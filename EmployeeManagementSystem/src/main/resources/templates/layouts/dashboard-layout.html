@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/base}">
+<head>
+    <title layout:title-pattern="$CONTENT_TITLE">Dashboard</title>
+    
+    <!-- Dashboard-specific CSS -->
+    <style>
+        .dashboard-card {
+            transition: transform 0.3s ease;
+        }
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+        }
+        .stat-card {
+            border-radius: 10px;
+            color: white;
+        }
+        .stat-icon {
+            font-size: 2.5rem;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div layout:fragment="content">
+
+        <!-- Content will be inserted here -->
+        <th:block layout:fragment="dashboard-content"></th:block>
+    </div>
+</body>
+</html>

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/base}">
+<head>
+    <title layout:title-pattern="$CONTENT_TITLE">Authentication</title>
+    
+    <!-- Auth-specific CSS -->
+    <style>
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+        }
+        .auth-card {
+            width: 100%;
+            max-width: 400px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .auth-header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .auth-body {
+            padding: 30px;
+        }
+        .auth-footer {
+            padding: 20px;
+            text-align: center;
+            background: #f8f9fa;
+            border-top: 1px solid #dee2e6;
+        }
+        .auth-logo {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="auth-container">
+            <div class="auth-card">
+                <!-- Auth Header -->
+                <div class="auth-header">
+                    <div class="auth-logo">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h2 class="h4 mb-0" th:text="${pageTitle} ?: 'Employee Management'">Employee Management</h2>
+                    <p class="mb-0 opacity-75">Sign in to your account</p>
+                </div>
+
+                <!-- Auth Body -->
+                <div class="auth-body">
+                    <th:block layout:fragment="auth-content"></th:block>
+                </div>
+
+                <!-- Auth Footer -->
+                <div class="auth-footer">
+                    <small class="text-muted">
+                        © 2026 Employee Management System. All rights reserved.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

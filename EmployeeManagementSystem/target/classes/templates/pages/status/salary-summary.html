@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/dashboard-layout}">
+<head>
+    <title>Salary Summary</title>
+    <style>
+        .summary-card {
+            border: none;
+            border-radius: 10px;
+            color: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .summary-icon {
+            font-size: 2.5rem;
+            opacity: 0.8;
+        }
+        .department-card {
+            border-left: 5px solid;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: white;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+        }
+        .salary-cell {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+        }
+        .progress-thin {
+            height: 8px;
+            border-radius: 4px;
+        }
+        .chart-container {
+            height: 300px;
+            position: relative;
+        }
+        .employee-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background-color: #667eea;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+    </style>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div layout:fragment="dashboard-content">
+        <!-- Page Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h4 class="mb-0">Salary Summary & Analytics</h4>
+                <p class="text-muted mb-0">Comprehensive salary analysis across the organization</p>
+            </div>
+            <div>
+                <button class="btn btn-primary me-2" onclick="printReport()">
+                    <i class="fas fa-print me-2"></i> Print Report
+                </button>
+                <button class="btn btn-success" onclick="exportSummary()">
+                    <i class="fas fa-file-excel me-2"></i> Export Data
+                </button>
+            </div>
+        </div>
+
+        <!-- Key Metrics -->
+        <div class="row">
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="summary-card bg-primary">
+                    <div class="row">
+                        <div class="col-8">
+                            <h5 class="text-white">Total Employees</h5>
+                            <h2 class="text-white" th:text="${totalEmployees}">0</h2>
+                        </div>
+                        <div class="col-4 text-end">
+                            <i class="fas fa-users summary-icon"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <small class="opacity-75">
+                            <span th:text="${activeEmployees}">0</span> active employees
+                        </small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="summary-card bg-success">
+                    <div class="row">
+                        <div class="col-8">
+                            <h5 class="text-white">Monthly Salary</h5>
+                            <h2 class="text-white" 
+                                th:text="'$' + ${#numbers.formatDecimal(totalMonthlySalary, 1, 2, 'COMMA')}">0</h2>
+                        </div>
+                        <div class="col-4 text-end">
+                            <i class="fas fa-money-bill-wave summary-icon"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <small class="opacity-75">
+                            Total monthly payroll
+                        </small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="summary-card bg-warning">
+                    <div class="row">
+                        <div class="col-8">
+                            <h5 class="text-white">Average Salary</h5>
+                            <h2 class="text-white" 
+                                th:text="'$' + ${#numbers.formatDecimal(averageSalary, 1, 2, 'COMMA')}">0</h2>
+                        </div>
+                        <div class="col-4 text-end">
+                            <i class="fas fa-chart-line summary-icon"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <small class="opacity-75">
+                            Per employee per month
+                        </small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="summary-card bg-info">
+                    <div class="row">
+                        <div class="col-8">
+                            <h5 class="text-white">Active Employees</h5>
+                            <h2 class="text-white" th:text="${activeEmployees}">0</h2>
+                        </div>
+                        <div class="col-4 text-end">
+                            <i class="fas fa-user-check summary-icon"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <small class="opacity-75">
+                            <span th:text="${totalEmployees > 0 ? #numbers.formatDecimal((activeEmployees * 1.0 / totalEmployees * 100), 1, 1) : 0}">0</span>%
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Department-wise Salary Distribution</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="departmentChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Salary Range Distribution</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="rangeChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Employee Salary List -->
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Employee Salary Details</h5>
+                    <div class="input-group" style="width: 300px;">
+                        <input type="text" class="form-control" placeholder="Search employees..." id="employeeSearch">
+                        <button class="btn btn-outline-secondary" type="button">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover" id="salaryTable">
+                        <thead>
+                            <tr>
+                                <th>Employee</th>
+                                <th>Position</th>
+                                <th>Department</th>
+                                <th>Status</th>
+                                <th>Band Level</th>
+                                <th>Basic Salary</th>
+                                <th>Net Salary</th>
+                                <th>% of Avg.</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="emp : ${employees}">
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="employee-avatar me-3">
+                                            <span th:text="${emp.full_name != null ? emp.full_name.substring(0,1).toUpperCase() : ''}"></span>
+                                        </div>
+                                        <div>
+                                            <div th:text="${emp.full_name}" class="fw-bold"></div>
+                                            <small class="text-muted" th:text="'EMP-' + ${emp.id}"></small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td th:text="${emp.position}"></td>
+                                <td>
+                                    <span class="badge bg-secondary" th:text="${emp.department}"></span>
+                                </td>
+                                <td>
+                                    <span class="badge" th:switch="${emp.status}">
+                                        <span th:case="'Active'" class="bg-success" th:text="${emp.status}"></span>
+                                        <span th:case="'On Leave'" class="bg-warning" th:text="${emp.status}"></span>
+                                        <span th:case="'Inactive'" class="bg-danger" th:text="${emp.status}"></span>
+                                        <span th:case="'Resigned'" class="bg-info" th:text="${emp.status}"></span>
+                                        <span th:case="'Terminated'" class="bg-dark" th:text="${emp.status}"></span>
+                                        <span th:case="*" class="bg-secondary" th:text="${emp.status != null ? emp.status : 'N/A'}"></span>
+                                    </span>
+                                </td>
+                                <td th:text="${emp.bandLevel != null ? emp.bandLevel : 'N/A'}"></td>
+                                <td class="salary-cell">
+                                    <span th:if="${emp.salary != null}">$<span th:text="${#numbers.formatDecimal(emp.salary, 1, 2)}"></span></span>
+                                    <span th:unless="${emp.salary != null}">N/A</span>
+                                </td>
+                                <td class="salary-cell">
+                                    <span th:if="${emp.netSalary != null}">$<span th:text="${#numbers.formatDecimal(emp.netSalary, 1, 2)}"></span></span>
+                                    <span th:unless="${emp.netSalary != null}">N/A</span>
+                                </td>
+                                <td>
+                                    <span th:if="${emp.netSalary != null and averageSalary > 0}">
+                                        <span th:text="${#numbers.formatDecimal((emp.netSalary / averageSalary * 100), 1, 1)}">0</span>%
+                                    </span>
+                                    <span th:unless="${emp.netSalary != null and averageSalary > 0}">N/A</span>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a th:href="@{/status/salary/{id}(id=${emp.id})}" 
+                                           class="btn btn-outline-info" title="View Breakdown">
+                                            <i class="fas fa-chart-pie"></i>
+                                        </a>
+                                        <a th:href="@{/employees/edit/{id}(id=${emp.id})}" 
+                                           class="btn btn-outline-warning" title="Edit Employee">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a th:href="@{/payroll/calculate/{employeeId}(employeeId=${emp.id})}" 
+                                           class="btn btn-outline-primary" title="Calculate Payroll">
+                                            <i class="fas fa-calculator"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr class="table-active">
+                                <td colspan="5" class="text-end"><strong>Totals/Averages:</strong></td>
+                                <td class="salary-cell">
+                                    <strong th:text="'$' + ${#numbers.formatDecimal(totalMonthlySalary, 1, 2, 'COMMA')}">0</strong>
+                                </td>
+                                <td class="salary-cell">
+                                    <strong th:text="'$' + ${#numbers.formatDecimal(totalMonthlySalary, 1, 2, 'COMMA')}">0</strong>
+                                </td>
+                                <td colspan="2"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Salary Analysis (SIMPLIFIED) -->
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Salary Statistics</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <small class="text-muted">Highest Salary</small>
+                                <p class="mb-0 fw-bold" th:text="'$' + ${#numbers.formatDecimal(highestSalary, 1, 2, 'COMMA')}">0</p>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <small class="text-muted">Lowest Salary</small>
+                                <p class="mb-0 fw-bold" th:text="'$' + ${#numbers.formatDecimal(lowestSalary, 1, 2, 'COMMA')}">0</p>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <small class="text-muted">Salary Range</small>
+                                <p class="mb-0 fw-bold" th:text="'$' + ${#numbers.formatDecimal(highestSalary - lowestSalary, 1, 2, 'COMMA')}">0</p>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <small class="text-muted">Median Salary</small>
+                                <p class="mb-0 fw-bold" th:text="'$' + ${#numbers.formatDecimal(medianSalary, 1, 2, 'COMMA')}">0</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Quick Actions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2 mb-4">
+                            <a th:href="@{/payroll/manage}" class="btn btn-outline-primary">
+                                <i class="fas fa-calculator me-2"></i> Go to Payroll Management
+                            </a>
+                            <a th:href="@{/employees/manage}" class="btn btn-outline-success">
+                                <i class="fas fa-users me-2"></i> Manage Employees
+                            </a>
+                            <a th:href="@{/status}" class="btn btn-outline-warning">
+                                <i class="fas fa-chart-bar me-2"></i> View Status Dashboard
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <th:block layout:fragment="scripts">
+        <script th:inline="javascript">
+            // Initialize charts
+            function initializeCharts() {
+                // Department Chart
+                const deptCtx = document.getElementById('departmentChart')?.getContext('2d');
+                if (deptCtx) {
+                    new Chart(deptCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: ['IT', 'HRM', 'Technical', 'Design', 'Social Media', 'Other'],
+                            datasets: [{
+                                label: 'Total Salary',
+                                data: [45000, 38000, 52000, 29000, 18000, 15000],
+                                backgroundColor: [
+                                    '#667eea',
+                                    '#28a745',
+                                    '#ffc107',
+                                    '#17a2b8',
+                                    '#6c757d',
+                                    '#343a40'
+                                ]
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    display: false
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        callback: function(value) {
+                                            return '$' + value.toLocaleString();
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+
+                // Range Chart
+                const rangeCtx = document.getElementById('rangeChart')?.getContext('2d');
+                if (rangeCtx) {
+                    new Chart(rangeCtx, {
+                        type: 'pie',
+                        data: {
+                            labels: ['Low (< $2K)', 'Medium ($2K-$5K)', 'High (> $5K)'],
+                            datasets: [{
+                                data: [5, 8, 3],
+                                backgroundColor: [
+                                    '#28a745',
+                                    '#ffc107',
+                                    '#dc3545'
+                                ]
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom'
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+
+            // Search functionality
+            document.getElementById('employeeSearch')?.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const rows = document.querySelectorAll('#salaryTable tbody tr');
+                
+                rows.forEach(row => {
+                    const employeeName = row.cells[0]?.textContent?.toLowerCase() || '';
+                    const department = row.cells[2]?.textContent?.toLowerCase() || '';
+                    
+                    if (employeeName.includes(searchTerm) || department.includes(searchTerm)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+
+            // Print report
+            function printReport() {
+                window.print();
+            }
+
+            // Export summary
+            function exportSummary() {
+                alert('Exporting salary summary data to Excel...');
+            }
+
+            // Initialize when page loads
+            document.addEventListener('DOMContentLoaded', function() {
+                initializeCharts();
+            });
+        </script>
+    </th:block>
+</body>
+</html>

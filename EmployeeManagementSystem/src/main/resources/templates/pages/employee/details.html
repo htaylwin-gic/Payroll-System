@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/dashboard-layout}">
+<head>
+    <title th:text="'Details - ' + ${employee.full_name}"></title>
+    <style>
+        .profile-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        .profile-photo {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 5px solid white;
+        }
+        .info-card {
+            border: none;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .info-card .card-header {
+            background-color: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+            font-weight: 600;
+        }
+        .info-label {
+            color: #6c757d;
+            font-weight: 500;
+        }
+        .info-value {
+            font-weight: 500;
+        }
+        .action-buttons .btn {
+            min-width: 120px;
+        }
+    </style>
+</head>
+<body>
+    <div layout:fragment="dashboard-content">
+        <!-- Profile Header -->
+        <div class="profile-header">
+            <div class="row align-items-center">
+                <div class="col-md-2 text-center">
+                    <img th:src="@{/images/default-avatar.png}" 
+                         alt="Profile Photo" 
+                         class="profile-photo mb-3">
+                </div>
+                <div class="col-md-6">
+                    <h2 class="mb-2" th:text="${employee.full_name}"></h2>
+                    <p class="mb-1" th:text="${employee.position}"></p>
+                    <p class="mb-0">
+                        <span class="badge bg-light text-dark me-2" th:text="${employee.department}"></span>
+                        <span th:classappend="'badge ' + ${employee.status == 'Active' ? 'bg-success' : 
+                                                        employee.status == 'Inactive' ? 'bg-danger' : 
+                                                        employee.status == 'On Leave' ? 'bg-warning' : 'bg-secondary'}"
+                              th:text="${employee.status ?: 'Unknown'}"></span>
+                    </p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <div class="action-buttons">
+                        <a th:href="@{/employees/edit/{id}(id=${employee.id})}" 
+                           class="btn btn-light me-2">
+                            <i class="fas fa-edit me-2"></i> Edit
+                        </a>
+                        <a th:href="@{/employees/manage}" 
+                           class="btn btn-outline-light">
+                            <i class="fas fa-arrow-left me-2"></i> Back
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Employee Information -->
+        <div class="row">
+            <!-- Personal Information -->
+            <div class="col-md-6">
+                <div class="card info-card">
+                    <div class="card-header">
+                        <i class="fas fa-user me-2"></i>Personal Information
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-2">
+                            <div class="col-5 info-label">Date of Birth</div>
+                            <div class="col-7 info-value" th:text="${employee.date_of_birth} ?: 'Not specified'"></div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-5 info-label">Gender</div>
+                            <div class="col-7 info-value" th:text="${employee.gender} ?: 'Not specified'"></div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-5 info-label">Nationality</div>
+                            <div class="col-7 info-value" th:text="${employee.nationality} ?: 'Not specified'"></div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-5 info-label">NIC</div>
+                            <div class="col-7 info-value" th:text="${employee.NIC}"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="col-md-6">
+                <div class="card info-card">
+                    <div class="card-header">
+                        <i class="fas fa-address-card me-2"></i>Contact Information
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-2">
+                            <div class="col-5 info-label">Email</div>
+                            <div class="col-7 info-value" th:text="${employee.email}"></div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-5 info-label">Phone</div>
+                            <div class="col-7 info-value" th:text="${employee.phone_number} ?: 'Not specified'"></div>
+                        </div>
+                        <div class="row">
+                            <div class="col-5 info-label">Address</div>
+                            <div class="col-7 info-value" th:text="${employee.address} ?: 'Not specified'"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Employment Information -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card info-card">
+                    <div class="card-header">
+                        <i class="fas fa-briefcase me-2"></i>Employment Details
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-2">
+                            <div class="col-5 info-label">Position</div>
+                            <div class="col-7 info-value" th:text="${employee.position}"></div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-5 info-label">Department</div>
+                            <div class="col-7 info-value">
+                                <span class="badge bg-secondary" th:text="${employee.department}"></span>
+                            </div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-5 info-label">Start Date</div>
+                            <div class="col-7 info-value" th:text="${employee.start_date}"></div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-5 info-label">Employment Status</div>
+                            <div class="col-7 info-value" th:text="${employee.employment_status} ?: 'Not specified'"></div>
+                        </div>
+                        <div class="row">
+                            <div class="col-5 info-label">Band Level</div>
+                            <div class="col-7 info-value" th:text="${employee.bandLevel} ?: 'Not set'"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Salary & Quick Actions -->
+            <div class="col-md-6">
+                <div class="card info-card">
+                    <div class="card-header">
+                        <i class="fas fa-money-bill-wave me-2"></i>Salary & Actions
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-5 info-label">Basic Salary</div>
+                            <div class="col-7 info-value" th:text="${employee.salary ? '$' + employee.salary : 'Not set'}"></div>
+                        </div>
+                        <div class="row mb-4">
+                            <div class="col-5 info-label">Net Salary</div>
+                            <div class="col-7 info-value" th:text="${employee.netSalary ? '$' + employee.netSalary : 'Not calculated'}"></div>
+                        </div>
+
+                        <div class="action-buttons">
+                            <div class="d-grid gap-2">
+                                <a th:href="@{/status/salary/{id}(id=${employee.id})}" 
+                                   class="btn btn-outline-info">
+                                    <i class="fas fa-chart-pie me-2"></i> View Salary Breakdown
+                                </a>
+                                <a th:href="@{/salary/update/{id}(id=${employee.id})}" 
+                                   class="btn btn-outline-warning">
+                                    <i class="fas fa-edit me-2"></i> Update Salary Details
+                                </a>
+                                <a th:href="@{/payroll/calculate/{employeeId}(employeeId=${employee.id})}" 
+                                   class="btn btn-outline-primary">
+                                    <i class="fas fa-calculator me-2"></i> Calculate Payroll
+                                </a>
+                                <a th:href="@{/payroll/view/{employeeId}(employeeId=${employee.id})}" 
+                                   class="btn btn-outline-secondary">
+                                    <i class="fas fa-history me-2"></i> View Payroll History
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Additional Information -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card info-card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-info-circle me-2"></i>Additional Information
+                        </div>
+                        <div>
+                            <span class="badge bg-light text-dark me-2" th:text="'ID: EMP-' + ${employee.id}"></span>
+                            <span class="badge bg-light text-dark" th:text="'Updated: ' + ${employee.date ?: 'N/A'}"></span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <div class="info-label">Attendance Today</div>
+                                <div class="info-value">
+                                    <span th:if="${employee.isAttedence == 'Yes'}" 
+                                          class="badge bg-success">Present</span>
+                                    <span th:if="${employee.isAttedence == 'No'}" 
+                                          class="badge bg-danger">Absent</span>
+                                    <span th:if="${!employee.isAttedence}" 
+                                          class="badge bg-secondary">Not recorded</span>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <div class="info-label">Payroll Status</div>
+                                <div class="info-value">
+                                    <span th:if="${employee.isPayroll == 'Yes'}" 
+                                          class="badge bg-success">Processed</span>
+                                    <span th:if="${employee.isPayroll == 'No'}" 
+                                          class="badge bg-warning">Pending</span>
+                                    <span th:if="${!employee.isPayroll}" 
+                                          class="badge bg-secondary">Not set</span>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <div class="info-label">Service Years</div>
+                                <div class="info-value" th:text="${employee.myanmarServiceYears} ? employee.myanmarServiceYears + ' years' : 'N/A'"></div>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <div class="info-label">Last Updated</div>
+                                <div class="info-value" th:text="${employee.time} ?: 'N/A'"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

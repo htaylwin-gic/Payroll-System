@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/dashboard-layout}">
+<head>
+    <title>Payroll Management</title>
+    <style>
+        .employee-card {
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+        .employee-card:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+        .employee-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            background-color: #667eea;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        .salary-amount {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        .payroll-status {
+            font-size: 0.8rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+        }
+        .filter-buttons .btn {
+            border-radius: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div layout:fragment="dashboard-content">
+        <!-- Page Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h4 class="mb-0">Payroll Management</h4>
+                <p class="text-muted mb-0">Manage employee payrolls and calculations</p>
+            </div>
+            <div>
+                <a th:href="@{/payroll/monthly}" class="btn btn-primary">
+                    <i class="fas fa-file-invoice-dollar me-2"></i> Monthly Report
+                </a>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <form th:action="@{/employees/search}" method="get">
+                            <div class="input-group">
+                                <input type="text" 
+                                       name="keyword" 
+                                       class="form-control" 
+                                       placeholder="Search employees by name or department...">
+                                <button type="submit" class="btn btn-outline-primary">
+                                    <i class="fas fa-search"></i> Search
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="filter-buttons">
+                            <div class="btn-group w-100" role="group">
+                                <button type="button" class="btn btn-outline-secondary active" data-filter="all">
+                                    All
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary" data-filter="processed">
+                                    Processed
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary" data-filter="pending">
+                                    Pending
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Month Selector -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <label for="monthSelect" class="form-label">Select Month for Calculation</label>
+                        <div class="input-group">
+                            <input type="month" 
+                                   class="form-control" 
+                                   id="monthSelect"
+                                   th:value="${#dates.format(#dates.createNow(), 'yyyy-MM')}">
+                            <button class="btn btn-outline-primary" onclick="applyMonthToAll()">
+                                Apply to All
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title">Quick Stats</h6>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <small class="text-muted">Total Employees</small>
+                                <h5 th:text="${employees.size()}">0</h5>
+                            </div>
+                            <div class="col-md-3">
+                                <small class="text-muted">Payroll Processed</small>
+                                <h5 th:text="${employees.?[isPayroll == 'Yes'].size()}">0</h5>
+                            </div>
+                            <div class="col-md-3">
+                                <small class="text-muted">Total Monthly Salary</small>
+                                <h5 class="text-success">
+                                    <span th:text="${#numbers.formatDecimal(totalSalary, 0, 2, 'COMMA')}">0</span>
+                                </h5>
+                            </div>
+                            <div class="col-md-3">
+                                <small class="text-muted">Average Salary</small>
+                                <h5 class="text-primary">
+                                    <span th:text="${#numbers.formatDecimal(averageSalary, 0, 2, 'COMMA')}">0</span>
+                                </h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Employees List -->
+        <div class="row" id="employeesContainer">
+            <th:block th:each="emp : ${employees}">
+                <div class="col-md-6 col-xl-4 mb-3 employee-item" 
+                     th:data-processed="${emp.isPayroll == 'Yes'}">
+                    <div class="employee-card">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div class="d-flex align-items-center">
+                                <div class="employee-avatar me-3" 
+                                     th:text="${emp.full_name?.substring(0,1)?.toUpperCase()}">
+                                </div>
+                                <div>
+                                    <h6 class="mb-1" th:text="${emp.full_name}"></h6>
+                                    <p class="text-muted mb-0" th:text="${emp.position}"></p>
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <span th:classappend="'badge ' + ${emp.isPayroll == 'Yes' ? 'bg-success' : 'bg-warning'} + ' payroll-status'"
+                                      th:text="${emp.isPayroll == 'Yes' ? 'Processed' : 'Pending'}">
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <small class="text-muted">Department</small>
+                                <p class="mb-0" th:text="${emp.department}"></p>
+                            </div>
+                            <div class="col-6 text-end">
+                                <small class="text-muted">Basic Salary</small>
+                                <p class="mb-0 salary-amount" th:text="'$' + (emp.salary ?: '0')"></p>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <a th:href="@{/payroll/calculate/{employeeId}(employeeId=${emp.id})}" 
+                               class="btn btn-sm btn-primary">
+                                <i class="fas fa-calculator me-1"></i> Calculate Payroll
+                            </a>
+                            <a th:href="@{/payroll/view/{employeeId}(employeeId=${emp.id})}" 
+                               class="btn btn-sm btn-outline-secondary">
+                                <i class="fas fa-history me-1"></i> View History
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </th:block>
+
+            <!-- Empty State -->
+            <div th:if="${employees.empty}" class="col-12">
+                <div class="card">
+                    <div class="card-body text-center py-5">
+                        <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No Employees Found</h5>
+                        <p class="text-muted mb-3">Add employees to start managing payroll</p>
+                        <a th:href="@{/employees/add}" class="btn btn-primary">
+                            <i class="fas fa-user-plus me-2"></i> Add Employee
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bulk Actions -->
+        <div class="card mt-4">
+            <div class="card-body">
+                <h6 class="card-title">Bulk Actions</h6>
+                <div class="row">
+                    <div class="col-md-4">
+                        <button class="btn btn-outline-primary w-100" onclick="calculateAllPending()">
+                            <i class="fas fa-calculator me-2"></i> Calculate All Pending
+                        </button>
+                    </div>
+                    <div class="col-md-4">
+                        <button class="btn btn-outline-success w-100" onclick="exportPayrollData()">
+                            <i class="fas fa-file-export me-2"></i> Export All Data
+                        </button>
+                    </div>
+                    <div class="col-md-4">
+                        <button class="btn btn-outline-info w-100" onclick="generateReports()">
+                            <i class="fas fa-chart-bar me-2"></i> Generate Reports
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <th:block layout:fragment="scripts">
+        <script>
+            document.querySelectorAll('.filter-buttons .btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.filter-buttons .btn').forEach(b => {
+                        b.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                    
+                    const filter = this.dataset.filter;
+                    const items = document.querySelectorAll('.employee-item');
+                    
+                    items.forEach(item => {
+                        const isProcessed = item.dataset.processed === 'true';
+                        
+                        switch(filter) {
+                            case 'all':
+                                item.style.display = '';
+                                break;
+                            case 'processed':
+                                item.style.display = isProcessed ? '' : 'none';
+                                break;
+                            case 'pending':
+                                item.style.display = isProcessed ? 'none' : '';
+                                break;
+                        }
+                    });
+                });
+            });
+
+            function applyMonthToAll() {
+                const month = document.getElementById('monthSelect').value;
+                if (month) {
+                    const calculateButtons = document.querySelectorAll('[href*="/payroll/calculate/"]');
+                    calculateButtons.forEach(btn => {
+                        const originalHref = btn.getAttribute('href');
+                        btn.setAttribute('href', originalHref + '?month=' + month);
+                    });
+                    alert('Month ' + month + ' applied to all calculation links');
+                }
+            }
+
+            function calculateAllPending() {
+                if (confirm('Calculate payroll for all pending employees? This may take a while.')) {
+                    alert('This feature would calculate payroll for all pending employees.');
+                }
+            }
+
+            function exportPayrollData() {
+                alert('Export functionality would be implemented here.');
+            }
+
+            function generateReports() {
+                alert('Report generation would be implemented here.');
+            }
+        </script>
+    </th:block>
+</body>
+</html>

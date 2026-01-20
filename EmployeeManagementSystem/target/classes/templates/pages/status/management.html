@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/dashboard-layout}">
+<head>
+    <title>Employee Status Management</title>
+    <style>
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        .status-active { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .status-inactive { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .status-leave { background-color: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .status-resigned { background-color: #e2e3e5; color: #383d41; border: 1px solid #d6d8db; }
+        .status-terminated { background-color: #343a40; color: white; border: 1px solid #454d55; }
+        
+        .stats-card {
+            border: none;
+            border-radius: 10px;
+            color: white;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .stats-icon {
+            font-size: 2.5rem;
+            opacity: 0.8;
+        }
+        
+        .employee-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #667eea;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .filter-tabs .nav-link {
+            border-radius: 20px;
+            margin-right: 5px;
+            padding: 8px 20px;
+        }
+        .filter-tabs .nav-link.active {
+            background-color: #667eea;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div layout:fragment="dashboard-content">
+        <!-- Page Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h4 class="mb-0">Employee Status Management</h4>
+                <p class="text-muted mb-0">Monitor and update employee employment status</p>
+            </div>
+            <div>
+                <a th:href="@{/status/salary-summary}" class="btn btn-primary">
+                    <i class="fas fa-chart-pie me-2"></i> Salary Summary
+                </a>
+            </div>
+        </div>
+
+        <!-- Status Statistics -->
+        <div class="row mb-4">
+            <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                <div class="stats-card bg-primary">
+                    <div class="row">
+                        <div class="col-8">
+                            <h5 class="text-white">Total</h5>
+                            <h2 class="text-white" th:text="${employeeCount}">0</h2>
+                        </div>
+                        <div class="col-4 text-end">
+                            <i class="fas fa-users stats-icon"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                <div class="stats-card bg-success">
+                    <div class="row">
+                        <div class="col-8">
+                            <h5 class="text-white">Active</h5>
+                            <h2 class="text-white" 
+                                th:text="${employees.?[status == 'Active'].size()}">0</h2>
+                        </div>
+                        <div class="col-4 text-end">
+                            <i class="fas fa-user-check stats-icon"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                <div class="stats-card bg-warning">
+                    <div class="row">
+                        <div class="col-8">
+                            <h5 class="text-white">On Leave</h5>
+                            <h2 class="text-white" 
+                                th:text="${employees.?[status == 'On Leave'].size()}">0</h2>
+                        </div>
+                        <div class="col-4 text-end">
+                            <i class="fas fa-bed stats-icon"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                <div class="stats-card bg-secondary">
+                    <div class="row">
+                        <div class="col-8">
+                            <h5 class="text-white">Inactive</h5>
+                            <h2 class="text-white" 
+                                th:text="${employees.?[status == 'Inactive'].size()}">0</h2>
+                        </div>
+                        <div class="col-4 text-end">
+                            <i class="fas fa-user-slash stats-icon"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                <div class="stats-card bg-info">
+                    <div class="row">
+                        <div class="col-8">
+                            <h5 class="text-white">Resigned</h5>
+                            <h2 class="text-white" 
+                                th:text="${employees.?[status == 'Resigned'].size()}">0</h2>
+                        </div>
+                        <div class="col-4 text-end">
+                            <i class="fas fa-sign-out-alt stats-icon"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                <div class="stats-card bg-dark">
+                    <div class="row">
+                        <div class="col-8">
+                            <h5 class="text-white">Terminated</h5>
+                            <h2 class="text-white" 
+                                th:text="${employees.?[status == 'Terminated'].size()}">0</h2>
+                        </div>
+                        <div class="col-4 text-end">
+                            <i class="fas fa-ban stats-icon"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="mb-3">Filter by Status:</h6>
+                        <div class="filter-tabs">
+                            <ul class="nav nav-pills">
+                                <li class="nav-item">
+                                    <a class="nav-link" th:href="@{/status}">
+                                        All (<span th:text="${employeeCount}">0</span>)
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" 
+                                       th:href="@{/status?status=Active}"
+                                       th:classappend="${selectedStatus == 'Active'} ? 'active' : ''">
+                                        Active
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" 
+                                       th:href="@{/status?status=On Leave}"
+                                       th:classappend="${selectedStatus == 'On Leave'} ? 'active' : ''">
+                                        On Leave
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" 
+                                       th:href="@{/status?status=Inactive}"
+                                       th:classappend="${selectedStatus == 'Inactive'} ? 'active' : ''">
+                                        Inactive
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" 
+                                       th:href="@{/status?status=Resigned}"
+                                       th:classappend="${selectedStatus == 'Resigned'} ? 'active' : ''">
+                                        Resigned
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" 
+                                       th:href="@{/status?status=Terminated}"
+                                       th:classappend="${selectedStatus == 'Terminated'} ? 'active' : ''">
+                                        Terminated
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="mb-3">Quick Actions:</h6>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-primary" onclick="bulkUpdateStatus()">
+                                <i class="fas fa-sync-alt me-2"></i> Bulk Update
+                            </button>
+                            <button class="btn btn-outline-success" onclick="exportStatusReport()">
+                                <i class="fas fa-file-export me-2"></i> Export Report
+                            </button>
+                            <button class="btn btn-outline-info" onclick="sendStatusNotifications()">
+                                <i class="fas fa-bell me-2"></i> Send Notifications
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Employees Table -->
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Employee</th>
+                                <th>Position</th>
+                                <th>Department</th>
+                                <th>Current Status</th>
+                                <th>Band Level</th>
+                                <th>Basic Salary</th>
+                                <th>Net Salary</th>
+                                <th>Last Updated</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="emp : ${employees}">
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="employee-avatar me-3">
+                                            <span th:text="${emp.full_name?.substring(0,1)?.toUpperCase()}"></span>
+                                        </div>
+                                        <div>
+                                            <div th:text="${emp.full_name}" class="fw-bold"></div>
+                                            <small class="text-muted" th:text="'EMP-' + ${emp.id}"></small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td th:text="${emp.position}"></td>
+                                <td>
+                                    <span class="badge bg-secondary" th:text="${emp.department}"></span>
+                                </td>
+                                <td>
+                                    <span th:classappend="'status-badge status-' + ${emp.status?.toLowerCase()?.replace(' ', '-')}" 
+                                        th:text="${emp.status ?: 'Not Set'}">
+                                    </span>
+                                </td>
+                                <td th:text="${emp.bandLevel ?: 'N/A'}"></td>
+                                <td>
+                                    <span th:if="${emp.salary != null}">
+                                        $<span th:text="${#numbers.formatDecimal(emp.salary, 1, 2)}"></span>
+                                    </span>
+                                    <span th:unless="${emp.salary != null}">N/A</span>
+                                </td>
+                                <td>
+                                    <span th:if="${emp.netSalary != null}" class="fw-bold text-primary">
+                                        $<span th:text="${#numbers.formatDecimal(emp.netSalary, 1, 2)}"></span>
+                                    </span>
+                                    <span th:unless="${emp.netSalary != null}">N/A</span>
+                                </td>
+                                <td>
+                                    <small class="text-muted">
+                                        <span th:text="${emp.date ?: 'N/A'}"></span>
+                                        <br>
+                                        <span th:text="${emp.time ?: ''}"></span>
+                                    </small>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a th:href="@{/status/update/{id}(id=${emp.id})}" 
+                                        class="btn btn-outline-warning" title="Update Status">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a th:href="@{/status/salary/{id}(id=${emp.id})}" 
+                                        class="btn btn-outline-info" title="View Salary">
+                                            <i class="fas fa-chart-pie"></i>
+                                        </a>
+                                        <!-- <a th:href="@{/employee/details/{id}(id=${emp.id})}" 
+                                        class="btn btn-outline-secondary" title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </a> -->
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr th:if="${employees.empty}">
+                                <td colspan="9" class="text-center py-5">
+                                    <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                                    <h5 class="text-muted" th:if="${selectedStatus}">
+                                        No employees found with status: <span th:text="${selectedStatus}"></span>
+                                    </h5>
+                                    <h5 class="text-muted" th:unless="${selectedStatus}">
+                                        No employees found
+                                    </h5>
+                                    <a th:href="@{/employees/add}" class="btn btn-primary mt-2">
+                                        <i class="fas fa-user-plus me-2"></i> Add Employee
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Distribution Chart -->
+        <div class="row mt-4">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Status Distribution</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <canvas id="statusChart" height="250"></canvas>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mt-4">
+                                    <div th:each="statusType : ${statusTypes}" class="mb-3">
+                                        <div class="d-flex justify-content-between">
+                                            <span th:text="${statusType}"></span>
+                                            <span class="fw-bold">
+                                                <span th:text="${employees.?[status == statusType].size()}">0</span>
+                                                (<span th:text="${employeeCount > 0 ? (employees.?[status == statusType].size() / employeeCount * 100) : 0}">0</span>%)
+                                            </span>
+                                        </div>
+                                        <div class="progress" style="height: 8px;">
+                                            <div class="progress-bar" 
+                                                 th:classappend="'bg-' + ${statusType == 'Active' ? 'success' : 
+                                                                 statusType == 'On Leave' ? 'warning' : 
+                                                                 statusType == 'Inactive' ? 'secondary' : 
+                                                                 statusType == 'Resigned' ? 'info' : 'dark'}"
+                                                 th:style="'width: ' + ${employeeCount > 0 ? (employees.?[status == statusType].size() / employeeCount * 100) : 0} + '%'">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Quick Status Updates</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-outline-success" onclick="updateMultipleStatus('Active')">
+                                <i class="fas fa-check-circle me-2"></i> Mark Selected as Active
+                            </button>
+                            <button class="btn btn-outline-warning" onclick="updateMultipleStatus('On Leave')">
+                                <i class="fas fa-bed me-2"></i> Mark Selected as On Leave
+                            </button>
+                            <button class="btn btn-outline-secondary" onclick="updateMultipleStatus('Inactive')">
+                                <i class="fas fa-user-slash me-2"></i> Mark Selected as Inactive
+                            </button>
+                            <button class="btn btn-outline-info" onclick="updateMultipleStatus('Resigned')">
+                                <i class="fas fa-sign-out-alt me-2"></i> Mark Selected as Resigned
+                            </button>
+                            <button class="btn btn-outline-dark" onclick="updateMultipleStatus('Terminated')">
+                                <i class="fas fa-ban me-2"></i> Mark Selected as Terminated
+                            </button>
+                        </div>
+                        <hr>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="selectAll">
+                            <label class="form-check-label" for="selectAll">
+                                Select All Employees
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="chartData" 
+             th:data-active-count="${employees.?[status == 'Active'].size()}"
+             th:data-on-leave-count="${employees.?[status == 'On Leave'].size()}"
+             th:data-inactive-count="${employees.?[status == 'Inactive'].size()}"
+             th:data-resigned-count="${employees.?[status == 'Resigned'].size()}"
+             th:data-terminated-count="${employees.?[status == 'Terminated'].size()}"
+             style="display: none;">
+        </div>
+    </div>
+
+    <th:block layout:fragment="scripts">
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script th:inline="javascript">
+
+            const chartData = document.getElementById('chartData');
+            // Initialize chart
+            function initializeChart() {
+                const ctx = document.getElementById('statusChart').getContext('2d');
+                const statusData = {
+                    labels: ['Active', 'On Leave', 'Inactive', 'Resigned', 'Terminated'],
+                    datasets: [{
+                        data: [
+                            parseInt(chartData.dataset.activeCount) || 0,
+                            parseInt(chartData.dataset.onLeaveCount) || 0,
+                            parseInt(chartData.dataset.inactiveCount) || 0,
+                            parseInt(chartData.dataset.resignedCount) || 0,
+                            parseInt(chartData.dataset.terminatedCount) || 0
+                        ],
+                        backgroundColor: [
+                            '#28a745',
+                            '#ffc107',
+                            '#6c757d',
+                            '#17a2b8',
+                            '#343a40'
+                        ]
+                    }]
+                };
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: statusData,
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Bulk update status
+            function bulkUpdateStatus() {
+                alert('Bulk update feature would open a modal to select employees and update their status.');
+            }
+
+            // Update multiple employees status
+            function updateMultipleStatus(status) {
+                const selectedEmployees = getSelectedEmployees();
+                if (selectedEmployees.length === 0) {
+                    alert('Please select at least one employee.');
+                    return;
+                }
+                
+                if (confirm(`Update ${selectedEmployees.length} employee(s) to "${status}" status?`)) {
+                    // In a real application, make an AJAX call to update status
+                    alert(`Status updated to "${status}" for selected employees.`);
+                }
+            }
+
+            function getSelectedEmployees() {
+                return [];
+            }
+
+            function exportStatusReport() {
+                alert('Exporting status report...');
+                // would trigger a CSV/Excel download
+            }
+
+            // Send status notifications
+            function sendStatusNotifications() {
+                if (confirm('Send status update notifications to selected employees?')) {
+                    alert('Notifications sent successfully!');
+                }
+            }
+
+            // Select all employees
+            document.getElementById('selectAll')?.addEventListener('change', function() {
+                const checkboxes = document.querySelectorAll('.employee-checkbox');
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = this.checked;
+                });
+            });
+
+            // Initialize when page loads
+            document.addEventListener('DOMContentLoaded', function() {
+                initializeChart();
+            });
+        </script>
+        
+        <style>
+            .employee-checkbox {
+                margin-right: 10px;
+            }
+        </style>
+    </th:block>
+</body>
+</html>

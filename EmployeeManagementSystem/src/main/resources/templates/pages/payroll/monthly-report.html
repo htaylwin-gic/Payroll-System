@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/dashboard-layout}">
+<head>
+    <title>Monthly Payroll Report</title>
+    <style>
+        .month-selector {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .summary-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-left: 5px solid #667eea;
+        }
+        .summary-card.total {
+            border-left-color: #28a745;
+        }
+        .summary-card.average {
+            border-left-color: #ffc107;
+        }
+        .summary-card.employees {
+            border-left-color: #dc3545;
+        }
+        .payroll-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+        .department-badge {
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+        }
+        .salary-cell {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+        }
+        .chart-container {
+            height: 300px;
+            position: relative;
+        }
+    </style>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div layout:fragment="dashboard-content">
+        <!-- Page Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h4 class="mb-0">Monthly Payroll Report</h4>
+                <p class="text-muted mb-0">Comprehensive payroll analysis by month</p>
+            </div>
+            <div>
+                <button class="btn btn-primary me-2" onclick="printReport()">
+                    <i class="fas fa-print me-2"></i> Print Report
+                </button>
+                <button class="btn btn-success" onclick="exportReport()">
+                    <i class="fas fa-file-excel me-2"></i> Export Excel
+                </button>
+            </div>
+        </div>
+
+        <!-- Month Selector -->
+        <div class="month-selector">
+            <div class="row align-items-center">
+                <div class="col-md-4">
+                    <label for="monthSelect" class="form-label text-white">Select Month</label>
+                    <div class="input-group">
+                        <select id="monthSelect" class="form-select" onchange="changeMonth()">
+                            <option th:each="monthYear : ${monthYears}"
+                                    th:value="${monthYear}"
+                                    th:text="${monthYear}"
+                                    th:selected="${selectedMonth == monthYear}">
+                            </option>
+                        </select>
+                        <button class="btn btn-light" onclick="loadCurrentMonth()">
+                            <i class="fas fa-redo"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-8">
+                    <div class="row">
+                        <div class="col-md-4 text-center">
+                            <h5 class="mb-1" th:text="${selectedMonth}"></h5>
+                            <small class="opacity-75">Selected Month</small>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <h5 class="mb-1" th:text="${payrolls.size()}">0</h5>
+                            <small class="opacity-75">Employees Paid</small>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <h5 class="mb-1" th:text="'$' + ${#numbers.formatDecimal(totalPayment, 0, 2, 'COMMA')}">$0.00</h5>
+                            <small class="opacity-75">Total Payment</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="row">
+            <div class="col-md-4">
+                <div class="summary-card total">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-2">Total Payment</h6>
+                            <h3 class="text-success mb-0" th:text="'$' + ${#numbers.formatDecimal(totalPayment, 0, 2, 'COMMA')}"></h3>
+                        </div>
+                        <div class="icon-circle bg-success">
+                            <i class="fas fa-money-bill-wave text-white"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <small class="text-muted">
+                            <i class="fas fa-arrow-up text-success me-1"></i>
+                            Total payroll expenditure for <span th:text="${selectedMonth}"></span>
+                        </small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="summary-card average">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-2">Average Salary</h6>
+                            <h3 class="text-warning mb-0" 
+                                th:text="'$' + ${#numbers.formatDecimal(payrolls.empty ? 0 : totalPayment / payrolls.size(), 0, 2, 'COMMA')}">
+                            </h3>
+                        </div>
+                        <div class="icon-circle bg-warning">
+                            <i class="fas fa-chart-line text-white"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <small class="text-muted">
+                            Average payment per employee
+                        </small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="summary-card employees">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-2">Employees Processed</h6>
+                            <h3 class="text-primary mb-0" th:text="${payrolls.size()}">0</h3>
+                        </div>
+                        <div class="icon-circle bg-primary">
+                            <i class="fas fa-users text-white"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <small class="text-muted">
+                            <span th:text="${payrolls.size()}">0</span> employees paid this month
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Department-wise Distribution</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="departmentChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Payment Summary</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="paymentChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payroll Table -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Detailed Payroll for <span th:text="${selectedMonth}"></span></h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                    <table class="table table-hover payroll-table">
+                        <thead>
+                            <tr>
+                                <th>Employee</th>
+                                <th>Department</th>
+                                <th>Basic Salary</th>
+                                <th>Present Days</th>
+                                <th>Deductions</th>
+                                <th>Additions</th>
+                                <th>Net Salary</th>
+                                <th>Travel Fee</th>
+                                <th>Total Payment</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="payroll : ${payrolls}">
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" 
+                                             style="width: 35px; height: 35px;">
+                                            <span th:text="${payroll.employee.full_name?.substring(0,1)?.toUpperCase()}"></span>
+                                        </div>
+                                        <div>
+                                            <div th:text="${payroll.employee.full_name}" class="fw-bold"></div>
+                                            <small class="text-muted" th:text="${payroll.employee.position}"></small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span th:classappend="'badge department-badge ' + ${payroll.employee.department == 'IT' ? 'bg-primary' : 
+                                                                                      payroll.employee.department == 'HRM' ? 'bg-success' : 
+                                                                                      payroll.employee.department == 'Technical' ? 'bg-warning' : 
+                                                                                      payroll.employee.department == 'Design' ? 'bg-info' : 'bg-secondary'}"
+                                          th:text="${payroll.employee.department}">
+                                    </span>
+                                </td>
+                                <td class="salary-cell" th:text="'$' + ${payroll.basicSalary}"></td>
+                                <td>
+                                    <span th:text="${payroll.presentDays} + '/' + ${payroll.workingDays}"></span>
+                                    <div class="text-muted" style="font-size: 0.75rem;">
+                                        <span th:if="${payroll.leaveDays > 0}" 
+                                              class="text-warning">L: <span th:text="${payroll.leaveDays}"></span></span>
+                                        <span th:if="${payroll.lateDays > 0}" 
+                                              class="text-danger ms-1">T: <span th:text="${payroll.lateDays}"></span></span>
+                                    </div>
+                                </td>
+                                <td class="salary-cell text-danger" 
+                                    th:text="'$' + (payroll.leaveDeduction + payroll.lateDeduction + payroll.incomeTax + payroll.loanReturn + payroll.ssc + payroll.companyTrip)">
+                                </td>
+                                <td class="salary-cell text-success" 
+                                    th:text="'$' + (payroll.allowance + payroll.overtime + payroll.bonus + payroll.home + payroll.businessTrip + payroll.continuedYear + payroll.homeTownVisit + payroll.manualAdjust + payroll.attendancePerfect + payroll.exchangeBenefit)">
+                                </td>
+                                <td class="salary-cell">
+                                    <strong th:text="'$' + ${payroll.netSalary}"></strong>
+                                </td>
+                                <td class="salary-cell" th:text="'K' + ${payroll.travelFee}"></td>
+                                <td class="salary-cell">
+                                    <h6 class="mb-0 text-primary" th:text="'$' + ${payroll.totalPayment}"></h6>
+                                </td>
+                                <td>
+                                    <span class="badge bg-success">Paid</span>
+                                    <div class="text-muted" style="font-size: 0.75rem;">
+                                        <span th:text="${#dates.format(payroll.createdAt, 'dd MMM')}"></span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a th:href="@{/payroll/view/{employeeId}(employeeId=${payroll.employee.id})}" 
+                                           class="btn btn-outline-info" title="View History">
+                                            <i class="fas fa-history"></i>
+                                        </a>
+                                        <button class="btn btn-outline-primary" 
+                                                th:data-id="${payroll.id}" onclick="downloadPayslip(this.getAttribute('data-id'))"
+                                                title="Download Payslip">
+                                            <i class="fas fa-download"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr th:if="${payrolls.empty}">
+                                <td colspan="11" class="text-center py-5">
+                                    <i class="fas fa-file-invoice-dollar fa-3x text-muted mb-3"></i>
+                                    <h5 class="text-muted">No Payroll Data for <span th:text="${selectedMonth}"></span></h5>
+                                    <p class="text-muted mb-3">No payroll records found for the selected month</p>
+                                    <a th:href="@{/payroll/manage}" class="btn btn-primary">
+                                        <i class="fas fa-calculator me-2"></i> Calculate Payroll
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                        <tfoot th:if="${!payrolls.empty}">
+                            <tr class="table-active">
+                                <td colspan="2" class="text-end"><strong>Totals:</strong></td>
+                                <td class="salary-cell">
+                                    <strong th:text="'$' + ${#numbers.formatDecimal(payrolls.!stream().mapToDouble(p -> p.basicSalary).sum(), 0, 2, 'COMMA')}"></strong>
+                                </td>
+                                <td></td>
+                                <td class="salary-cell text-danger">
+                                    <strong th:text="'$' + ${#numbers.formatDecimal(payrolls.!stream().mapToDouble(p -> p.leaveDeduction + p.lateDeduction + p.incomeTax + p.loanReturn + p.ssc + p.companyTrip).sum(), 0, 2, 'COMMA')}"></strong>
+                                </td>
+                                <td class="salary-cell text-success">
+                                    <strong th:text="'$' + ${#numbers.formatDecimal(payrolls.!stream().mapToDouble(p -> p.allowance + p.overtime + p.bonus + p.home + p.businessTrip + p.continuedYear + p.homeTownVisit + p.manualAdjust + p.attendancePerfect + p.exchangeBenefit).sum(), 0, 2, 'COMMA')}"></strong>
+                                </td>
+                                <td class="salary-cell">
+                                    <strong th:text="'$' + ${#numbers.formatDecimal(payrolls.!stream().mapToDouble(p -> p.netSalary).sum(), 0, 2, 'COMMA')}"></strong>
+                                </td>
+                                <td class="salary-cell">
+                                    <strong th:text="'K' + ${#numbers.formatDecimal(payrolls.!stream().mapToDouble(p -> p.travelFee).sum(), 0, 2, 'COMMA')}"></strong>
+                                </td>
+                                <td class="salary-cell text-primary">
+                                    <h5 class="mb-0" th:text="'$' + ${#numbers.formatDecimal(totalPayment, 0, 2, 'COMMA')}"></h5>
+                                </td>
+                                <td colspan="2"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Additional Information -->
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Month Summary</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-6">
+                                <small class="text-muted">Working Days Average</small>
+                                <p class="mb-0">
+                                    <span th:if="${!payrolls.empty}"
+                                          th:text="${#numbers.formatDecimal(payrolls.!stream().mapToDouble(p -> p.workingDays).average().orElse(0), 0, 0)}">
+                                    0
+                                    </span>
+                                    <span th:if="${payrolls.empty}">0</span> days
+                                </p>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted">Attendance Rate</small>
+                                <p class="mb-0">
+                                    <span th:if="${!payrolls.empty}"
+                                          th:text="${#numbers.formatDecimal(payrolls.!stream().mapToDouble(p -> (p.presentDays / p.workingDays) * 100).average().orElse(0), 0, 1)}">
+                                    0
+                                    </span>
+                                    <span th:if="${payrolls.empty}">0</span>%
+                                </p>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row">
+                            <div class="col-6">
+                                <small class="text-muted">Highest Salary</small>
+                                <p class="mb-0">
+                                    <span th:if="${!payrolls.empty}"
+                                          th:text="'$' + ${#numbers.formatDecimal(payrolls.!stream().mapToDouble(p -> p.totalPayment).max().orElse(0), 0, 2, 'COMMA')}">
+                                    $0.00
+                                    </span>
+                                    <span th:if="${payrolls.empty}">$0.00</span>
+                                </p>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted">Lowest Salary</small>
+                                <p class="mb-0">
+                                    <span th:if="${!payrolls.empty}"
+                                          th:text="'$' + ${#numbers.formatDecimal(payrolls.!stream().mapToDouble(p -> p.totalPayment).min().orElse(0), 0, 2, 'COMMA')}">
+                                    $0.00
+                                    </span>
+                                    <span th:if="${payrolls.empty}">$0.00</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Quick Actions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <a th:href="@{/payroll/manage}" class="btn btn-outline-primary">
+                                <i class="fas fa-calculator me-2"></i> Back to Payroll Management
+                            </a>
+                            <button class="btn btn-outline-success" onclick="sendPaymentNotifications()">
+                                <i class="fas fa-bell me-2"></i> Send Payment Notifications
+                            </button>
+                            <button class="btn btn-outline-warning" onclick="generateMonthlyReport()">
+                                <i class="fas fa-chart-bar me-2"></i> Generate Detailed Report
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <th:block layout:fragment="scripts">
+        <script>
+            // Initialize charts
+            let departmentChart, paymentChart;
+
+            function initializeCharts() {
+                // Department Chart
+                const departmentCtx = document.getElementById('departmentChart').getContext('2d');
+                departmentChart = new Chart(departmentCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['IT', 'HRM', 'Technical', 'Design', 'Other'],
+                        datasets: [{
+                            label: 'Total Payment by Department',
+                            data: calculateDepartmentTotals(),
+                            backgroundColor: [
+                                '#667eea',
+                                '#28a745',
+                                '#ffc107',
+                                '#17a2b8',
+                                '#6c757d'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+
+                // Payment Chart
+                const paymentCtx = document.getElementById('paymentChart').getContext('2d');
+                paymentChart = new Chart(paymentCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Basic Salary', 'Additions', 'Deductions'],
+                        datasets: [{
+                            data: calculatePaymentBreakdown(),
+                            backgroundColor: [
+                                '#667eea',
+                                '#28a745',
+                                '#dc3545'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            }
+
+            function calculateDepartmentTotals() {
+                // In a real application, you would calculate from payroll data
+                // For now, return sample data
+                return [15000, 12000, 18000, 9000, 6000];
+            }
+
+            function calculatePaymentBreakdown() {
+                // In a real application, you would calculate from payroll data
+                // For now, return sample data
+                return [50000, 15000, 8000];
+            }
+
+            // Change month
+            function changeMonth() {
+                const selectedMonth = document.getElementById('monthSelect').value;
+                window.location.href = `/payroll/monthly?monthYear=${selectedMonth}`;
+            }
+
+            // Load current month
+            function loadCurrentMonth() {
+                window.location.href = `/payroll/monthly`;
+            }
+
+            // Print report
+            function printReport() {
+                window.print();
+            }
+
+            // Export report
+            function exportReport() {
+                alert('Exporting monthly report to Excel...');
+                // In a real application, this would trigger an Excel download
+            }
+
+            // Download payslip
+            function downloadPayslip(payrollId) {
+                alert(`Downloading payslip for payroll ID: ${payrollId}`);
+                // In a real application, this would trigger a PDF download
+            }
+
+            // Send payment notifications
+            function sendPaymentNotifications() {
+                if (confirm('Send payment notifications to all employees for this month?')) {
+                    alert('Payment notifications sent successfully!');
+                }
+            }
+
+            // Generate detailed report
+            function generateMonthlyReport() {
+                alert('Generating detailed monthly report...');
+                // In a real application, this would generate a comprehensive report
+            }
+
+            // Initialize charts when page loads
+            document.addEventListener('DOMContentLoaded', function() {
+                initializeCharts();
+                
+                // Style for print
+                const style = document.createElement('style');
+                style.textContent = `
+                    @media print {
+                        .btn, .month-selector, .summary-card .icon-circle {
+                            display: none !important;
+                        }
+                        .card {
+                            border: 1px solid #000 !important;
+                            box-shadow: none !important;
+                        }
+                        .table th {
+                            background-color: #f0f0f0 !important;
+                            -webkit-print-color-adjust: exact;
+                        }
+                    }
+                `;
+                document.head.appendChild(style);
+            });
+        </script>
+        
+        <style>
+            .icon-circle {
+                width: 50px;
+                height: 50px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.5rem;
+            }
+        </style>
+    </th:block>
+</body>
+</html>

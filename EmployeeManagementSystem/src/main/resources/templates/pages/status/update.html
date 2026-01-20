@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/dashboard-layout}">
+<head>
+    <title th:text="'Update Status - ' + ${employee.full_name}"></title>
+    <style>
+        .employee-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+        .employee-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: white;
+            color: #667eea;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 2rem;
+            margin-bottom: 15px;
+        }
+        .current-status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: 500;
+            margin-top: 10px;
+        }
+        .status-active { background-color: #28a745; color: white; }
+        .status-inactive { background-color: #dc3545; color: white; }
+        .status-leave { background-color: #ffc107; color: #212529; }
+        .status-resigned { background-color: #6c757d; color: white; }
+        .status-terminated { background-color: #343a40; color: white; }
+        
+        .status-option {
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .status-option:hover {
+            border-color: #667eea;
+            background-color: #f8f9fa;
+        }
+        .status-option.selected {
+            border-color: #28a745;
+            background-color: rgba(40, 167, 69, 0.1);
+        }
+        .status-icon {
+            font-size: 1.5rem;
+            margin-right: 10px;
+        }
+        
+        .reason-box {
+            display: none;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div layout:fragment="dashboard-content">
+        <!-- Page Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h4 class="mb-0">Update Employee Status</h4>
+                <p class="text-muted mb-0">Change employment status for employee</p>
+            </div>
+            <div>
+                <a th:href="@{/status}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i> Back to Status
+                </a>
+            </div>
+        </div>
+
+        <!-- Employee Information -->
+        <div class="employee-card">
+            <div class="row align-items-center">
+                <div class="col-md-2 text-center">
+                    <div class="employee-avatar">
+                        <span th:text="${employee.full_name?.substring(0,1)?.toUpperCase()}"></span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <h3 class="mb-2" th:text="${employee.full_name}"></h3>
+                    <p class="mb-1">
+                        <i class="fas fa-briefcase me-2"></i>
+                        <span th:text="${employee.position}"></span> | 
+                        <span th:text="${employee.department}"></span>
+                    </p>
+                    <p class="mb-1">
+                        <i class="fas fa-calendar-alt me-2"></i>
+                        Start Date: <span th:text="${employee.start_date}"></span>
+                    </p>
+                    <p class="mb-0">
+                        <i class="fas fa-id-card me-2"></i>
+                        Employee ID: <span th:text="'EMP-' + ${employee.id}"></span>
+                    </p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <h5>Current Status</h5>
+                    <div th:if="${employee.status}" 
+                         th:classappend="'current-status status-' + ${employee.status?.toLowerCase()?.replace(' ', '-')}"
+                         th:text="${employee.status}">
+                    </div>
+                    <div th:unless="${employee.status}" class="current-status bg-secondary">
+                        Not Set
+                    </div>
+                    <p class="mt-2 mb-0">
+                        <small>Last updated: <span th:text="${employee.date ?: 'N/A'}"></span></small>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Update Form -->
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Select New Status</h5>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/status/update/{id}(id=${employee.id})}" method="post" id="statusForm">
+                            <!-- Status Options -->
+                            <div class="mb-4">
+                                <h6 class="mb-3">Choose Status:</h6>
+                                <div th:each="statusType : ${statusTypes}">
+                                    <div class="status-option" 
+                                         onclick="selectStatus('${statusType}')"
+                                         th:id="'status-' + ${statusType?.replace(' ', '-')?.toLowerCase()}">
+                                        <div class="d-flex align-items-center">
+                                            <div class="status-icon">
+                                                <i th:classappend="'fas fa-' + ${statusType == 'Active' ? 'check-circle text-success' : 
+                                                                                  statusType == 'On Leave' ? 'bed text-warning' : 
+                                                                                  statusType == 'Inactive' ? 'user-slash text-danger' : 
+                                                                                  statusType == 'Resigned' ? 'sign-out-alt text-info' : 
+                                                                                  'ban text-dark'}">
+                                                </i>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-1" th:text="${statusType}"></h6>
+                                                <!-- <p class="text-muted mb-0" th:text="getStatusDescription(${statusType})"></p> -->
+                                                 <p class="text-muted mb-0" th:id="'desc-' + ${statusType?.replace(' ', '-')?.toLowerCase()}">
+                                                    Loading description...
+                                                </p>
+                                            </div>
+                                            <div class="ms-auto">
+                                                <i class="fas fa-check text-success" style="display: none;"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Hidden Input for Status -->
+                            <input type="hidden" name="status" id="selectedStatus" required>
+
+                            <!-- Reason for Change (Optional) -->
+                            <div class="mb-4" id="reasonSection">
+                                <label for="reason" class="form-label">
+                                    Reason for Status Change (Optional)
+                                </label>
+                                <textarea class="form-control" 
+                                          id="reason" 
+                                          name="reason" 
+                                          rows="3"
+                                          placeholder="Enter reason for status change..."></textarea>
+                                <div class="form-text">
+                                    This information will be logged for audit purposes.
+                                </div>
+                            </div>
+
+                            <!-- Effective Date -->
+                            <div class="mb-4">
+                                <label for="effectiveDate" class="form-label">Effective Date</label>
+                                <input type="date" 
+                                       class="form-control" 
+                                       id="effectiveDate" 
+                                       name="effectiveDate"
+                                       th:value="${#dates.format(#dates.createNow(), 'yyyy-MM-dd')}">
+                                <div class="form-text">
+                                    Date when the status change takes effect.
+                                </div>
+                            </div>
+
+                            <!-- Additional Notes -->
+                            <div class="mb-4">
+                                <label for="notes" class="form-label">Additional Notes</label>
+                                <textarea class="form-control" 
+                                          id="notes" 
+                                          name="notes" 
+                                          rows="2"
+                                          placeholder="Any additional notes or instructions..."></textarea>
+                            </div>
+
+                            <!-- Form Actions -->
+                            <div class="mt-4">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-save me-2"></i> Update Status
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary btn-lg" onclick="resetForm()">
+                                    <i class="fas fa-redo me-2"></i> Reset
+                                </button>
+                                <a th:href="@{/status}" class="btn btn-outline-danger btn-lg">
+                                    <i class="fas fa-times me-2"></i> Cancel
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar Information -->
+            <div class="col-md-4">
+                <!-- Current Employment Details -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Current Details</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <small class="text-muted">Employment Status</small>
+                            <p class="mb-0" th:text="${employee.employment_status ?: 'Not specified'}"></p>
+                        </div>
+                        <div class="mb-3">
+                            <small class="text-muted">Band Level</small>
+                            <p class="mb-0" th:text="${employee.bandLevel ?: 'Not set'}"></p>
+                        </div>
+                        <div class="mb-3">
+                            <small class="text-muted">Basic Salary</small>
+                            <p class="mb-0 fw-bold" th:text="${employee.salary ? '$' + employee.salary : 'Not set'}"></p>
+                        </div>
+                        <div class="mb-3">
+                            <small class="text-muted">Net Salary</small>
+                            <p class="mb-0 fw-bold text-primary" th:text="${employee.netSalary ? '$' + employee.netSalary : 'Not calculated'}"></p>
+                        </div>
+                        <div class="mb-3">
+                            <small class="text-muted">Service Years</small>
+                            <p class="mb-0">
+                                <span th:if="${employee.myanmarServiceYears}" 
+                                      th:text="${employee.myanmarServiceYears} + ' years'">
+                                    0 years
+                                </span>
+                                <span th:unless="${employee.myanmarServiceYears}">0 years</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Quick Actions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <a th:href="@{/employee/details/{id}(id=${employee.id})}" 
+                               class="btn btn-outline-info">
+                                <i class="fas fa-eye me-2"></i> View Full Profile
+                            </a>
+                            <a th:href="@{/status/salary/{id}(id=${employee.id})}" 
+                               class="btn btn-outline-warning">
+                                <i class="fas fa-chart-pie me-2"></i> View Salary Breakdown
+                            </a>
+                            <a th:href="@{/salary/update/{id}(id=${employee.id})}" 
+                               class="btn btn-outline-primary">
+                                <i class="fas fa-edit me-2"></i> Update Salary Details
+                            </a>
+                            <a th:href="@{/payroll/calculate/{employeeId}(employeeId=${employee.id})}" 
+                               class="btn btn-outline-success">
+                                <i class="fas fa-calculator me-2"></i> Calculate Payroll
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status Change History -->
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Recent Changes</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="text-center text-muted py-3">
+                            <i class="fas fa-history fa-2x mb-3"></i>
+                            <p class="mb-0">Status change history will appear here</p>
+                            <small>Enable logging to track status changes</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <th:block layout:fragment="scripts">
+        <script th:inline="javascript">
+
+            const employeeId = '0';
+            
+             // Status descriptions
+            function getStatusDescription(status) {
+                const descriptions = {
+                    'Active': 'Employee is actively working and receiving salary.',
+                    'On Leave': 'Employee is on approved leave with or without pay.',
+                    'Inactive': 'Employee is temporarily inactive (e.g., unpaid leave).',
+                    'Resigned': 'Employee has voluntarily resigned from the company.',
+                    'Terminated': 'Employee has been terminated by the company.'
+                };
+                return descriptions[status] || 'Update employment status.';
+            }
+
+            // Select status
+            function selectStatus(status) {
+                // Remove selected class from all options
+                document.querySelectorAll('.status-option').forEach(option => {
+                    option.classList.remove('selected');
+                    option.querySelector('.fa-check').style.display = 'none';
+                });
+
+                // Add selected class to clicked option
+                const selectedOption = document.getElementById('status-' + status.toLowerCase().replace(' ', '-'));
+                if (selectedOption) {
+                    selectedOption.classList.add('selected');
+                    selectedOption.querySelector('.fa-check').style.display = 'inline-block';
+                }
+
+                // Update hidden input
+                document.getElementById('selectedStatus').value = status;
+
+                // Show/hide reason section for certain statuses
+                const reasonSection = document.getElementById('reasonSection');
+                if (['Resigned', 'Terminated', 'Inactive'].includes(status)) {
+                    reasonSection.style.display = 'block';
+                } else {
+                    reasonSection.style.display = 'none';
+                }
+
+                // Update form action - FIXED
+                const form = document.getElementById('statusForm');
+                form.action = '/status/update/' + employeeId + '?status=' + encodeURIComponent(status);
+            }
+
+            // Reset form
+            function resetForm() {
+                document.querySelectorAll('.status-option').forEach(option => {
+                    option.classList.remove('selected');
+                    option.querySelector('.fa-check').style.display = 'none';
+                });
+                document.getElementById('selectedStatus').value = '';
+                document.getElementById('reason').value = '';
+                document.getElementById('notes').value = '';
+                document.getElementById('effectiveDate').value = new Date().toISOString().split('T')[0];
+                document.getElementById('reasonSection').style.display = 'none';
+            }
+
+            // Form validation
+            document.getElementById('statusForm')?.addEventListener('submit', function(e) {
+                const selectedStatus = document.getElementById('selectedStatus').value;
+                
+                if (!selectedStatus) {
+                    e.preventDefault();
+                    alert('Please select a status.');
+                    return;
+                }
+
+                const effectiveDate = document.getElementById('effectiveDate').value;
+                if (!effectiveDate) {
+                    e.preventDefault();
+                    alert('Please select an effective date.');
+                    return;
+                }
+
+                // Confirm status change for critical statuses
+                if (['Terminated', 'Resigned'].includes(selectedStatus)) {
+                    if (!confirm(`Are you sure you want to change status to "${selectedStatus}"? This action may affect payroll and benefits.`)) {
+                        e.preventDefault();
+                        return;
+                    }
+                }
+
+                // Show processing message
+                const submitBtn = this.querySelector('button[type="submit"]');
+                const originalText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Updating...';
+                submitBtn.disabled = true;
+            });
+
+            // Initialize form with current status
+            document.addEventListener('DOMContentLoaded', function() {
+                // Get current status from Thymeleaf
+                const currentStatus = /*[[${employee.status}]]*/ '';
+                if (currentStatus) {
+                    selectStatus(currentStatus);
+                }
+
+                // Set default effective date to today
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('effectiveDate').value = today;
+                document.getElementById('effectiveDate').min = today;
+            });
+        </script>
+    </th:block>
+</body>
+</html>

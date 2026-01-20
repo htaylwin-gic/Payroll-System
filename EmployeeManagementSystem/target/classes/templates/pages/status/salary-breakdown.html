@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/dashboard-layout}">
+<head>
+    <title th:text="'Salary Breakdown - ' + ${employee.full_name}"></title>
+</head>
+<body>
+    <div layout:fragment="dashboard-content">
+        <div class="row">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h4 class="mb-0" th:text="'Salary Breakdown: ' + ${employee.full_name}"></h4>
+                        <p class="text-muted mb-0">Detailed salary components analysis</p>
+                    </div>
+                    <div>
+                        <a th:href="@{/status}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i> Back to Status
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Salary breakdown view is under development. Please check back later.
+                </div>
+                
+                <div class="card">
+                    <div class="card-body text-center py-5">
+                        <i class="fas fa-chart-pie fa-4x text-muted mb-4"></i>
+                        <h5 class="text-muted">Salary Breakdown View Coming Soon</h5>
+                        <p class="text-muted">This feature will show detailed salary components and calculations.</p>
+                        <a th:href="@{/payroll/calculate/{employeeId}(employeeId=${employee.id})}" class="btn btn-primary mt-3">
+                            <i class="fas fa-calculator me-2"></i> Calculate Payroll Instead
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/dashboard-layout}">
+<head>
+    <title th:text="'Update Salary - ' + ${employee.full_name}"></title>
+    <style>
+        .salary-card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .salary-card .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px 10px 0 0 !important;
+            padding: 20px;
+        }
+        .salary-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section-title {
+            color: #495057;
+            font-weight: 600;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #dee2e6;
+        }
+        .allowance-item {
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 10px;
+            background: white;
+        }
+        .allowance-amount {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            color: #28a745;
+        }
+        .preview-box {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        .calculation-row {
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+        .calculation-row:last-child {
+            border-bottom: none;
+        }
+        .employee-summary {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div layout:fragment="dashboard-content">
+        <!-- Page Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h4 class="mb-0">Update Salary Details</h4>
+                <p class="text-muted mb-0" th:text="'Employee: ' + ${employee.full_name}"></p>
+            </div>
+            <div>
+                <a th:href="@{/status/salary/{id}(id=${employee.id})}" class="btn btn-outline-info me-2">
+                    <i class="fas fa-chart-pie me-2"></i> View Breakdown
+                </a>
+                <a th:href="@{/employee/details/{id}(id=${employee.id})}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i> Back to Profile
+                </a>
+            </div>
+        </div>
+
+        <!-- Employee Summary -->
+        <div class="employee-summary">
+            <div class="row">
+                <div class="col-md-3">
+                    <small class="text-muted">Employee ID</small>
+                    <p class="mb-0 fw-bold" th:text="'EMP-' + ${employee.id}"></p>
+                </div>
+                <div class="col-md-3">
+                    <small class="text-muted">Current Band Level</small>
+                    <p class="mb-0" th:text="${employee.bandLevel ?: 'Not Set'}"></p>
+                </div>
+                <div class="col-md-3">
+                    <small class="text-muted">Current Basic Salary</small>
+                    <p class="mb-0 fw-bold" th:text="${employee.salary ? '$' + employee.salary : 'Not Set'}"></p>
+                </div>
+                <div class="col-md-3">
+                    <small class="text-muted">Current Net Salary</small>
+                    <p class="mb-0 fw-bold text-primary" th:text="${employee.netSalary ? '$' + employee.netSalary : 'Not Calculated'}"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Salary Update Form -->
+        <form th:action="@{/salary/update/{id}(id=${employee.id})}" method="post" th:object="${employee}">
+            <div class="row">
+                <!-- Left Column: Salary Components -->
+                <div class="col-md-8">
+                    <!-- Band Level & Basic Salary -->
+                    <div class="salary-section">
+                        <h5 class="section-title">
+                            <i class="fas fa-layer-group me-2"></i>Band Level & Basic Salary
+                        </h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="bandLevel" class="form-label">Band Level *</label>
+                                <select class="form-select" id="bandLevel" th:field="*{bandLevel}" required>
+                                    <option value="">Select Band Level</option>
+                                    <option th:each="band : ${bandLevels}"
+                                            th:value="${band}"
+                                            th:text="${band}"
+                                            th:selected="${employee.bandLevel == band}">
+                                    </option>
+                                </select>
+                                <div class="form-text">Determines the base salary</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Calculated Basic Salary</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="text" 
+                                           class="form-control fw-bold" 
+                                           id="calculatedSalary"
+                                           readonly
+                                           th:value="${@salaryService.calculateBasicSalary(employee.bandLevel)}">
+                                </div>
+                                <div class="form-text">Based on selected band level</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Education Allowance -->
+                    <div class="salary-section">
+                        <h5 class="section-title">
+                            <i class="fas fa-graduation-cap me-2"></i>Education Allowance
+                        </h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="educationLevel" class="form-label">Education Level</label>
+                                <select class="form-select" id="educationLevel" th:field="*{educationLevel}">
+                                    <option value="">Select Education Level</option>
+                                    <option th:each="level : ${educationLevels}"
+                                            th:value="${level}"
+                                            th:text="${level}"
+                                            th:selected="${employee.educationLevel == level}">
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Allowance Amount</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="text" 
+                                           class="form-control allowance-amount" 
+                                           id="educationAllowance"
+                                           th:field="*{educationAllowance}"
+                                           readonly>
+                                </div>
+                                <div class="form-text">Auto-calculated based on education level</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Performance & Evaluation -->
+                    <div class="salary-section">
+                        <h5 class="section-title">
+                            <i class="fas fa-star me-2"></i>Performance & Evaluation
+                        </h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="evaluationGrade" class="form-label">Evaluation Grade (PBC)</label>
+                                <select class="form-select" id="evaluationGrade" th:field="*{evaluationGrade}">
+                                    <option value="">Select Grade</option>
+                                    <option th:each="grade : ${evaluationGrades}"
+                                            th:value="${grade}"
+                                            th:text="${grade}"
+                                            th:selected="${employee.evaluationGrade == grade}">
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Evaluation Allowance</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="text" 
+                                           class="form-control allowance-amount" 
+                                           id="evaluationAllowance"
+                                           th:field="*{evaluationAllowance}"
+                                           readonly>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Language Allowances -->
+                    <div class="salary-section">
+                        <h5 class="section-title">
+                            <i class="fas fa-language me-2"></i>Language Allowances
+                        </h5>
+                        
+                        <!-- Japanese -->
+                        <div class="allowance-item mb-3">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label for="japaneseLevel" class="form-label">Japanese Level</label>
+                                    <select class="form-select" id="japaneseLevel" th:field="*{japaneseLevel}">
+                                        <option value="">Select Level</option>
+                                        <option th:each="level : ${japaneseLevels}"
+                                                th:value="${level}"
+                                                th:text="${level}"
+                                                th:selected="${employee.japaneseLevel == level}">
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Japanese Allowance</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="text" 
+                                               class="form-control allowance-amount" 
+                                               id="japaneseAllowance"
+                                               th:field="*{japaneseAllowance}"
+                                               readonly>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- English -->
+                        <div class="allowance-item">
+                            <h6 class="mb-3">English Proficiency</h6>
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <label for="englishToeicScore" class="form-label">TOEIC Score</label>
+                                    <input type="number" 
+                                           class="form-control" 
+                                           id="englishToeicScore"
+                                           th:field="*{englishToeicScore}"
+                                           min="0" max="990">
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="englishToeflScore" class="form-label">TOEFL Score</label>
+                                    <input type="number" 
+                                           class="form-control" 
+                                           id="englishToeflScore"
+                                           th:field="*{englishToeflScore}"
+                                           min="0" max="677">
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="englishIeltsScore" class="form-label">IELTS Score</label>
+                                    <input type="number" 
+                                           class="form-control" 
+                                           id="englishIeltsScore"
+                                           th:field="*{englishIeltsScore}"
+                                           step="0.5" min="0" max="9">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="form-text">
+                                        Enter at least one English proficiency score
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">English Allowance</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="text" 
+                                               class="form-control allowance-amount" 
+                                               id="englishAllowance"
+                                               th:field="*{englishAllowance}"
+                                               readonly>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Service & Assignment Allowances -->
+                    <div class="salary-section">
+                        <h5 class="section-title">
+                            <i class="fas fa-briefcase me-2"></i>Service & Assignment
+                        </h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="assignmentLevel" class="form-label">Assignment Level</label>
+                                <select class="form-select" id="assignmentLevel" th:field="*{assignmentLevel}">
+                                    <option value="">Select Assignment Level</option>
+                                    <option th:each="level : ${assignmentLevels}"
+                                            th:value="${level}"
+                                            th:text="${level}"
+                                            th:selected="${employee.assignmentLevel == level}">
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Assignment Allowance</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="text" 
+                                           class="form-control allowance-amount" 
+                                           id="assignmentAllowance"
+                                           th:field="*{assignmentAllowance}"
+                                           readonly>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="managementLevel" class="form-label">Management Level</label>
+                                <select class="form-select" id="managementLevel" th:field="*{managementLevel}">
+                                    <option value="">Select Management Level</option>
+                                    <option th:each="level : ${managementLevels}"
+                                            th:value="${level}"
+                                            th:text="${level}"
+                                            th:selected="${employee.managementLevel == level}">
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Management Allowance</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="text" 
+                                           class="form-control allowance-amount" 
+                                           id="managementAllowance"
+                                           th:field="*{managementAllowance}"
+                                           readonly>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Additional Allowances -->
+                    <div class="salary-section">
+                        <h5 class="section-title">
+                            <i class="fas fa-plus-circle me-2"></i>Additional Allowances
+                        </h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="houseAllowance" class="form-label">House Allowance</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" 
+                                           class="form-control" 
+                                           id="houseAllowance"
+                                           th:field="*{houseAllowance}"
+                                           step="0.01"
+                                           min="0"
+                                           th:value="${employee.houseAllowance ?: '100000'}">
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="transportationAllowance" class="form-label">Transportation Allowance</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" 
+                                           class="form-control" 
+                                           id="transportationAllowance"
+                                           th:field="*{transportationAllowance}"
+                                           step="0.01"
+                                           min="0"
+                                           th:value="${employee.transportationAllowance ?: '50000'}">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="perfectAttendanceAllowance" class="form-label">Perfect Attendance Allowance</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" 
+                                           class="form-control" 
+                                           id="perfectAttendanceAllowance"
+                                           th:field="*{perfectAttendanceAllowance}"
+                                           step="0.01"
+                                           min="0"
+                                           th:value="${employee.perfectAttendanceAllowance ?: '10000'}">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Preview & Actions -->
+                <div class="col-md-4">
+                    <!-- Salary Preview -->
+                    <div class="preview-box">
+                        <h5 class="text-white mb-4">Salary Preview</h5>
+                        
+                        <div class="calculation-row d-flex justify-content-between">
+                            <span>Basic Salary:</span>
+                            <span class="fw-bold" id="previewBasicSalary">$0.00</span>
+                        </div>
+                        
+                        <div class="calculation-row d-flex justify-content-between">
+                            <span>Total Allowances:</span>
+                            <span class="fw-bold text-success" id="previewTotalAllowances">$0.00</span>
+                        </div>
+                        
+                        <div class="calculation-row d-flex justify-content-between">
+                            <span>Total Deductions:</span>
+                            <span class="fw-bold text-danger" id="previewTotalDeductions">$0.00</span>
+                        </div>
+                        
+                        <hr class="opacity-50 my-3">
+                        
+                        <div class="calculation-row d-flex justify-content-between">
+                            <h5 class="mb-0">Net Salary:</h5>
+                            <h3 class="mb-0 text-white" id="previewNetSalary">$0.00</h3>
+                        </div>
+                    </div>
+
+                    <!-- Allowance Summary -->
+                    <div class="card salary-card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0 text-white">Allowance Summary</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <small class="text-muted">Education Allowance</small>
+                                <div class="d-flex justify-content-between">
+                                    <span id="summaryEducationLevel" th:text="${employee.educationLevel ?: 'Not set'}"></span>
+                                    <span class="allowance-amount" id="summaryEducationAllowance">$0.00</span>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <small class="text-muted">Evaluation Allowance</small>
+                                <div class="d-flex justify-content-between">
+                                    <span id="summaryEvaluationGrade" th:text="${employee.evaluationGrade ?: 'Not set'}"></span>
+                                    <span class="allowance-amount" id="summaryEvaluationAllowance">$0.00</span>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <small class="text-muted">Japanese Allowance</small>
+                                <div class="d-flex justify-content-between">
+                                    <span id="summaryJapaneseLevel" th:text="${employee.japaneseLevel ?: 'Not set'}"></span>
+                                    <span class="allowance-amount" id="summaryJapaneseAllowance">$0.00</span>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <small class="text-muted">English Allowance</small>
+                                <div class="d-flex justify-content-between">
+                                    <span id="summaryEnglishScores">Not set</span>
+                                    <span class="allowance-amount" id="summaryEnglishAllowance">$0.00</span>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <small class="text-muted">Assignment Allowance</small>
+                                <div class="d-flex justify-content-between">
+                                    <span id="summaryAssignmentLevel" th:text="${employee.assignmentLevel ?: 'Not set'}"></span>
+                                    <span class="allowance-amount" id="summaryAssignmentAllowance">$0.00</span>
+                                </div>
+                            </div>
+                            
+                            <div th:if="${employee.managementLevel}">
+                                <small class="text-muted">Management Allowance</small>
+                                <div class="d-flex justify-content-between">
+                                    <span id="summaryManagementLevel" th:text="${employee.managementLevel}"></span>
+                                    <span class="allowance-amount" id="summaryManagementAllowance">$0.00</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Service Information -->
+                    <div class="card salary-card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0 text-white">Service Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label for="myanmarServiceYears" class="form-label">Myanmar Service Years</label>
+                                <input type="number" 
+                                       class="form-control" 
+                                       id="myanmarServiceYears"
+                                       th:field="*{myanmarServiceYears}"
+                                       min="0" max="50">
+                                <div class="form-text">Years of service in Myanmar</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="gicpServiceYears" class="form-label">GICP Service Years</label>
+                                <input type="number" 
+                                       class="form-control" 
+                                       id="gicpServiceYears"
+                                       th:field="*{gicpServiceYears}"
+                                       min="0" max="50">
+                                <div class="form-text">Years of service at GICP</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <small class="text-muted">Service Allowance</small>
+                                <div class="d-flex justify-content-between">
+                                    <span>Total Service Years</span>
+                                    <span class="allowance-amount" id="summaryServiceAllowance">$0.00</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="card salary-card">
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-save me-2"></i> Update Salary
+                                </button>
+                                
+                                <button type="button" class="btn btn-outline-secondary" onclick="calculatePreview()">
+                                    <i class="fas fa-calculator me-2"></i> Preview Calculation
+                                </button>
+                                
+                                <button type="button" class="btn btn-outline-info" onclick="resetToDefaults()">
+                                    <i class="fas fa-redo me-2"></i> Reset to Defaults
+                                </button>
+                                
+                                <a th:href="@{/status/salary/{id}(id=${employee.id})}" 
+                                   class="btn btn-outline-warning">
+                                    <i class="fas fa-times me-2"></i> Cancel
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <th:block layout:fragment="scripts">
+        <script>
+            // Band salary mapping
+            const bandSalaries = {
+                'Band1': 350000,
+                'Band2': 400000,
+                'Band3': 450000,
+                'Band4': 500000,
+                'Band5': 550000,
+                'Band6': 600000,
+                'Band7': 650000,
+                'Band8': 700000
+            };
+
+            // Education allowance mapping
+            const educationAllowances = {
+                'Diploma': 30000,
+                'Master': 50000,
+                'FE Passer': 30000
+            };
+
+            // Evaluation allowance mapping
+            const evaluationAllowances = {
+                'A': 100000,
+                'B': 50000,
+                'C': 10000
+            };
+
+            // Japanese allowance mapping
+            const japaneseAllowances = {
+                'N1': 300000,
+                'N2': 150000,
+                'N3': 40000,
+                'JLPIT': 20000
+            };
+
+            // English allowance calculation
+            function calculateEnglishAllowance(toeic, toefl, ielts) {
+                if ((toeic && toeic >= 730) || (toefl && toefl >= 650) || (ielts && ielts >= 6.5)) {
+                    return 100000;
+                }
+                if ((toeic && toeic >= 600) || (toefl && toefl >= 505) || (ielts && ielts >= 5.5)) {
+                    return 50000;
+                }
+                return 0;
+            }
+
+            // Assignment allowance mapping
+            const assignmentAllowances = {
+                'Sub TL': 100000,
+                'TL': 300000,
+                'HL': 200000,
+                'Senior TL': 300000
+            };
+
+            // Management allowance mapping
+            const managementAllowances = {
+                'Sub Leader': 500000,
+                'Leader': 600000,
+                'Sub Manager': 700000,
+                'Manager': 1100000
+            };
+
+            // Service allowance calculation
+            function calculateServiceAllowance(myanmarYears, gicpYears) {
+                let total = 0;
+                
+                if (myanmarYears) {
+                    if (myanmarYears >= 6) {
+                        total += 90000;
+                    } else if (myanmarYears >= 1) {
+                        total += 15000 * myanmarYears;
+                    }
+                }
+                
+                if (gicpYears) {
+                    if (gicpYears >= 6) {
+                        total += 300000;
+                    } else if (gicpYears >= 1) {
+                        total += 50000 * gicpYears;
+                    }
+                }
+                
+                return total;
+            }
+
+            // Calculate all values
+            function calculateAll() {
+                // Get values
+                const bandLevel = document.getElementById('bandLevel').value;
+                const educationLevel = document.getElementById('educationLevel').value;
+                const evaluationGrade = document.getElementById('evaluationGrade').value;
+                const japaneseLevel = document.getElementById('japaneseLevel').value;
+                const assignmentLevel = document.getElementById('assignmentLevel').value;
+                const managementLevel = document.getElementById('managementLevel').value;
+                
+                const toeic = parseInt(document.getElementById('englishToeicScore').value) || null;
+                const toefl = parseInt(document.getElementById('englishToeflScore').value) || null;
+                const ielts = parseFloat(document.getElementById('englishIeltsScore').value) || null;
+                
+                const myanmarYears = parseInt(document.getElementById('myanmarServiceYears').value) || 0;
+                const gicpYears = parseInt(document.getElementById('gicpServiceYears').value) || 0;
+                
+                const houseAllowance = parseFloat(document.getElementById('houseAllowance').value) || 100000;
+                const transportationAllowance = parseFloat(document.getElementById('transportationAllowance').value) || 50000;
+                const perfectAttendance = parseFloat(document.getElementById('perfectAttendanceAllowance').value) || 10000;
+
+                // Calculate values
+                const basicSalary = bandSalaries[bandLevel] || 0;
+                const educationAllowance = educationAllowances[educationLevel] || 0;
+                const evaluationAllowance = evaluationAllowances[evaluationGrade] || 0;
+                const japaneseAllowance = japaneseAllowances[japaneseLevel] || 0;
+                const englishAllowance = calculateEnglishAllowance(toeic, toefl, ielts);
+                const assignmentAllowance = assignmentAllowances[assignmentLevel] || 0;
+                const managementAllowance = managementAllowances[managementLevel] || 0;
+                const serviceAllowance = calculateServiceAllowance(myanmarYears, gicpYears);
+
+                // Update input fields
+                document.getElementById('calculatedSalary').value = basicSalary.toLocaleString();
+                document.getElementById('educationAllowance').value = educationAllowance.toLocaleString();
+                document.getElementById('evaluationAllowance').value = evaluationAllowance.toLocaleString();
+                document.getElementById('japaneseAllowance').value = japaneseAllowance.toLocaleString();
+                document.getElementById('englishAllowance').value = englishAllowance.toLocaleString();
+                document.getElementById('assignmentAllowance').value = assignmentAllowance.toLocaleString();
+                document.getElementById('managementAllowance').value = managementAllowance.toLocaleString();
+
+                // Update summary
+                document.getElementById('summaryEducationLevel').textContent = educationLevel || 'Not set';
+                document.getElementById('summaryEducationAllowance').textContent = '$' + educationAllowance.toLocaleString();
+                document.getElementById('summaryEvaluationGrade').textContent = evaluationGrade || 'Not set';
+                document.getElementById('summaryEvaluationAllowance').textContent = '$' + evaluationAllowance.toLocaleString();
+                document.getElementById('summaryJapaneseLevel').textContent = japaneseLevel || 'Not set';
+                document.getElementById('summaryJapaneseAllowance').textContent = '$' + japaneseAllowance.toLocaleString();
+                
+                let englishScores = [];
+                if (toeic) englishScores.push('TOEIC: ' + toeic);
+                if (toefl) englishScores.push('TOEFL: ' + toefl);
+                if (ielts) englishScores.push('IELTS: ' + ielts);
+                document.getElementById('summaryEnglishScores').textContent = englishScores.length > 0 ? englishScores.join(', ') : 'Not set';
+                document.getElementById('summaryEnglishAllowance').textContent = '$' + englishAllowance.toLocaleString();
+                
+                document.getElementById('summaryAssignmentLevel').textContent = assignmentLevel || 'Not set';
+                document.getElementById('summaryAssignmentAllowance').textContent = '$' + assignmentAllowance.toLocaleString();
+                
+                if (managementLevel) {
+                    document.getElementById('summaryManagementLevel').textContent = managementLevel;
+                    document.getElementById('summaryManagementAllowance').textContent = '$' + managementAllowance.toLocaleString();
+                }
+                
+                document.getElementById('summaryServiceAllowance').textContent = '$' + serviceAllowance.toLocaleString();
+
+                // Calculate totals
+                const totalAllowances = educationAllowance + evaluationAllowance + japaneseAllowance + 
+                                      englishAllowance + assignmentAllowance + managementAllowance + 
+                                      serviceAllowance + houseAllowance + transportationAllowance + perfectAttendance;
+
+                // For this example, we'll assume deductions are 0
+                const totalDeductions = 0;
+
+                // Calculate net salary
+                const netSalary = basicSalary + totalAllowances - totalDeductions;
+
+                // Update preview
+                document.getElementById('previewBasicSalary').textContent = '$' + basicSalary.toLocaleString();
+                document.getElementById('previewTotalAllowances').textContent = '$' + totalAllowances.toLocaleString();
+                document.getElementById('previewTotalDeductions').textContent = '$' + totalDeductions.toLocaleString();
+                document.getElementById('previewNetSalary').textContent = '$' + netSalary.toLocaleString();
+
+                return {
+                    basicSalary,
+                    totalAllowances,
+                    totalDeductions,
+                    netSalary
+                };
+            }
+
+            // Calculate preview
+            function calculatePreview() {
+                const result = calculateAll();
+                alert(`Net Salary Preview: $${result.netSalary.toLocaleString()}\n\nBasic: $${result.basicSalary.toLocaleString()}\nAllowances: $${result.totalAllowances.toLocaleString()}\nDeductions: $${result.totalDeductions.toLocaleString()}`);
+            }
+
+            // Reset to defaults
+            function resetToDefaults() {
+                if (confirm('Reset all salary fields to default values?')) {
+                    document.getElementById('bandLevel').selectedIndex = 0;
+                    document.getElementById('educationLevel').selectedIndex = 0;
+                    document.getElementById('evaluationGrade').selectedIndex = 0;
+                    document.getElementById('japaneseLevel').selectedIndex = 0;
+                    document.getElementById('assignmentLevel').selectedIndex = 0;
+                    document.getElementById('managementLevel').selectedIndex = 0;
+                    
+                    document.getElementById('englishToeicScore').value = '';
+                    document.getElementById('englishToeflScore').value = '';
+                    document.getElementById('englishIeltsScore').value = '';
+                    
+                    document.getElementById('myanmarServiceYears').value = '';
+                    document.getElementById('gicpServiceYears').value = '';
+                    
+                    document.getElementById('houseAllowance').value = '100000';
+                    document.getElementById('transportationAllowance').value = '50000';
+                    document.getElementById('perfectAttendanceAllowance').value = '10000';
+                    
+                    calculateAll();
+                }
+            }
+
+            // Form validation
+            document.querySelector('form')?.addEventListener('submit', function(e) {
+                const bandLevel = document.getElementById('bandLevel').value;
+                
+                if (!bandLevel) {
+                    e.preventDefault();
+                    alert('Please select a Band Level. This determines the basic salary.');
+                    return;
+                }
+
+                // Calculate final values before submit
+                calculateAll();
+                
+                if (!confirm('Are you sure you want to update the salary details? This will affect payroll calculations.')) {
+                    e.preventDefault();
+                }
+            });
+
+            // Add event listeners to auto-calculate
+            document.addEventListener('DOMContentLoaded', function() {
+                // Add listeners to all relevant inputs
+                const calculationInputs = [
+                    'bandLevel', 'educationLevel', 'evaluationGrade', 'japaneseLevel',
+                    'englishToeicScore', 'englishToeflScore', 'englishIeltsScore',
+                    'assignmentLevel', 'managementLevel', 'myanmarServiceYears',
+                    'gicpServiceYears', 'houseAllowance', 'transportationAllowance',
+                    'perfectAttendanceAllowance'
+                ];
+                
+                calculationInputs.forEach(id => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.addEventListener('change', calculateAll);
+                        element.addEventListener('input', calculateAll);
+                    }
+                });
+
+                // Initial calculation
+                calculateAll();
+            });
+        </script>
+    </th:block>
+</body>
+</html>

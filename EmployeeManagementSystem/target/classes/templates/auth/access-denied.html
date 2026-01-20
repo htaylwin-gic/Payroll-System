@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/auth-layout}">
+<head>
+    <title>Access Denied</title>
+    <style>
+        .access-denied-icon {
+            font-size: 5rem;
+            color: #dc3545;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div layout:fragment="auth-content">
+        <div class="text-center">
+            <div class="access-denied-icon">
+                <i class="fas fa-ban"></i>
+            </div>
+            <h3 class="mb-3">Access Denied</h3>
+            <p class="text-muted mb-4">
+                You don't have permission to access this page. 
+                Please contact your administrator if you believe this is an error.
+            </p>
+            <div class="d-grid gap-2 d-md-block">
+                <a th:href="@{/dashboard}" class="btn btn-primary me-2">
+                    <i class="fas fa-home me-2"></i> Go to Dashboard
+                </a>
+                <a th:href="@{/auth/logout}" class="btn btn-outline-secondary">
+                    <i class="fas fa-sign-out-alt me-2"></i> Sign in as different user
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

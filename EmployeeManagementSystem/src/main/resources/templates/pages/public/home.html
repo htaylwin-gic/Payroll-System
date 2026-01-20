@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/base}">
+<head>
+    <title>Home - Employee Management System</title>
+    <style>
+        .hero-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 100px 0;
+            margin-bottom: 50px;
+        }
+        .feature-icon {
+            font-size: 3rem;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+        .feature-card {
+            transition: transform 0.3s ease;
+            border: none;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .feature-card:hover {
+            transform: translateY(-10px);
+        }
+    </style>
+</head>
+<body>
+    <!-- Remove navigation for public pages -->
+    <th:block layout:fragment="navigation"></th:block>
+    
+    <div layout:fragment="content">
+        <section class="hero-section text-center">
+            <div class="container">
+                <h1 class="display-4 mb-4">Employee Management System</h1>
+                <p class="lead mb-4">Streamline your HR processes with our comprehensive employee management solution</p>
+                <div class="mt-4">
+                    <a th:href="@{/auth/login}" class="btn btn-light btn-lg me-3">
+                        <i class="fas fa-sign-in-alt me-2"></i> Login
+                    </a>
+                    <a th:href="@{/auth/register}" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-user-plus me-2"></i> Register
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section class="container py-5">
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="card feature-card h-100">
+                        <div class="card-body text-center p-4">
+                            <div class="feature-icon">
+                                <i class="fas fa-user-tie"></i>
+                            </div>
+                            <h4 class="card-title">Employee Management</h4>
+                            <p class="card-text">Manage employee profiles, track attendance, and handle leave requests efficiently.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card feature-card h-100">
+                        <div class="card-body text-center p-4">
+                            <div class="feature-icon">
+                                <i class="fas fa-calculator"></i>
+                            </div>
+                            <h4 class="card-title">Payroll Processing</h4>
+                            <p class="card-text">Automate salary calculations, deductions, and generate payslips with ease.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card feature-card h-100">
+                        <div class="card-body text-center p-4">
+                            <div class="feature-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <h4 class="card-title">Analytics & Reports</h4>
+                            <p class="card-text">Gain insights with detailed reports and analytics for better decision making.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="bg-dark text-white py-5">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-4">
+                        <h5>About EMS</h5>
+                        <p>Employee Management System is a comprehensive solution for managing all HR operations in one place.</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h5>Quick Links</h5>
+                        <ul class="list-unstyled">
+                            <li><a href="#" class="text-white text-decoration-none">Home</a></li>
+                            <li><a th:href="@{/auth/login}" class="text-white text-decoration-none">Login</a></li>
+                            <li><a th:href="@{/auth/register}" class="text-white text-decoration-none">Register</a></li>
+                        </ul>
+                    </div>
+                    <div class="col-md-4">
+                        <h5>Contact Us</h5>
+                        <p><i class="fas fa-envelope me-2"></i> support@ems.com</p>
+                        <p><i class="fas fa-phone me-2"></i> +1 234 567 8900</p>
+                    </div>
+                </div>
+                <hr class="bg-light">
+                <div class="text-center">
+                    <p>&copy; 2024 Employee Management System. All rights reserved.</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>

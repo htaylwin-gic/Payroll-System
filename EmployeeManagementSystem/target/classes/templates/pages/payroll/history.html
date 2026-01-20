@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/dashboard-layout}">
+<head>
+    <title th:text="'Payroll History - ' + ${employee.full_name}"></title>
+    <style>
+        .history-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+        .salary-cell {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+        }
+        .status-badge {
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+        }
+        .action-buttons .btn {
+            min-width: 80px;
+        }
+        .month-filter {
+            max-width: 200px;
+        }
+        .summary-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div layout:fragment="dashboard-content">
+        <!-- Page Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h4 class="mb-0">Payroll History</h4>
+                <p class="text-muted mb-0" th:text="'Employee: ' + ${employee.full_name}"></p>
+            </div>
+            <div>
+                <a th:href="@{/payroll/calculate/{employeeId}(employeeId=${employee.id})}" 
+                   class="btn btn-primary me-2">
+                    <i class="fas fa-calculator me-2"></i> New Calculation
+                </a>
+                <a th:href="@{/payroll/manage}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i> Back to Payroll
+                </a>
+            </div>
+        </div>
+
+        <!-- Employee Summary -->
+        <div class="summary-card">
+            <div class="row">
+                <div class="col-md-3">
+                    <small class="opacity-75">Employee ID</small>
+                    <h5 th:text="'EMP-' + ${employee.id}"></h5>
+                </div>
+                <div class="col-md-3">
+                    <small class="opacity-75">Current Salary</small>
+                    <h5 th:text="'$' + ${employee.salary}"></h5>
+                </div>
+                <div class="col-md-3">
+                    <small class="opacity-75">Total Payroll Records</small>
+                    <h5 th:text="${payrolls.size()}">0</h5>
+                </div>
+                <div class="col-md-3">
+                    <small class="opacity-75">Last Updated</small>
+                    <h5 th:if="${payrolls.size() > 0}" 
+                        th:text="${#temporals.format(payrolls[0]?.createdAt, 'dd MMM yyyy')}"></h5>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-4">
+                        <label for="monthFilter" class="form-label">Filter by Month</label>
+                        <select id="monthFilter" class="form-select month-filter" onchange="filterByMonth()">
+                            <option value="">All Months</option>
+                            <option th:each="period : ${@employeeService.getDistinctMonthYears()}"
+                                    th:value="${period}"
+                                    th:text="${period}">
+                            </option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-check mt-4">
+                            <input class="form-check-input" type="checkbox" id="showDetails" checked 
+                                   onchange="toggleDetails()">
+                            <label class="form-check-label" for="showDetails">
+                                Show detailed view
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <button class="btn btn-outline-primary" onclick="exportHistory()">
+                            <i class="fas fa-file-export me-2"></i> Export History
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payroll History Table -->
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover history-table">
+                        <thead>
+                            <tr>
+                                <th>Month/Year</th>
+                                <th>Basic Salary</th>
+                                <th>Present Days</th>
+                                <th>Deductions</th>
+                                <th>Additions</th>
+                                <th>Net Salary</th>
+                                <th>Travel Fee</th>
+                                <th>Total Payment</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="payroll : ${payrolls}" th:data-month="${payroll.monthYear}">
+                                <td>
+                                    <strong th:text="${payroll.monthYear}"></strong>
+                                    <div class="text-muted" style="font-size: 0.8rem;">
+                                        <span th:text="${payroll.createdAt}"></span>
+                                    </div>
+                                </td>
+                                <td class="salary-cell" th:text="'$' + ${payroll.basicSalary}"></td>
+                                <td>
+                                    <span th:text="${payroll.presentDays} + '/' + ${payroll.workingDays}"></span>
+                                    <div class="text-muted" style="font-size: 0.8rem;">
+                                        <span th:if="${payroll.leaveDays > 0}" 
+                                              class="text-warning">Leave: <span th:text="${payroll.leaveDays}"></span></span>
+                                        <span th:if="${payroll.lateDays > 0}" 
+                                              class="text-danger">Late: <span th:text="${payroll.lateDays}"></span></span>
+                                    </div>
+                                </td>
+                                <!-- <td class="salary-cell text-danger" 
+                                    th:text="'$' + (payroll.leaveDeduction + payroll.lateDeduction + payroll.incomeTax + payroll.loanReturn + payroll.ssc + payroll.companyTrip)">
+                                </td>
+                                <td class="salary-cell text-success" 
+                                    th:text="'$' + (payroll.allowance + payroll.overtime + payroll.bonus + payroll.home + payroll.businessTrip + payroll.continuedYear + payroll.homeTownVisit + payroll.manualAdjust + payroll.attendancePerfect + payroll.exchangeBenefit)">
+                                </td> -->
+                                <td class="salary-cell text-danger" 
+                                    th:text="'$' + (${payroll.leaveDeduction != null ? payroll.leaveDeduction : 0} + ${payroll.lateDeduction != null ? payroll.lateDeduction : 0} + ${payroll.incomeTax != null ? payroll.incomeTax : 0} + ${payroll.loanReturn != null ? payroll.loanReturn : 0} + ${payroll.ssc != null ? payroll.ssc : 0} + ${payroll.companyTrip != null ? payroll.companyTrip : 0})">
+                                </td>
+                                <td class="salary-cell text-success" 
+                                    th:text="'$' + (${payroll.allowance != null ? payroll.allowance : 0} + ${payroll.overtime != null ? payroll.overtime : 0} + ${payroll.bonus != null ? payroll.bonus : 0} + ${payroll.home != null ? payroll.home : 0} + ${payroll.businessTrip != null ? payroll.businessTrip : 0} + ${payroll.continuedYear != null ? payroll.continuedYear : 0} + ${payroll.homeTownVisit != null ? payroll.homeTownVisit : 0} + ${payroll.manualAdjust != null ? payroll.manualAdjust : 0} + ${payroll.attendancePerfect != null ? payroll.attendancePerfect : 0} + ${payroll.exchangeBenefit != null ? payroll.exchangeBenefit : 0})">
+                                </td>
+                                <td class="salary-cell">
+                                    <strong th:text="'$' + ${payroll.netSalary}"></strong>
+                                </td>
+                                <td class="salary-cell" th:text="'K' + ${payroll.travelFee}"></td>
+                                <td class="salary-cell">
+                                    <h6 class="mb-0 text-primary" th:text="'$' + ${payroll.totalPayment}"></h6>
+                                </td>
+                                <td>
+                                    <span class="badge bg-success status-badge">Paid</span>
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn btn-sm btn-outline-info mb-1" 
+                                                onclick="viewDetails(this)"
+                                                th:data-id="${payroll.id}">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <!-- <button class="btn btn-sm btn-outline-warning mb-1" 
+                                                th:data-id="${payroll.id}"> onclick="editPayroll(this.getAttribute('data-id'))">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger mb-1" 
+                                                th:data-id="${payroll.id}"> onclick="deletePayroll(this.getAttribute('data-id'), '${payroll.monthYear}')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-primary" 
+                                                th:data-id="${payroll.id}"> onclick="downloadSlip(this.getAttribute('data-id'))"
+                                            <i class="fas fa-download"></i>
+                                        </button> -->
+                                        <button class="btn btn-sm btn-outline-warning mb-1" 
+                                                th:data-id="${payroll.id}"
+                                                onclick="editPayroll(this.getAttribute('data-id'))">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger mb-1" 
+                                                th:data-id="${payroll.id}"
+                                                onclick="deletePayroll(this.getAttribute('data-id'), '${payroll.monthYear}')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-primary" 
+                                                th:data-id="${payroll.id}"
+                                                onclick="downloadSlip(this.getAttribute('data-id'))">
+                                            <i class="fas fa-download"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr th:if="${payrolls.empty}">
+                                <td colspan="10" class="text-center py-4">
+                                    <i class="fas fa-file-invoice-dollar fa-2x text-muted mb-3"></i>
+                                    <h5 class="text-muted">No Payroll Records Found</h5>
+                                    <p class="text-muted">Start by creating a payroll calculation for this employee</p>
+                                    <a th:href="@{/payroll/calculate/{employeeId}(employeeId=${employee.id})}" 
+                                       class="btn btn-primary">
+                                        <i class="fas fa-calculator me-2"></i> Create First Payroll
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed View (Hidden by default) -->
+        <div class="card mt-4" id="detailedView" style="display: none;">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Detailed Payroll Breakdown</h5>
+            </div>
+            <div class="card-body" id="detailedContent">
+            </div>
+        </div>
+
+<!-- Summary Statistics -->
+<div class="row mt-4">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h6 class="card-title">Total Paid</h6>
+                <h3 class="text-success">
+                    <span th:text="'$' + ${#numbers.formatDecimal(totalPaidAmount, 0, 2, 'COMMA')}">$0.00</span>
+                </h3>
+                <p class="text-muted mb-0">Total payments made</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h6 class="card-title">Average Monthly</h6>
+                <h3 class="text-primary">
+                    <span th:text="'$' + ${#numbers.formatDecimal(averageMonthlyAmount, 0, 2, 'COMMA')}">$0.00</span>
+                </h3>
+                <p class="text-muted mb-0">Average monthly payment</p>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <th:block layout:fragment="scripts">
+        <script>
+            function filterByMonth() {
+                const selectedMonth = document.getElementById('monthFilter').value;
+                const rows = document.querySelectorAll('.history-table tbody tr[data-month]');
+                
+                rows.forEach(row => {
+                    if (!selectedMonth || row.dataset.month === selectedMonth) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            }
+
+            function toggleDetails() {
+                const showDetails = document.getElementById('showDetails').checked;
+                const detailedView = document.getElementById('detailedView');
+                detailedView.style.display = showDetails ? 'block' : 'none';
+            }
+
+            function viewDetails(button) {
+                const payrollId = button.dataset.id;
+                const sampleContent = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Deductions Breakdown:</h6>
+                            <ul class="list-unstyled">
+                                <li>Leave Deduction: $50.00</li>
+                                <li>Late Deduction: $25.00</li>
+                                <li>Income Tax: $150.00</li>
+                                <li>Loan Return: $100.00</li>
+                                <li>SSC: $30.00</li>
+                                <li>Company Trip: $20.00</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Additions Breakdown:</h6>
+                            <ul class="list-unstyled">
+                                <li>Allowance: $100.00</li>
+                                <li>Overtime: $200.00</li>
+                                <li>Bonus: $150.00</li>
+                                <li>Home Allowance: $80.00</li>
+                                <li>Business Trip: $120.00</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <hr>
+                            <div class="d-flex justify-content-between">
+                                <strong>Basic Salary:</strong>
+                                <span>$2,000.00</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <strong>Total Deductions:</strong>
+                                <span class="text-danger">$375.00</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <strong>Total Additions:</strong>
+                                <span class="text-success">$650.00</span>
+                            </div>
+                            <hr>
+                            <div class="d-flex justify-content-between">
+                                <h5>Net Salary:</h5>
+                                <h5 class="text-primary">$2,275.00</h5>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                document.getElementById('detailedContent').innerHTML = sampleContent;
+                document.getElementById('detailedView').style.display = 'block';
+            }
+
+            function editPayroll(payrollId) {
+                if (confirm('Edit this payroll record?')) {
+                    window.location.href = `/payroll/edit/${payrollId}`;
+                }
+            }
+
+            function deletePayroll(payrollId, monthYear) {
+                if (confirm(`Are you sure you want to delete payroll record for ${monthYear}? This action cannot be undone.`)) {
+                    window.location.href = `/payroll/delete/${payrollId}`;
+                }
+            }
+
+            function downloadSlip(payrollId) {
+                alert(`Downloading payslip for record ${payrollId}`);
+            }
+
+            function exportHistory() {
+                alert('Export functionality would generate a CSV/Excel file of all payroll history.');
+            }
+        </script>
+    </th:block>
+</body>
+</html>
