@@ -4,9 +4,6 @@ import com.empManagement.empManagement.dto.PayrollRequest;
 import com.empManagement.empManagement.entity.Employee;
 import com.empManagement.empManagement.entity.EmployeePayroll;
 import com.empManagement.empManagement.service.EmployeeService;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -167,14 +164,5 @@ public class PayrollController {
         model.addAttribute("totalDeductions", totalDeductions);
 
         return "pages/payroll/monthly-report";
-    }
-
-    private String convertMapToJson(Map<String, Double> map) {
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            return mapper.writeValueAsString(map);
-        } catch (JsonProcessingException e) {
-            return "{}";
-        }
     }
 }
