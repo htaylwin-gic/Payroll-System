@@ -144,12 +144,6 @@
                                               class="text-danger">Late: <span th:text="${payroll.lateDays}"></span></span>
                                     </div>
                                 </td>
-                                <!-- <td class="salary-cell text-danger" 
-                                    th:text="'$' + (payroll.leaveDeduction + payroll.lateDeduction + payroll.incomeTax + payroll.loanReturn + payroll.ssc + payroll.companyTrip)">
-                                </td>
-                                <td class="salary-cell text-success" 
-                                    th:text="'$' + (payroll.allowance + payroll.overtime + payroll.bonus + payroll.home + payroll.businessTrip + payroll.continuedYear + payroll.homeTownVisit + payroll.manualAdjust + payroll.attendancePerfect + payroll.exchangeBenefit)">
-                                </td> -->
                                 <td class="salary-cell text-danger" 
                                     th:text="'$' + (${payroll.leaveDeduction != null ? payroll.leaveDeduction : 0} + ${payroll.lateDeduction != null ? payroll.lateDeduction : 0} + ${payroll.incomeTax != null ? payroll.incomeTax : 0} + ${payroll.loanReturn != null ? payroll.loanReturn : 0} + ${payroll.ssc != null ? payroll.ssc : 0} + ${payroll.companyTrip != null ? payroll.companyTrip : 0})">
                                 </td>
@@ -173,18 +167,6 @@
                                                 th:data-id="${payroll.id}">
                                             <i class="fas fa-eye"></i>
                                         </button>
-                                        <!-- <button class="btn btn-sm btn-outline-warning mb-1" 
-                                                th:data-id="${payroll.id}"> onclick="editPayroll(this.getAttribute('data-id'))">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button class="btn btn-sm btn-outline-danger mb-1" 
-                                                th:data-id="${payroll.id}"> onclick="deletePayroll(this.getAttribute('data-id'), '${payroll.monthYear}')">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                        <button class="btn btn-sm btn-outline-primary" 
-                                                th:data-id="${payroll.id}"> onclick="downloadSlip(this.getAttribute('data-id'))"
-                                            <i class="fas fa-download"></i>
-                                        </button> -->
                                         <button class="btn btn-sm btn-outline-warning mb-1" 
                                                 th:data-id="${payroll.id}"
                                                 onclick="editPayroll(this.getAttribute('data-id'))">
@@ -229,31 +211,31 @@
             </div>
         </div>
 
-<!-- Summary Statistics -->
-<div class="row mt-4">
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-body">
-                <h6 class="card-title">Total Paid</h6>
-                <h3 class="text-success">
-                    <span th:text="'$' + ${#numbers.formatDecimal(totalPaidAmount, 0, 2, 'COMMA')}">$0.00</span>
-                </h3>
-                <p class="text-muted mb-0">Total payments made</p>
+        <!-- Summary Statistics -->
+        <div class="row mt-4">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title">Total Paid</h6>
+                        <h3 class="text-success">
+                            <span th:text="'$' + ${#numbers.formatDecimal(totalPaidAmount, 0, 2, 'COMMA')}">$0.00</span>
+                        </h3>
+                        <p class="text-muted mb-0">Total payments made</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title">Average Monthly</h6>
+                        <h3 class="text-primary">
+                            <span th:text="'$' + ${#numbers.formatDecimal(averageMonthlyAmount, 0, 2, 'COMMA')}">$0.00</span>
+                        </h3>
+                        <p class="text-muted mb-0">Average monthly payment</p>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-body">
-                <h6 class="card-title">Average Monthly</h6>
-                <h3 class="text-primary">
-                    <span th:text="'$' + ${#numbers.formatDecimal(averageMonthlyAmount, 0, 2, 'COMMA')}">$0.00</span>
-                </h3>
-                <p class="text-muted mb-0">Average monthly payment</p>
-            </div>
-        </div>
-    </div>
-    </div>
 
     <th:block layout:fragment="scripts">
         <script>

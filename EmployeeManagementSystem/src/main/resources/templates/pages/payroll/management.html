@@ -174,7 +174,7 @@
                             </div>
                             <div class="col-6 text-end">
                                 <small class="text-muted">Basic Salary</small>
-                                <p class="mb-0 salary-amount" th:text="'$' + (emp.salary ?: '0')"></p>
+                                <p class="mb-0 salary-amount" th:text="${emp.salary != null ? #numbers.formatDecimal(emp.salary, 0, 'COMMA', 2, 'POINT') + ' MMK' : '0.00 MMK'}"></p>
                             </div>
                         </div>
 

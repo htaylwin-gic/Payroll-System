@@ -267,15 +267,13 @@
                                 <td th:text="${emp.bandLevel ?: 'N/A'}"></td>
                                 <td>
                                     <span th:if="${emp.salary != null}">
-                                        $<span th:text="${#numbers.formatDecimal(emp.salary, 1, 2)}"></span>
+                                        <span th:text="${#numbers.formatDecimal(emp.salary, 0, 'COMMA', 2, 'POINT')}"></span> MMK
                                     </span>
-                                    <span th:unless="${emp.salary != null}">N/A</span>
                                 </td>
                                 <td>
                                     <span th:if="${emp.netSalary != null}" class="fw-bold text-primary">
-                                        $<span th:text="${#numbers.formatDecimal(emp.netSalary, 1, 2)}"></span>
+                                        <span th:text="${#numbers.formatDecimal(emp.netSalary, 0, 'COMMA', 2, 'POINT')}"></span> MMK
                                     </span>
-                                    <span th:unless="${emp.netSalary != null}">N/A</span>
                                 </td>
                                 <td>
                                     <small class="text-muted">
@@ -294,10 +292,10 @@
                                         class="btn btn-outline-info" title="View Salary">
                                             <i class="fas fa-chart-pie"></i>
                                         </a>
-                                        <!-- <a th:href="@{/employee/details/{id}(id=${emp.id})}" 
+                                        <a th:href="@{/employee/details/{id}(id=${emp.id})}" 
                                         class="btn btn-outline-secondary" title="View Details">
                                             <i class="fas fa-eye"></i>
-                                        </a> -->
+                                        </a>
                                     </div>
                                 </td>
                             </tr>
@@ -464,13 +462,17 @@
                 }
             }
 
+            // Get selected employees
             function getSelectedEmployees() {
+                // This would get selected employee IDs from checkboxes
+                // For now, return empty array
                 return [];
             }
 
+            // Export status report
             function exportStatusReport() {
                 alert('Exporting status report...');
-                // would trigger a CSV/Excel download
+                // In a real application, this would trigger a CSV/Excel download
             }
 
             // Send status notifications

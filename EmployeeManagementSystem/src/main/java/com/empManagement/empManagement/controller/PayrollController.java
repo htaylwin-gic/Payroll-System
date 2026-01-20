@@ -123,7 +123,7 @@ public class PayrollController {
         return "pages/payroll/history";
     }
 
-    @GetMapping("/monthly")
+    @GetMapping("/monthly/{employeeId}")
     public String monthlyPayrollReport(@RequestParam(value = "monthYear", required = false) String monthYear,
             Model model) {
         String currentMonth = LocalDate.now().format(DateTimeFormatter.ofPattern("MMM,yyyy"));

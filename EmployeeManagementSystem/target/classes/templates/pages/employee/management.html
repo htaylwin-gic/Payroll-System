@@ -116,7 +116,7 @@
                                                                     emp.status == 'On Leave' ? 'bg-warning' : 'bg-secondary'}"
                                           th:text="${emp.status ?: 'Unknown'}"></span>
                                 </td>
-                                <td th:text="${emp.salary != null ? 'MMK' + emp.salary : 'N/A'}"></td>
+                                <td th:text="${emp.salary != null ? #numbers.formatDecimal(emp.salary, 0, 'COMMA', 2, 'POINT') + ' MMK' : 'N/A'}"></td>
                                 <td>
                                     <div class="btn-group btn-group-sm">
                                         <a th:href="@{/employee/details/{id}(id=${emp.id})}" 
