@@ -338,7 +338,11 @@
                                 <small class="text-muted">Working Days Average</small>
                                 <p class="mb-0">
                                     <span th:if="${!payrolls.empty}"
-                                          th:text="${#numbers.formatDecimal(payrolls.!stream().mapToDouble(p -> p.workingDays).average().orElse(0), 0, 0)}">
+                                        th:text="${#numbers.formatDecimal(
+                                            payrolls.stream()
+                                                .mapToDouble(p -> p.workingDays)
+                                                .average()
+                                                .orElse(0), 0, 0)}">
                                     0
                                     </span>
                                     <span th:if="${payrolls.empty}">0</span> days
@@ -348,7 +352,11 @@
                                 <small class="text-muted">Attendance Rate</small>
                                 <p class="mb-0">
                                     <span th:if="${!payrolls.empty}"
-                                          th:text="${#numbers.formatDecimal(payrolls.!stream().mapToDouble(p -> (p.presentDays / p.workingDays) * 100).average().orElse(0), 0, 1)}">
+                                        th:text="${#numbers.formatDecimal(
+                                            payrolls.stream()
+                                                .mapToDouble(p -> (p.presentDays.toDouble() / p.workingDays) * 100)
+                                                .average()
+                                                .orElse(0), 0, 1)}">
                                     0
                                     </span>
                                     <span th:if="${payrolls.empty}">0</span>%
@@ -361,7 +369,11 @@
                                 <small class="text-muted">Highest Salary</small>
                                 <p class="mb-0">
                                     <span th:if="${!payrolls.empty}"
-                                          th:text="'$' + ${#numbers.formatDecimal(payrolls.!stream().mapToDouble(p -> p.totalPayment).max().orElse(0), 0, 2, 'COMMA')}">
+                                        th:text="'$' + ${#numbers.formatDecimal(
+                                            payrolls.stream()
+                                                .mapToDouble(p -> p.totalPayment)
+                                                .max()
+                                                .orElse(0), 0, 2, 'COMMA')}">
                                     $0.00
                                     </span>
                                     <span th:if="${payrolls.empty}">$0.00</span>
@@ -371,7 +383,11 @@
                                 <small class="text-muted">Lowest Salary</small>
                                 <p class="mb-0">
                                     <span th:if="${!payrolls.empty}"
-                                          th:text="'$' + ${#numbers.formatDecimal(payrolls.!stream().mapToDouble(p -> p.totalPayment).min().orElse(0), 0, 2, 'COMMA')}">
+                                        th:text="'$' + ${#numbers.formatDecimal(
+                                            payrolls.stream()
+                                                .mapToDouble(p -> p.totalPayment)
+                                                .min()
+                                                .orElse(0), 0, 2, 'COMMA')}">
                                     $0.00
                                     </span>
                                     <span th:if="${payrolls.empty}">$0.00</span>
@@ -380,6 +396,11 @@
                         </div>
                     </div>
                 </div>
+                <!-- Hidden inputs for chart data -->
+<input type="hidden" id="departmentData" th:value="${#strings.mapToString(departmentTotals)}">
+<input type="hidden" id="basicSalaryTotal" th:value="${totalBasicSalary}">
+<input type="hidden" id="additionsTotal" th:value="${totalAdditions}">
+<input type="hidden" id="deductionsTotal" th:value="${totalDeductions}">
             </div>
             <div class="col-md-6">
                 <div class="card">
@@ -408,8 +429,17 @@
         <script>
             // Initialize charts
             let departmentChart, paymentChart;
+            const departmentData = /*[[${#strings.mapToString(departmentTotals)}]]*/ {};
+            const basicSalaryTotal = /*[[${totalBasicSalary}]]*/ 0;
+            const additionsTotal = /*[[${totalAdditions}]]*/ 0;
+            const deductionsTotal = /*[[${totalDeductions}]]*/ 0;
 
             function initializeCharts() {
+
+                // Parse department data
+                const departmentTotals = typeof departmentData === 'string' ? 
+                JSON.parse(departmentData) : departmentData;
+
                 // Department Chart
                 const departmentCtx = document.getElementById('departmentChart').getContext('2d');
                 departmentChart = new Chart(departmentCtx, {

@@ -4,6 +4,9 @@ import com.empManagement.empManagement.dto.PayrollRequest;
 import com.empManagement.empManagement.entity.Employee;
 import com.empManagement.empManagement.entity.EmployeePayroll;
 import com.empManagement.empManagement.service.EmployeeService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -14,6 +17,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/payroll")
@@ -123,7 +128,7 @@ public class PayrollController {
         return "pages/payroll/history";
     }
 
-    @GetMapping("/monthly/{employeeId}")
+    @GetMapping("/monthly")
     public String monthlyPayrollReport(@RequestParam(value = "monthYear", required = false) String monthYear,
             Model model) {
         String currentMonth = LocalDate.now().format(DateTimeFormatter.ofPattern("MMM,yyyy"));
@@ -133,12 +138,43 @@ public class PayrollController {
         Double totalPayment = employeeService.getTotalPaymentByMonth(selectedMonth);
         List<String> monthYears = employeeService.getDistinctMonthYears();
 
+        // Calculate department totals
+        Map<String, Double> departmentTotals = payrolls.stream()
+                .collect(Collectors.groupingBy(
+                        p -> p.getEmployee().getDepartment(),
+                        Collectors.summingDouble(EmployeePayroll::getTotalPayment)));
+
+        // Calculate payment breakdown
+        double totalBasicSalary = payrolls.stream().mapToDouble(EmployeePayroll::getBasicSalary).sum();
+        double totalAdditions = payrolls.stream()
+                .mapToDouble(p -> p.getAllowance() + p.getOvertime() + p.getBonus() + p.getHome() +
+                        p.getBusinessTrip() + p.getContinuedYear() + p.getHomeTownVisit() +
+                        p.getManualAdjust() + p.getAttendancePerfect() + p.getExchangeBenefit())
+                .sum();
+        double totalDeductions = payrolls.stream()
+                .mapToDouble(p -> p.getLeaveDeduction() + p.getLateDeduction() + p.getIncomeTax() +
+                        p.getLoanReturn() + p.getSsc() + p.getCompanyTrip())
+                .sum();
+
         model.addAttribute("payrolls", payrolls);
         model.addAttribute("totalPayment", totalPayment);
         model.addAttribute("selectedMonth", selectedMonth);
         model.addAttribute("monthYears", monthYears);
         model.addAttribute("currentMonth", currentMonth);
+        model.addAttribute("departmentTotals", departmentTotals);
+        model.addAttribute("totalBasicSalary", totalBasicSalary);
+        model.addAttribute("totalAdditions", totalAdditions);
+        model.addAttribute("totalDeductions", totalDeductions);
 
         return "pages/payroll/monthly-report";
+    }
+
+    private String convertMapToJson(Map<String, Double> map) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.writeValueAsString(map);
+        } catch (JsonProcessingException e) {
+            return "{}";
+        }
     }
 }

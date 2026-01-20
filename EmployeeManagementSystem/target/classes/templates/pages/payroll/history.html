@@ -151,11 +151,11 @@
                                     th:text="'$' + (${payroll.allowance != null ? payroll.allowance : 0} + ${payroll.overtime != null ? payroll.overtime : 0} + ${payroll.bonus != null ? payroll.bonus : 0} + ${payroll.home != null ? payroll.home : 0} + ${payroll.businessTrip != null ? payroll.businessTrip : 0} + ${payroll.continuedYear != null ? payroll.continuedYear : 0} + ${payroll.homeTownVisit != null ? payroll.homeTownVisit : 0} + ${payroll.manualAdjust != null ? payroll.manualAdjust : 0} + ${payroll.attendancePerfect != null ? payroll.attendancePerfect : 0} + ${payroll.exchangeBenefit != null ? payroll.exchangeBenefit : 0})">
                                 </td>
                                 <td class="salary-cell">
-                                    <strong th:text="'$' + ${payroll.netSalary}"></strong>
+                                    <strong th:text="${payroll.netSalary != null ? #numbers.formatDecimal(payroll.netSalary, 0, 'COMMA', 2, 'POINT') + ' MMK' : '0.00 MMK'}"></strong>
                                 </td>
                                 <td class="salary-cell" th:text="'K' + ${payroll.travelFee}"></td>
                                 <td class="salary-cell">
-                                    <h6 class="mb-0 text-primary" th:text="'$' + ${payroll.totalPayment}"></h6>
+                                    <h6 class="mb-0 text-primary" th:text="${payroll.totalPayment != null ? #numbers.formatDecimal(payroll.totalPayment, 0, 'COMMA', 2, 'POINT') + ' MMK' : '0.00 MMK'}"></h6>
                                 </td>
                                 <td>
                                     <span class="badge bg-success status-badge">Paid</span>
@@ -211,31 +211,31 @@
             </div>
         </div>
 
-        <!-- Summary Statistics -->
-        <div class="row mt-4">
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-body">
-                        <h6 class="card-title">Total Paid</h6>
-                        <h3 class="text-success">
-                            <span th:text="'$' + ${#numbers.formatDecimal(totalPaidAmount, 0, 2, 'COMMA')}">$0.00</span>
-                        </h3>
-                        <p class="text-muted mb-0">Total payments made</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-body">
-                        <h6 class="card-title">Average Monthly</h6>
-                        <h3 class="text-primary">
-                            <span th:text="'$' + ${#numbers.formatDecimal(averageMonthlyAmount, 0, 2, 'COMMA')}">$0.00</span>
-                        </h3>
-                        <p class="text-muted mb-0">Average monthly payment</p>
-                    </div>
-                </div>
+<!-- Summary Statistics -->
+<div class="row mt-4">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h6 class="card-title">Total Paid</h6>
+                <h3 class="text-success">
+                    <span th:text="${totalPaidAmount != null ? #numbers.formatDecimal(totalPaidAmount, 0, 'COMMA', 2, 'POINT') + ' MMK' : '0.00 MMK'}"></span>
+                </h3>
+                <p class="text-muted mb-0">Total payments made</p>
             </div>
         </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h6 class="card-title">Average Monthly</h6>
+                <h3 class="text-primary">
+                    <span th:text="${averageMonthlyAmount != null ? #numbers.formatDecimal(averageMonthlyAmount, 0, 'COMMA', 2, 'POINT') + ' MMK' : '0.00 MMK'}"></span>
+                </h3>
+                <p class="text-muted mb-0">Average monthly payment</p>
+            </div>
+        </div>
+    </div>
+    </div>
 
     <th:block layout:fragment="scripts">
         <script>
