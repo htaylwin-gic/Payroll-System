@@ -276,12 +276,11 @@
                                     <div class="col-md-6 mb-3">
                                         <label for="employeeId" class="form-label">Employee ID *</label>
                                         <input type="text" 
-                                               class="form-control readonly-field" 
+                                               class="form-control" 
                                                id="employeeId" 
                                                th:field="*{employeeId}"
-                                               readonly
                                                required>
-                                        <div class="form-text">6-digit ID starting with 20 (cannot be changed)</div>
+                                        <div class="form-text">6-digit ID starting with 20 (e.g., 201234)</div>
                                     </div>
                                     <div class="col-md-6 mb-3">
                                         <label for="department" class="form-label">Department *</label>
