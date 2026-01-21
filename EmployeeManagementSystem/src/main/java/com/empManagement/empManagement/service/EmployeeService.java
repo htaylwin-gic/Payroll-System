@@ -492,6 +492,10 @@ public class EmployeeService {
         return employeeRepository.countByDepartment("Social Media");
     }
 
+    public long getCountOfEmployeesFinance() {
+        return employeeRepository.countByDepartment("Finance");
+    }
+
     public Map<String, Double> getSectionPercentages() {
         long totalEmployees = getEmployeeCount();
         if (totalEmployees == 0)
@@ -511,4 +515,5 @@ public class EmployeeService {
 
         return percentages;
     }
+
 }
