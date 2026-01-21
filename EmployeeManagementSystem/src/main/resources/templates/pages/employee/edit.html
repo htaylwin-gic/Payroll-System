@@ -25,6 +25,10 @@
             object-fit: cover;
             border: 5px solid #e9ecef;
         }
+        .readonly-field {
+            background-color: #e9ecef;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
@@ -104,6 +108,16 @@
                                                th:field="*{nationality}">
                                     </div>
                                 </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="NIC" class="form-label">National ID (NIC) *</label>
+                                        <input type="text" 
+                                               class="form-control" 
+                                               id="NIC" 
+                                               th:field="*{NIC}"
+                                               required>
+                                    </div>
+                                </div>
                             </div>
 
                             <!-- Contact Information -->
@@ -121,11 +135,12 @@
                                                required>
                                     </div>
                                     <div class="col-md-6 mb-3">
-                                        <label for="phone_number" class="form-label">Phone Number</label>
+                                        <label for="phone_number" class="form-label">Phone Number *</label>
                                         <input type="tel" 
                                                class="form-control" 
                                                id="phone_number" 
-                                               th:field="*{phone_number}">
+                                               th:field="*{phone_number}"
+                                               required>
                                     </div>
                                 </div>
                                 <div class="mb-3">
@@ -137,6 +152,117 @@
                                 </div>
                             </div>
 
+                            <!-- Assignment & Management Information -->
+                            <div class="form-section">
+                                <h5 class="section-title">
+                                    <i class="fas fa-chart-line me-2"></i>Assignment & Management Information
+                                </h5>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="assignmentLevel" class="form-label">Assignment Level</label>
+                                        <select class="form-select" id="assignmentLevel" th:field="*{assignmentLevel}">
+                                            <option value="">Select Assignment Level</option>
+                                            <option value="Sub TL">Sub TL</option>
+                                            <option value="TL">TL</option>
+                                            <option value="PL">PL</option>
+                                            <option value="Senior PL">Senior PL</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="managementLevel" class="form-label">Management Level</label>
+                                        <select class="form-select" id="managementLevel" th:field="*{managementLevel}">
+                                            <option value="">Select Management Level</option>
+                                            <option value="Sub leader">Sub leader</option>
+                                            <option value="Leader">Leader</option>
+                                            <option value="Sub Manager">Sub Manager</option>
+                                            <option value="Manager">Manager</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Transportation Information -->
+                            <div class="form-section">
+                                <h5 class="section-title">
+                                    <i class="fas fa-bus me-2"></i>Transportation Information
+                                </h5>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="transportationSteps" class="form-label">Transportation by bus *</label>
+                                        <input type="number" 
+                                               class="form-control" 
+                                               id="transportationSteps" 
+                                               name="transportationSteps"
+                                               th:value="${employee.transportationSteps != null} ? ${employee.transportationSteps} : ''"
+                                               required
+                                               min="1"
+                                               max="10"
+                                               step="1">
+                                        <div class="form-text">Number of bus changes from home to work (1 = no change, 2 = 1 change, etc.)</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Language Skill Information -->
+                            <div class="form-section">
+                                <h5 class="section-title">
+                                    <i class="fas fa-language me-2"></i>Language Skill Information
+                                </h5>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="educationLevel" class="form-label">Education</label>
+                                        <select class="form-select" id="educationLevel" th:field="*{educationLevel}">
+                                            <option value="">Select Education</option>
+                                            <option value="Diploma">Diploma</option>
+                                            <option value="Bachelor">Bachelor</option>
+                                            <option value="Master">Master</option>
+                                            <option value="FE Passer">FE Passer</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="evaluationGrade" class="form-label">Education (PBC)</label>
+                                        <select class="form-select" id="evaluationGrade" th:field="*{evaluationGrade}">
+                                            <option value="">Select PBC Grade</option>
+                                            <option value="C">C</option>
+                                            <option value="B">B</option>
+                                            <option value="A">A</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="japaneseLevel" class="form-label">Japanese JLPT</label>
+                                        <select class="form-select" id="japaneseLevel" th:field="*{japaneseLevel}">
+                                            <option value="">Select JLPT Level</option>
+                                            <option value="None">-</option>
+                                            <option value="N3">N3</option>
+                                            <option value="N2">N2</option>
+                                            <option value="N1">N1</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="japaneseNatTest" class="form-label">Japanese NAT Test</label>
+                                        <select class="form-select" id="japaneseNatTest" th:field="*{japaneseNatTest}">
+                                            <option value="">Select NAT Level</option>
+                                            <option value="None">-</option>
+                                            <option value="N3">N3</option>
+                                            <option value="N2">N2</option>
+                                            <option value="N1">N1</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="englishLevel" class="form-label">English Level</label>
+                                        <select class="form-select" id="englishLevel" th:field="*{englishLevel}">
+                                            <option value="">Select English Level</option>
+                                            <option value="TOEIC 600+/TOEFL 505+/IELTS 5.5+">TOEIC 600+/TOEFL 505+/IELTS 5.5+</option>
+                                            <option value="TOEIC 730+/TOEFL 550+/IELTS 6.5+">TOEIC 730+/TOEFL 550+/IELTS 6.5+</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
                             <!-- Employment Information -->
                             <div class="form-section">
                                 <h5 class="section-title">
@@ -144,12 +270,17 @@
                                 </h5>
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
-                                        <label for="position" class="form-label">Position *</label>
+                                        <label for="employeeId" class="form-label">Employee ID *</label>
                                         <input type="text" 
                                                class="form-control" 
-                                               id="position" 
-                                               th:field="*{position}"
-                                               required>
+                                               id="employeeId" 
+                                               name="employeeId"
+                                               th:value="${employee.employeeId != null} ? ${employee.employeeId} : ''"
+                                               required
+                                               pattern="20[0-9]{4}"
+                                               title="6-digit ID starting with 20 (e.g., 201234)"
+                                               placeholder="201234">
+                                        <div class="form-text">6-digit ID starting with 20 (e.g., 201234)</div>
                                     </div>
                                     <div class="col-md-6 mb-3">
                                         <label for="department" class="form-label">Department *</label>
@@ -165,6 +296,30 @@
                                 </div>
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
+                                        <label for="position" class="form-label">Position *</label>
+                                        <input type="text" 
+                                               class="form-control" 
+                                               id="position" 
+                                               th:field="*{position}"
+                                               required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="bandLevel" class="form-label">Band Level *</label>
+                                        <select class="form-select" id="bandLevel" th:field="*{bandLevel}" required>
+                                            <option value="">Select Band Level</option>
+                                            <option value="Band1">Band 1</option>
+                                            <option value="Band2">Band 2</option>
+                                            <option value="Band3">Band 3</option>
+                                            <option value="Band4">Band 4</option>
+                                            <option value="Band5">Band 5</option>
+                                            <option value="Band6">Band 6</option>
+                                            <option value="Band7">Band 7</option>
+                                            <option value="Band8">Band 8</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
                                         <label for="start_date" class="form-label">Start Date *</label>
                                         <input type="date" 
                                                class="form-control" 
@@ -173,12 +328,13 @@
                                                required>
                                     </div>
                                     <div class="col-md-6 mb-3">
-                                        <label for="NIC" class="form-label">National ID (NIC) *</label>
+                                        <label for="salary" class="form-label">Basic Salary (Band-based)</label>
                                         <input type="text" 
-                                               class="form-control" 
-                                               id="NIC" 
-                                               th:field="*{NIC}"
-                                               required>
+                                               class="form-control readonly-field" 
+                                               id="salary" 
+                                               th:field="*{salary}"
+                                               readonly>
+                                        <div class="form-text">Auto-calculated based on selected Band Level</div>
                                     </div>
                                 </div>
                                 <div class="row">
@@ -186,19 +342,12 @@
                                         <label for="employment_status" class="form-label">Employment Status</label>
                                         <select class="form-select" id="employment_status" th:field="*{employment_status}">
                                             <option value="">Select Status</option>
-                                            <option value="Full-time">Full-time</option>
-                                            <option value="Part-time">Part-time</option>
+                                            <option value="Active">Active</option>
+                                            <option value="Inactive">Inactive</option>
+                                            <option value="On Leave">On Leave</option>
                                             <option value="Contract">Contract</option>
-                                            <option value="Intern">Intern</option>
+                                            <option value="Probation">Probation</option>
                                         </select>
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <label for="salary" class="form-label">Basic Salary</label>
-                                        <input type="number" 
-                                               class="form-control" 
-                                               id="salary" 
-                                               th:field="*{salary}"
-                                               step="0.01">
                                     </div>
                                 </div>
                             </div>
@@ -222,5 +371,66 @@
             </div>
         </div>
     </div>
+
+    <th:block layout:fragment="scripts">
+        <script>
+            // Calculate basic salary based on band level
+            document.getElementById('bandLevel').addEventListener('change', function() {
+                const bandLevel = this.value;
+                const salaryField = document.getElementById('salary');
+                
+                // Salary mapping based on band levels (in MMK)
+                const salaryMap = {
+                        'Band1': '350,000',
+                        'Band2': '550,000',
+                        'Band3': '650,000',
+                        'Band4': '750,000',
+                        'Band5': '850,000',
+                        'Band6': '1,150,000',
+                        'Band7': '1,350,000',
+                        'Band8': '1,550,000'
+                };
+                
+                if (bandLevel && salaryMap[bandLevel]) {
+                    salaryField.value = salaryMap[bandLevel];
+                }
+            });
+
+            // Initialize salary when page loads
+            document.addEventListener('DOMContentLoaded', function() {
+                const bandLevel = document.getElementById('bandLevel').value;
+                const salaryField = document.getElementById('salary');
+                
+                if (bandLevel) {
+                    const salaryMap = {
+                        'Band1': '350,000',
+                        'Band2': '550,000',
+                        'Band3': '650,000',
+                        'Band4': '750,000',
+                        'Band5': '850,000',
+                        'Band6': '1,150,000',
+                        'Band7': '1,350,000',
+                        'Band8': '1,550,000'
+                    };
+                    
+                    if (salaryMap[bandLevel]) {
+                        salaryField.value = salaryMap[bandLevel];
+                    }
+                }
+            });
+            
+            // Validate employee ID format
+            document.getElementById('employeeId').addEventListener('input', function() {
+                const empId = this.value;
+                const empIdPattern = /^20[0-9]{4}$/;
+                
+                if (empId && !empIdPattern.test(empId)) {
+                    this.setCustomValidity('Employee ID must be 6 digits starting with 20');
+                } else {
+                    this.setCustomValidity('');
+                }
+            });
+        </script>
+    </th:block>
 </body>
 </html>

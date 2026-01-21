@@ -42,6 +42,12 @@ public class Employee {
     @Column(name = "salary", nullable = true)
     private Double salary;
 
+    @Column(name = "employee_id", unique = true)
+    private String employeeId;
+
+    @Column(name = "transportation_steps")
+    private Integer transportationSteps;
+
     // Salary Components
     @Column(name = "band_level")
     private String bandLevel;
@@ -64,6 +70,12 @@ public class Employee {
     @Column(name = "japanese_allowance")
     private String japaneseAllowance;
 
+    @Column(name = "japanese_nat_test")
+    private String japaneseNatTest;
+
+    @Column(name = "japanese_nat_allowance")
+    private String japaneseNatAllowance;
+
     @Column(name = "english_toeic_score")
     private String englishToeicScore;
 
@@ -75,6 +87,9 @@ public class Employee {
 
     @Column(name = "english_allowance")
     private String englishAllowance;
+
+    @Column(name = "english_level")
+    private String englishLevel;
 
     @Column(name = "myanmar_service_years")
     private Integer myanmarServiceYears;
@@ -184,5 +199,65 @@ public class Employee {
     @Transient
     public void setEmployment_status(String employmentStatus) {
         this.employmentStatus = employmentStatus;
+    }
+
+    @Transient
+    public String getEmployeeId() {
+        return employeeId;
+    }
+
+    @Transient
+    public void setEmployeeId(String employeeId) {
+        this.employeeId = employeeId;
+    }
+
+    @Transient
+    public Integer getTransportationSteps() {
+        return transportationSteps;
+    }
+
+    @Transient
+    public void setTransportationSteps(Integer transportationSteps) {
+        this.transportationSteps = transportationSteps;
+    }
+
+    @Transient
+    public String getJapaneseNatTest() {
+        return japaneseNatTest;
+    }
+
+    @Transient
+    public void setJapaneseNatTest(String japaneseNatTest) {
+        this.japaneseNatTest = japaneseNatTest;
+    }
+
+    @Transient
+    public String getEnglishLevel() {
+        return englishLevel;
+    }
+
+    @Transient
+    public void setEnglishLevel(String englishLevel) {
+        this.englishLevel = englishLevel;
+    }
+
+    @Transient
+    public String getAssignmentLevel() {
+        return assignmentLevel;
+    }
+
+    @Transient
+    public void setAssignmentLevel(String assignmentLevel) {
+        this.assignmentLevel = assignmentLevel;
+    }
+
+    @Transient
+    public String getManagementLevel() {
+        return managementLevel;
+    }
+
+    @Transient
+    public void setManagementLevel(String managementLevel) {
+        this.managementLevel = managementLevel;
     }
 }
