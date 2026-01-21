@@ -105,7 +105,7 @@ public class DashboardController {
         // Calculate section percentages
         Map<String, Double> sectionPercentages = new HashMap<>();
         for (Map.Entry<String, Integer> entry : departmentStats.entrySet()) {
-            double percentage = totalEmployees > 0 ? (entry.getValue().doubleValue() / totalEmployees * 100) : 0;
+            double percentage = totalEmployees > 0 ? (entry.getValue().doubleValue() * 100.0 / totalEmployees) : 0;
             sectionPercentages.put(entry.getKey(), Math.round(percentage * 10.0) / 10.0);
         }
         model.addAttribute("sectionPercentages", sectionPercentages);
