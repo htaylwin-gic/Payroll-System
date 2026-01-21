@@ -134,7 +134,7 @@
                                 <h6 class="mb-3">Choose Status:</h6>
                                 <div th:each="statusType : ${statusTypes}">
                                     <div class="status-option" 
-                                         onclick="selectStatus('${statusType}')"
+                                         th:onclick="selectStatus('${statusType}')"
                                          th:id="'status-' + ${statusType?.replace(' ', '-')?.toLowerCase()}">
                                         <div class="d-flex align-items-center">
                                             <div class="status-icon">
@@ -147,9 +147,15 @@
                                             </div>
                                             <div>
                                                 <h6 class="mb-1" th:text="${statusType}"></h6>
-                                                <!-- <p class="text-muted mb-0" th:text="getStatusDescription(${statusType})"></p> -->
-                                                 <p class="text-muted mb-0" th:id="'desc-' + ${statusType?.replace(' ', '-')?.toLowerCase()}">
+                                                 <!-- <p class="text-muted mb-0" th:id="'desc-' + ${statusType?.replace(' ', '-')?.toLowerCase()}">
                                                     Loading description...
+                                                </p> -->
+                                                <p class="text-muted mb-0" 
+                                                    th:text= "${statusType == 'Active' ? 'Employee is actively working.' : 
+                                                                statusType == 'On Leave' ? 'Employee is on approved leave.' : 
+                                                                statusType == 'Inactive' ? 'Employee is temporarily inactive.' : 
+                                                                statusType == 'Resigned' ? 'Employee has voluntarily resigned.' : 
+                                                                'Employee has been terminated.'}">
                                                 </p>
                                             </div>
                                             <div class="ms-auto">
@@ -302,7 +308,7 @@
     <th:block layout:fragment="scripts">
         <script th:inline="javascript">
 
-            const employeeId = '0';
+            const employeeId = /*[[${employee.id}]]*/ '0';
             
              // Status descriptions
             function getStatusDescription(status) {
@@ -342,9 +348,8 @@
                     reasonSection.style.display = 'none';
                 }
 
-                // Update form action - FIXED
-                const form = document.getElementById('statusForm');
-                form.action = '/status/update/' + employeeId + '?status=' + encodeURIComponent(status);
+                // REMOVE THIS LINE - don't modify the form action
+                // form.action = '/status/update/' + employeeId + '?status=' + encodeURIComponent(status);
             }
 
             // Reset form
