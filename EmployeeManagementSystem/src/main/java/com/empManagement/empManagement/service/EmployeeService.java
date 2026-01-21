@@ -488,10 +488,6 @@ public class EmployeeService {
         return employeeRepository.countByDepartment("Design");
     }
 
-    public long getCountOfEmployeesSocial() {
-        return employeeRepository.countByDepartment("Social Media");
-    }
-
     public long getCountOfEmployeesFinance() {
         return employeeRepository.countByDepartment("Finance");
     }
@@ -507,7 +503,7 @@ public class EmployeeService {
         percentages.put("HRM", (getCountOfEmployeesHRM() * 100.0) / totalEmployees);
         percentages.put("Technical", (getCountOfEmployeesTechnical() * 100.0) / totalEmployees);
         percentages.put("Design", (getCountOfEmployeesDesign() * 100.0) / totalEmployees);
-        percentages.put("Social", (getCountOfEmployeesSocial() * 100.0) / totalEmployees);
+        percentages.put("Finance", (getCountOfEmployeesFinance() * 100.0) / totalEmployees);
 
         // Calculate "Other" for remaining percentage
         double totalPercentage = percentages.values().stream().mapToDouble(Double::doubleValue).sum();

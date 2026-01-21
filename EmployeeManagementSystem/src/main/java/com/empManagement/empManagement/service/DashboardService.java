@@ -34,8 +34,7 @@ public class DashboardService {
         departmentStats.put("HRM", employeeService.getCountOfEmployeesHRM());
         departmentStats.put("Technical", employeeService.getCountOfEmployeesTechnical());
         departmentStats.put("Design", employeeService.getCountOfEmployeesDesign());
-        departmentStats.put("Social", employeeService.getCountOfEmployeesSocial());
-
+        departmentStats.put("Finance", employeeService.getCountOfEmployeesFinance());
         return departmentStats;
     }
 }

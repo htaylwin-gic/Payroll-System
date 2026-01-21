@@ -237,6 +237,7 @@
                                     <span th:classappend="'badge department-badge ' + ${payroll.employee.department == 'IT' ? 'bg-primary' : 
                                                                                       payroll.employee.department == 'HRM' ? 'bg-success' : 
                                                                                       payroll.employee.department == 'Technical' ? 'bg-warning' : 
+                                                                                      payroll.employee.department == 'Finance' ? 'bg-dark' :
                                                                                       payroll.employee.department == 'Design' ? 'bg-info' : 'bg-secondary'}"
                                           th:text="${payroll.employee.department}">
                                     </span>
@@ -445,7 +446,7 @@
                 departmentChart = new Chart(departmentCtx, {
                     type: 'bar',
                     data: {
-                        labels: ['IT', 'HRM', 'Technical', 'Design', 'Other'],
+                        labels: ['IT', 'HRM', 'Technical', 'Design', 'Finance', 'Other'],
                         datasets: [{
                             label: 'Total Payment by Department',
                             data: calculateDepartmentTotals(),
@@ -454,7 +455,8 @@
                                 '#28a745',
                                 '#ffc107',
                                 '#17a2b8',
-                                '#6c757d'
+                                '#6c757d',
+                                '#dc3545'
                             ]
                         }]
                     },
