@@ -137,9 +137,7 @@
                                             <option value="HRM">HRM</option>
                                             <option value="Technical">Technical</option>
                                             <option value="Design">Design</option>
-                                            <option value="Social Media">Social Media</option>
                                             <option value="Finance">Finance</option>
-                                            <option value="Marketing">Marketing</option>
                                         </select>
                                     </div>
                                 </div>
@@ -153,7 +151,7 @@
                                                required>
                                     </div>
                                     <div class="col-md-6 mb-3">
-                                        <label for="NIC" class="form-label">Employee ID *</label>
+                                        <label for="NIC" class="form-label">National ID (NIC) *</label>
                                         <input type="text" 
                                                class="form-control" 
                                                id="NIC" 
@@ -170,8 +168,8 @@
                                 </h5>
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
-                                        <label for="bandLevel" class="form-label">Band Level *</label>
-                                        <select class="form-select" id="bandLevel" th:field="*{bandLevel}" required>
+                                        <label for="bandLevel" class="form-label">Band Level</label>
+                                        <select class="form-select" id="bandLevel" th:field="*{bandLevel}">
                                             <option value="">Select Band Level</option>
                                             <option value="Band1">Band 1</option>
                                             <option value="Band2">Band 2</option>
