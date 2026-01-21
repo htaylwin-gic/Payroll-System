@@ -42,9 +42,11 @@ public class Employee {
     @Column(name = "salary", nullable = true)
     private Double salary;
 
+    // New fields for employee ID
     @Column(name = "employee_id", unique = true)
     private String employeeId;
 
+    // New fields for transportation
     @Column(name = "transportation_steps")
     private Integer transportationSteps;
 
@@ -70,6 +72,7 @@ public class Employee {
     @Column(name = "japanese_allowance")
     private String japaneseAllowance;
 
+    // New fields for Japanese NAT Test
     @Column(name = "japanese_nat_test")
     private String japaneseNatTest;
 
@@ -88,6 +91,7 @@ public class Employee {
     @Column(name = "english_allowance")
     private String englishAllowance;
 
+    // New field for English Level
     @Column(name = "english_level")
     private String englishLevel;
 
@@ -151,113 +155,118 @@ public class Employee {
     private String netSalary;
 
     // For backward compatibility - add these as separate methods
-    @Transient
+    // Thymeleaf will use these getters/setters
     public String getFull_name() {
         return fullName;
     }
 
-    @Transient
     public void setFull_name(String fullName) {
         this.fullName = fullName;
     }
 
-    @Transient
     public String getDate_of_birth() {
         return dateOfBirth;
     }
 
-    @Transient
     public void setDate_of_birth(String dateOfBirth) {
         this.dateOfBirth = dateOfBirth;
     }
 
-    @Transient
     public String getPhone_number() {
         return phoneNumber;
     }
 
-    @Transient
     public void setPhone_number(String phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
 
-    @Transient
     public String getStart_date() {
         return startDate;
     }
 
-    @Transient
     public void setStart_date(String startDate) {
         this.startDate = startDate;
     }
 
-    @Transient
     public String getEmployment_status() {
         return employmentStatus;
     }
 
-    @Transient
     public void setEmployment_status(String employmentStatus) {
         this.employmentStatus = employmentStatus;
     }
 
-    @Transient
+    // Add getters/setters for new fields - these will be used by Thymeleaf
     public String getEmployeeId() {
         return employeeId;
     }
 
-    @Transient
     public void setEmployeeId(String employeeId) {
         this.employeeId = employeeId;
     }
 
-    @Transient
     public Integer getTransportationSteps() {
         return transportationSteps;
     }
 
-    @Transient
     public void setTransportationSteps(Integer transportationSteps) {
         this.transportationSteps = transportationSteps;
     }
 
-    @Transient
     public String getJapaneseNatTest() {
         return japaneseNatTest;
     }
 
-    @Transient
     public void setJapaneseNatTest(String japaneseNatTest) {
         this.japaneseNatTest = japaneseNatTest;
     }
 
-    @Transient
     public String getEnglishLevel() {
         return englishLevel;
     }
 
-    @Transient
     public void setEnglishLevel(String englishLevel) {
         this.englishLevel = englishLevel;
     }
 
-    @Transient
     public String getAssignmentLevel() {
         return assignmentLevel;
     }
 
-    @Transient
     public void setAssignmentLevel(String assignmentLevel) {
         this.assignmentLevel = assignmentLevel;
     }
 
-    @Transient
     public String getManagementLevel() {
         return managementLevel;
     }
 
-    @Transient
     public void setManagementLevel(String managementLevel) {
         this.managementLevel = managementLevel;
+    }
+
+    // Add getters/setters for other fields that might be needed
+    public String getEducationLevel() {
+        return educationLevel;
+    }
+
+    public void setEducationLevel(String educationLevel) {
+        this.educationLevel = educationLevel;
+    }
+
+    public String getEvaluationGrade() {
+        return evaluationGrade;
+    }
+
+    public void setEvaluationGrade(String evaluationGrade) {
+        this.evaluationGrade = evaluationGrade;
+    }
+
+    public String getJapaneseLevel() {
+        return japaneseLevel;
+    }
+
+    public void setJapaneseLevel(String japaneseLevel) {
+        this.japaneseLevel = japaneseLevel;
     }
 }
