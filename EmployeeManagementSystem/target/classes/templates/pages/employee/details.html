@@ -173,14 +173,15 @@
                     <div class="card-body">
                         <div class="row mb-3">
                             <div class="col-5 info-label">Basic Salary</div>
+
                             <div class="col-7 info-value" 
-                                 th:text="${employee.salary != null} ? '&#36;' + ${#numbers.formatDecimal(employee.salary, 1, 2)} : 'Not set'">
+                                 th:text="${employee.salary != null ? #numbers.formatDecimal(employee.salary, 0, 'COMMA', 2, 'POINT') + ' MMK' : 'Not set'}">
                             </div>
                         </div>
                         <div class="row mb-4">
                             <div class="col-5 info-label">Net Salary</div>
                             <div class="col-7 info-value" 
-                                 th:text="${employee.salary != null} ? '&#36;' + ${#numbers.formatDecimal(employee.salary, 1, 2)} : 'Not set'">
+                                 th:text="${employee.netSalary != null} ? '&#36;' + ${#numbers.formatDecimal(employee.netSalary, 1, 2)} : 'Not set'">
                             </div>
                         </div>
 

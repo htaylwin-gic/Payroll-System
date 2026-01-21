@@ -61,7 +61,7 @@
                 </div>
                 <div class="col-md-3">
                     <small class="opacity-75">Current Salary</small>
-                    <h5 th:text="'$' + ${employee.salary}"></h5>
+                    <h5 th:text="${employee.salary != null ? #numbers.formatDecimal(employee.salary, 0, 'COMMA', 2, 'POINT') + ' MMK' : '0.00 MMK'}"></h5>
                 </div>
                 <div class="col-md-3">
                     <small class="opacity-75">Total Payroll Records</small>
@@ -134,7 +134,9 @@
                                         <span th:text="${payroll.createdAt}"></span>
                                     </div>
                                 </td>
-                                <td class="salary-cell" th:text="'$' + ${payroll.basicSalary}"></td>
+                                <td class="salary-cell" 
+                                    th:text="${payroll.basicSalary != null ? #numbers.formatDecimal(payroll.basicSalary, 0, 'COMMA', 2, 'POINT') + ' MMK' : '0.00 MMK'}">
+                                </td>
                                 <td>
                                     <span th:text="${payroll.presentDays} + '/' + ${payroll.workingDays}"></span>
                                     <div class="text-muted" style="font-size: 0.8rem;">
@@ -145,17 +147,23 @@
                                     </div>
                                 </td>
                                 <td class="salary-cell text-danger" 
-                                    th:text="'$' + (${payroll.leaveDeduction != null ? payroll.leaveDeduction : 0} + ${payroll.lateDeduction != null ? payroll.lateDeduction : 0} + ${payroll.incomeTax != null ? payroll.incomeTax : 0} + ${payroll.loanReturn != null ? payroll.loanReturn : 0} + ${payroll.ssc != null ? payroll.ssc : 0} + ${payroll.companyTrip != null ? payroll.companyTrip : 0})">
+                                    th:text="${#numbers.formatDecimal((payroll.leaveDeduction != null ? payroll.leaveDeduction : 0) + (payroll.lateDeduction != null ? payroll.lateDeduction : 0) + (payroll.incomeTax != null ? payroll.incomeTax : 0) + (payroll.loanReturn != null ? payroll.loanReturn : 0) + (payroll.ssc != null ? payroll.ssc : 0) + (payroll.companyTrip != null ? payroll.companyTrip : 0), 0, 'COMMA', 2, 'POINT') + ' MMK'}">
                                 </td>
                                 <td class="salary-cell text-success" 
-                                    th:text="'$' + (${payroll.allowance != null ? payroll.allowance : 0} + ${payroll.overtime != null ? payroll.overtime : 0} + ${payroll.bonus != null ? payroll.bonus : 0} + ${payroll.home != null ? payroll.home : 0} + ${payroll.businessTrip != null ? payroll.businessTrip : 0} + ${payroll.continuedYear != null ? payroll.continuedYear : 0} + ${payroll.homeTownVisit != null ? payroll.homeTownVisit : 0} + ${payroll.manualAdjust != null ? payroll.manualAdjust : 0} + ${payroll.attendancePerfect != null ? payroll.attendancePerfect : 0} + ${payroll.exchangeBenefit != null ? payroll.exchangeBenefit : 0})">
+                                    th:text="${#numbers.formatDecimal((payroll.allowance != null ? payroll.allowance : 0) + (payroll.overtime != null ? payroll.overtime : 0) + (payroll.bonus != null ? payroll.bonus : 0) + (payroll.home != null ? payroll.home : 0) + (payroll.businessTrip != null ? payroll.businessTrip : 0) + (payroll.continuedYear != null ? payroll.continuedYear : 0) + (payroll.homeTownVisit != null ? payroll.homeTownVisit : 0) + (payroll.manualAdjust != null ? payroll.manualAdjust : 0) + (payroll.attendancePerfect != null ? payroll.attendancePerfect : 0) + (payroll.exchangeBenefit != null ? payroll.exchangeBenefit : 0), 0, 'COMMA', 2, 'POINT') + ' MMK'}">
                                 </td>
                                 <td class="salary-cell">
-                                    <strong th:text="${payroll.netSalary != null ? #numbers.formatDecimal(payroll.netSalary, 0, 'COMMA', 2, 'POINT') + ' MMK' : '0.00 MMK'}"></strong>
+                                    <strong 
+                                        th:text="${payroll.netSalary != null ? #numbers.formatDecimal(payroll.netSalary, 0, 'COMMA', 2, 'POINT') + ' MMK' : '0.00 MMK'}">
+                                    </strong>
                                 </td>
-                                <td class="salary-cell" th:text="'K' + ${payroll.travelFee}"></td>
+                                <td class="salary-cell" 
+                                    th:text="${payroll.travelFee != null ? #numbers.formatDecimal(payroll.travelFee, 0, 'COMMA', 2, 'POINT') + ' MMK' : '0.00 MMK'}">
+                                </td>
                                 <td class="salary-cell">
-                                    <h6 class="mb-0 text-primary" th:text="${payroll.totalPayment != null ? #numbers.formatDecimal(payroll.totalPayment, 0, 'COMMA', 2, 'POINT') + ' MMK' : '0.00 MMK'}"></h6>
+                                    <h6 class="mb-0 text-primary" 
+                                        th:text="${payroll.totalPayment != null ? #numbers.formatDecimal(payroll.totalPayment, 0, 'COMMA', 2, 'POINT') + ' MMK' : '0.00 MMK'}">
+                                    </h6>
                                 </td>
                                 <td>
                                     <span class="badge bg-success status-badge">Paid</span>
@@ -211,31 +219,31 @@
             </div>
         </div>
 
-<!-- Summary Statistics -->
-<div class="row mt-4">
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-body">
-                <h6 class="card-title">Total Paid</h6>
-                <h3 class="text-success">
-                    <span th:text="${totalPaidAmount != null ? #numbers.formatDecimal(totalPaidAmount, 0, 'COMMA', 2, 'POINT') + ' MMK' : '0.00 MMK'}"></span>
-                </h3>
-                <p class="text-muted mb-0">Total payments made</p>
+        <!-- Summary Statistics -->
+        <div class="row mt-4">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title">Total Paid</h6>
+                        <h3 class="text-success">
+                            <span th:text="${#numbers.formatDecimal(totalPaidAmount, 0, 'COMMA', 2, 'POINT') + ' MMK'}">0.00 MMK</span>
+                        </h3>
+                        <p class="text-muted mb-0">Total payments made</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title">Average Monthly</h6>
+                        <h3 class="text-primary">
+                            <span th:text="${#numbers.formatDecimal(averageMonthlyAmount, 0, 'COMMA', 2, 'POINT') + ' MMK'}">0.00 MMK</span>
+                        </h3>
+                        <p class="text-muted mb-0">Average monthly payment</p>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-body">
-                <h6 class="card-title">Average Monthly</h6>
-                <h3 class="text-primary">
-                    <span th:text="${averageMonthlyAmount != null ? #numbers.formatDecimal(averageMonthlyAmount, 0, 'COMMA', 2, 'POINT') + ' MMK' : '0.00 MMK'}"></span>
-                </h3>
-                <p class="text-muted mb-0">Average monthly payment</p>
-            </div>
-        </div>
-    </div>
-    </div>
 
     <th:block layout:fragment="scripts">
         <script>
@@ -265,22 +273,22 @@
                         <div class="col-md-6">
                             <h6>Deductions Breakdown:</h6>
                             <ul class="list-unstyled">
-                                <li>Leave Deduction: $50.00</li>
-                                <li>Late Deduction: $25.00</li>
-                                <li>Income Tax: $150.00</li>
-                                <li>Loan Return: $100.00</li>
-                                <li>SSC: $30.00</li>
-                                <li>Company Trip: $20.00</li>
+                                <li>Leave Deduction: 50.00 MMK</li>
+                                <li>Late Deduction: 25.00 MMK</li>
+                                <li>Income Tax: 150.00 MMK</li>
+                                <li>Loan Return: 100.00 MMK</li>
+                                <li>SSC: 30.00 MMK</li>
+                                <li>Company Trip: 20.00 MMK</li>
                             </ul>
                         </div>
                         <div class="col-md-6">
                             <h6>Additions Breakdown:</h6>
                             <ul class="list-unstyled">
-                                <li>Allowance: $100.00</li>
-                                <li>Overtime: $200.00</li>
-                                <li>Bonus: $150.00</li>
-                                <li>Home Allowance: $80.00</li>
-                                <li>Business Trip: $120.00</li>
+                                <li>Allowance: 100.00 MMK</li>
+                                <li>Overtime: 200.00 MMK</li>
+                                <li>Bonus: 150.00 MMK</li>
+                                <li>Home Allowance: 80.00 MMK</li>
+                                <li>Business Trip: 120.00 MMK</li>
                             </ul>
                         </div>
                     </div>
@@ -289,20 +297,20 @@
                             <hr>
                             <div class="d-flex justify-content-between">
                                 <strong>Basic Salary:</strong>
-                                <span>$2,000.00</span>
+                                <span>2,000.00 MMK</span>
                             </div>
                             <div class="d-flex justify-content-between">
                                 <strong>Total Deductions:</strong>
-                                <span class="text-danger">$375.00</span>
+                                <span class="text-danger">375.00 MMK</span>
                             </div>
                             <div class="d-flex justify-content-between">
                                 <strong>Total Additions:</strong>
-                                <span class="text-success">$650.00</span>
+                                <span class="text-success">650.00 MMK</span>
                             </div>
                             <hr>
                             <div class="d-flex justify-content-between">
                                 <h5>Net Salary:</h5>
-                                <h5 class="text-primary">$2,275.00</h5>
+                                <h5 class="text-primary">2,275.00 MMK</h5>
                             </div>
                         </div>
                     </div>
