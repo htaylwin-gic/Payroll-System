@@ -48,7 +48,8 @@ public class EmployeeController {
     }
 
     @PostMapping("/add")
-    public String addEmployee(@ModelAttribute Employee employee, RedirectAttributes redirectAttributes) {
+    public String addEmployee(@ModelAttribute Employee employee,
+            RedirectAttributes redirectAttributes) {
         employeeService.save(employee);
         redirectAttributes.addFlashAttribute("success", "Employee added successfully!");
         return "redirect:/employees/manage";

@@ -47,8 +47,11 @@ public class PayrollController {
 
         // Set default values
         payrollRequest.setWorkingDays(22);
-        payrollRequest.setPresentDays(20);
         payrollRequest.setLeaveDays(2);
+
+        // Calculate Present Days (Working Days - Leave Days)
+        int presentDays = payrollRequest.getWorkingDays() - payrollRequest.getLeaveDays();
+        payrollRequest.setPresentDays(presentDays);
 
         // Set employee data
         if (emp.getMyanmarServiceYears() != null) {
@@ -67,10 +70,26 @@ public class PayrollController {
             payrollRequest.setManagementLevel(emp.getManagementLevel());
         }
 
+        // AUTO-POPULATE ALLOWANCES from employee's Language Skill Information
+        payrollRequest.setEducationAllowance(emp.getEducationAllowanceValue());
+        payrollRequest.setEvaluationAllowance(emp.getEvaluationAllowanceValue());
+        payrollRequest.setJapaneseJlptAllowance(emp.getJapaneseJlptAllowanceValue());
+        payrollRequest.setJapaneseNatAllowance(emp.getJapaneseNatAllowanceValue());
+        payrollRequest.setEnglishAllowance(emp.getEnglishAllowanceValue());
+
+        // Set transportation fee if available
+        if (emp.getTransportationFee() != null) {
+            // Calculate travel fee: transportation fee × present days
+            double travelFee = emp.getTransportationFee() * presentDays;
+            payrollRequest.setTravelFee(travelFee);
+        }
+
         model.addAttribute("employee", emp);
         model.addAttribute("payrollRequest", payrollRequest);
 
         System.out.println("Employee Band Level: " + emp.getBandLevel());
+        System.out.println("Education Allowance: " + emp.getEducationAllowanceValue());
+        System.out.println("Japanese JLPT Allowance: " + emp.getJapaneseJlptAllowanceValue());
 
         return "pages/payroll/calculate";
     }

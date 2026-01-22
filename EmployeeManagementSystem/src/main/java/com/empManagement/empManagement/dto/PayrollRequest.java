@@ -48,4 +48,8 @@ public class PayrollRequest {
     private Double attendancePerfect = 0.0;
     private Double exchangeBenefit = 0.0;
     private Double travelFee = 0.0;
+
+    private Integer busRoute;
+    private Double transportationFee;
+
 }

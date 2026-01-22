@@ -97,11 +97,42 @@
                     <p class="mb-0" th:text="${employee.department}"></p>
                 </div>
                 <div class="col-md-2">
+                    <small class="text-muted">Transportation Fee</small>
+                    <p class="mb-0 fw-bold" id="employeeTransportationFeeText">
+                        <span th:text="${employee.transportationFee != null ? #numbers.formatDecimal(employee.transportationFee, 0, 'COMMA', 2, 'POINT') : 0}"></span> MMK/day
+                    </p>
+                </div>
+            </div>
+            <div class="row mt-2">
+                <div class="col-md-2">
                     <small class="text-muted">Start Date</small>
                     <p class="mb-0" th:text="${employee.startDate}"></p>
                 </div>
+                <div class="col-md-2">
+                    <small class="text-muted">Education</small>
+                    <p class="mb-0" id="employeeEducationLevel" th:text="${employee.educationLevel}"></p>
+                </div>
+                <div class="col-md-2">
+                    <small class="text-muted">PBC Grade</small>
+                    <p class="mb-0" id="employeeEvaluationGrade" th:text="${employee.evaluationGrade}"></p>
+                </div>
+                <div class="col-md-2">
+                    <small class="text-muted">Japanese JLPT</small>
+                    <p class="mb-0" id="employeeJapaneseLevel" th:text="${employee.japaneseLevel}"></p>
+                </div>
+                <div class="col-md-2">
+                    <small class="text-muted">Japanese NAT</small>
+                    <p class="mb-0" id="employeeJapaneseNatTest" th:text="${employee.japaneseNatTest}"></p>
+                </div>
+                <div class="col-md-2">
+                    <small class="text-muted">English Level</small>
+                    <p class="mb-0" id="employeeEnglishLevel" th:text="${employee.englishLevel}"></p>
+                </div>
             </div>
         </div>
+
+        <!-- Hidden field for employee transportation fee -->
+        <input type="hidden" id="employeeTransportationFee" th:value="${employee.transportationFee}">
 
         <!-- Payroll Calculation Form -->
         <form th:action="@{/payroll/calculate}" method="post" th:object="${payrollRequest}">
@@ -165,6 +196,17 @@
                                min="0">
                     </div>
                     <div class="col-md-4 mb-3">
+                        <label for="presentDays" class="form-label">Present Days</label>
+                        <input type="number" 
+                               class="form-control readonly-field" 
+                               id="presentDays" 
+                               th:field="*{presentDays}"
+                               readonly>
+                        <div class="form-text">Auto-calculated: Working Days - Leave Days</div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
                         <label for="overtimeHours" class="form-label">Overtime Hours</label>
                         <input type="number" 
                                class="form-control" 
@@ -172,9 +214,7 @@
                                th:field="*{overtimeHours}"
                                min="0">
                     </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-12">
+                    <div class="col-md-6 mb-3">
                         <div class="calculation-box">
                             <small class="text-muted">Overtime Amount</small>
                             <h4 class="mb-0 addition-amount" id="overtimeAmountDisplay">0 MMK</h4>
@@ -228,10 +268,10 @@
                                 id="assignmentLevel" 
                                 th:field="*{assignmentLevel}">
                             <option value="None">None</option>
-                            <option value="Sub TL">Sub TL (+100,000)</option>
-                            <option value="TL">TL (+200,000)</option>
-                            <option value="PL">PL (+200,000)</option>
-                            <option value="Senior PL">Senior PL (+300,000)</option>
+                            <option value="Sub TL" th:selected="${employee.assignmentLevel == 'Sub TL'}">Sub TL (+100,000)</option>
+                            <option value="TL" th:selected="${employee.assignmentLevel == 'TL'}">TL (+200,000)</option>
+                            <option value="PL" th:selected="${employee.assignmentLevel == 'PL'}">PL (+200,000)</option>
+                            <option value="Senior PL" th:selected="${employee.assignmentLevel == 'Senior PL'}">Senior PL (+300,000)</option>
                         </select>
                     </div>
                     <div class="col-md-6 mb-3">
@@ -240,10 +280,10 @@
                                 id="managementLevel" 
                                 th:field="*{managementLevel}">
                             <option value="None">None</option>
-                            <option value="Sub Leader">Sub Leader (+500,000)</option>
-                            <option value="Leader">Leader (+600,000)</option>
-                            <option value="Sub Manager">Sub Manager (+700,000)</option>
-                            <option value="Manager">Manager (+1,100,000)</option>
+                            <option value="Sub Leader" th:selected="${employee.managementLevel == 'Sub Leader'}">Sub Leader (+500,000)</option>
+                            <option value="Leader" th:selected="${employee.managementLevel == 'Leader'}">Leader (+600,000)</option>
+                            <option value="Sub Manager" th:selected="${employee.managementLevel == 'Sub Manager'}">Sub Manager (+700,000)</option>
+                            <option value="Manager" th:selected="${employee.managementLevel == 'Manager'}">Manager (+1,100,000)</option>
                         </select>
                     </div>
                 </div>
@@ -257,7 +297,7 @@
                 </div>
             </div>
 
-            <!-- 5. Basic Allowance Details -->
+            <!-- 5. Basic Allowance Details (Auto-populated from employee's Language Skill Information) -->
             <div class="form-section">
                 <h5 class="section-title">
                     <i class="fas fa-money-bill-wave me-2"></i>Basic Allowance Details
@@ -269,9 +309,12 @@
                                 id="educationAllowance" 
                                 th:field="*{educationAllowance}">
                             <option value="0">-</option>
-                            <option value="30000">Diploma (+30,000)</option>
-                            <option value="50000">Master (+50,000)</option>
-                            <option value="30000">FE Passer (+30,000)</option>
+                            <option value="30000" th:selected="${employee.educationLevel == 'Diploma' or employee.educationLevel == 'FE Passer'}">
+                                Diploma/FE Passer (+30,000)
+                            </option>
+                            <option value="50000" th:selected="${employee.educationLevel == 'Master'}">
+                                Master (+50,000)
+                            </option>
                         </select>
                     </div>
                     
@@ -281,9 +324,9 @@
                                 id="evaluationAllowance" 
                                 th:field="*{evaluationAllowance}">
                             <option value="0">-</option>
-                            <option value="10000">C (+10,000)</option>
-                            <option value="50000">B (+50,000)</option>
-                            <option value="100000">A (+100,000)</option>
+                            <option value="10000" th:selected="${employee.evaluationGrade == 'C'}">C (+10,000)</option>
+                            <option value="50000" th:selected="${employee.evaluationGrade == 'B'}">B (+50,000)</option>
+                            <option value="100000" th:selected="${employee.evaluationGrade == 'A'}">A (+100,000)</option>
                         </select>
                     </div>
                     
@@ -293,9 +336,9 @@
                                 id="japaneseJlptAllowance" 
                                 th:field="*{japaneseJlptAllowance}">
                             <option value="0">-</option>
-                            <option value="40000">N3 (+40,000)</option>
-                            <option value="150000">N2 (+150,000)</option>
-                            <option value="300000">N1 (+300,000)</option>
+                            <option value="40000" th:selected="${employee.japaneseLevel == 'N3'}">N3 (+40,000)</option>
+                            <option value="150000" th:selected="${employee.japaneseLevel == 'N2'}">N2 (+150,000)</option>
+                            <option value="300000" th:selected="${employee.japaneseLevel == 'N1'}">N1 (+300,000)</option>
                         </select>
                     </div>
                 </div>
@@ -307,9 +350,9 @@
                                 id="japaneseNatAllowance" 
                                 th:field="*{japaneseNatAllowance}">
                             <option value="0">-</option>
-                            <option value="20000">N3 (+20,000)</option>
-                            <option value="75000">N2 (+75,000)</option>
-                            <option value="150000">N1 (+150,000)</option>
+                            <option value="20000" th:selected="${employee.japaneseNatTest == 'N3'}">N3 (+20,000)</option>
+                            <option value="75000" th:selected="${employee.japaneseNatTest == 'N2'}">N2 (+75,000)</option>
+                            <option value="150000" th:selected="${employee.japaneseNatTest == 'N1'}">N1 (+150,000)</option>
                         </select>
                     </div>
                     
@@ -319,8 +362,12 @@
                                 id="englishAllowance" 
                                 th:field="*{englishAllowance}">
                             <option value="0">-</option>
-                            <option value="50000">TOEIC 600+/TOEFL 505+/IELTS 5.5+ (+50,000)</option>
-                            <option value="100000">TOEIC 730+/TOEFL 550+/IELTS 6.5+ (+100,000)</option>
+                            <option value="50000" th:selected="${employee.englishLevel == 'TOEIC 600+/TOEFL 505+/IELTS 5.5+'}">
+                                TOEIC 600+/TOEFL 505+/IELTS 5.5+ (+50,000)
+                            </option>
+                            <option value="100000" th:selected="${employee.englishLevel == 'TOEIC 730+/TOEFL 550+/IELTS 6.5+'}">
+                                TOEIC 730+/TOEFL 550+/IELTS 6.5+ (+100,000)
+                            </option>
                         </select>
                     </div>
                     
@@ -541,12 +588,12 @@
                         <div class="input-group">
                             <span class="input-group-text">MMK</span>
                             <input type="number" 
-                                   class="form-control" 
+                                   class="form-control readonly-field" 
                                    id="travelFee" 
                                    th:field="*{travelFee}"
-                                   step="100"
-                                   min="0">
+                                   readonly>
                         </div>
+                        <div class="form-text">Auto: Transportation Fee × Present Days</div>
                     </div>
                 </div>
             </div>
@@ -625,12 +672,35 @@
                 return BAND_SALARIES[bandLevel] || 0;
             }
 
-            // 1. Calculate Overtime Amount
+            // 1. Calculate Present Days
+            function calculatePresentDays() {
+                workingDays = parseInt(document.getElementById('workingDays').value) || 0;
+                const leaveDays = parseInt(document.getElementById('leaveDays').value) || 0;
+                const presentDays = Math.max(0, workingDays - leaveDays);
+                
+                document.getElementById('presentDays').value = presentDays;
+                return presentDays;
+            }
+
+            // 2. Calculate Travel Fee
+            function calculateTravelFee() {
+                const presentDays = calculatePresentDays();
+                const transportationFee = parseFloat(document.getElementById('employeeTransportationFee').value) || 0;
+                const travelFee = presentDays * transportationFee;
+                
+                document.getElementById('travelFee').value = Math.round(travelFee);
+                return travelFee;
+            }
+
+            // 3. Calculate Overtime Amount
             function calculateOvertimeAmount() {
                 const overtimeHours = parseInt(document.getElementById('overtimeHours').value) || 0;
                 if (overtimeHours === 0 || workingDays === 0 || basicSalary === 0) {
+                    document.getElementById('overtimeAmountDisplay').textContent = formatCurrency(0);
+                    document.getElementById('overtime').value = 0;
                     return 0;
                 }
+                
                 // Assuming 8 working hours per day
                 const hourlyRate = basicSalary / (workingDays * 8);
                 const overtimeAmount = overtimeHours * hourlyRate;
@@ -639,7 +709,7 @@
                 return overtimeAmount;
             }
 
-            // 2. Calculate Service Allowance
+            // 4. Calculate Service Allowance
             function calculateServiceAllowance() {
                 const myanmarYears = parseInt(document.getElementById('myanmarYears').value) || 0;
                 const gicjpYears = parseInt(document.getElementById('gicjpYears').value) || 0;
@@ -664,7 +734,7 @@
                 return allowance;
             }
 
-            // 3. Calculate Assignment & Management Allowance
+            // 5. Calculate Assignment & Management Allowance
             function calculateManagementAssignmentAllowance() {
                 const assignmentLevel = document.getElementById('assignmentLevel').value;
                 const managementLevel = document.getElementById('managementLevel').value;
@@ -687,7 +757,7 @@
                 return allowance;
             }
 
-            // 4. Calculate Total Basic Allowance
+            // 6. Calculate Total Basic Allowance
             function calculateTotalBasicAllowance() {
                 const educationAllowance = parseFloat(document.getElementById('educationAllowance').value) || 0;
                 const evaluationAllowance = parseFloat(document.getElementById('evaluationAllowance').value) || 0;
@@ -704,7 +774,7 @@
                 return total;
             }
 
-            // 5. Calculate Leave Deduction
+            // 7. Calculate Leave Deduction
             function calculateLeaveDeduction() {
                 const leaveDays = parseInt(document.getElementById('leaveDays').value) || 0;
                 if (leaveDays === 0 || workingDays === 0) {
@@ -712,11 +782,8 @@
                     return 0;
                 }
                 
-                // Get Basic Salary (already stored in basicSalary variable)
-                // Get Total Basic Allowance (calculate it)
-                const totalBasicAllowance = calculateTotalBasicAllowanceForLeaveDeduction();
-                
                 // Calculate daily rate: (Basic Salary + Total Basic Allowance) / Working Days
+                const totalBasicAllowance = calculateTotalBasicAllowanceForLeaveDeduction();
                 const dailyRate = (basicSalary + totalBasicAllowance) / workingDays;
                 const deduction = leaveDays * dailyRate;
                 
@@ -737,7 +804,7 @@
                     englishAllowance;
             }
 
-            // 6. Calculate Late Deduction
+            // 8. Calculate Late Deduction
             function calculateLateDeduction() {
                 const lateDays = parseInt(document.getElementById('lateDays').value) || 0;
                 const deduction = lateDays * 500; // 500 MMK per late day
@@ -745,7 +812,7 @@
                 return deduction;
             }
 
-            // 7. Calculate Total Deductions
+            // 9. Calculate Total Deductions
             function calculateTotalDeductions() {
                 const leaveDeduction = parseFloat(document.getElementById('leaveDeduction').value) || 0;
                 const lateDeduction = parseFloat(document.getElementById('lateDeduction').value) || 0;
@@ -760,7 +827,7 @@
                 return total;
             }
 
-            // 8. Calculate Total Additions
+            // 10. Calculate Total Additions
             function calculateTotalAdditions() {
                 const bonus = parseFloat(document.getElementById('bonus').value) || 0;
                 const homeAllowance = parseFloat(document.getElementById('home').value) || 0;
@@ -774,7 +841,7 @@
                 return total;
             }
 
-            // 9. Calculate Month Net Salary (Salary after deduction)
+            // 11. Calculate Month Net Salary (Salary after deduction)
             function calculateMonthNetSalary() {
                 const totalBasicAllowance = calculateTotalBasicAllowance();
                 const leaveDeduction = calculateLeaveDeduction();
@@ -786,7 +853,7 @@
                 return monthNetSalary;
             }
 
-            // 10. Calculate Final Net Salary
+            // 12. Calculate Final Net Salary
             function calculateFinalNetSalary() {
                 const monthNetSalary = calculateMonthNetSalary();
                 const totalAdditions = calculateTotalAdditions();
@@ -794,7 +861,7 @@
                 const homeTownVisit = parseFloat(document.getElementById('homeTownVisit').value) || 0;
                 const manualAdjust = parseFloat(document.getElementById('manualAdjust').value) || 0;
                 const exchangeBenefit = parseFloat(document.getElementById('exchangeBenefit').value) || 0;
-                const travelFee = parseFloat(document.getElementById('travelFee').value) || 0;
+                const travelFee = calculateTravelFee();
                 const serviceAllowance = calculateServiceAllowance();
                 const managementAssignmentAllowance = calculateManagementAssignmentAllowance();
                 const overtimeAmount = calculateOvertimeAmount();
@@ -827,6 +894,8 @@
                 document.getElementById('bandBasicSalary').textContent = formatCurrency(basicSalary);
                 
                 // Calculate all components
+                calculatePresentDays();
+                calculateTravelFee();
                 calculateOvertimeAmount();
                 calculateServiceAllowance();
                 calculateManagementAssignmentAllowance();

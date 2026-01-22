@@ -1,5 +1,7 @@
 package com.empManagement.empManagement.entity;
 
+import org.springframework.format.annotation.NumberFormat;
+
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -39,6 +41,7 @@ public class Employee {
     @Column(name = "employment_status")
     private String employmentStatus;
 
+    @NumberFormat(pattern = "#,###.##")
     @Column(name = "salary", nullable = true)
     private Double salary;
 
@@ -154,8 +157,13 @@ public class Employee {
     @Column(name = "net_salary")
     private String netSalary;
 
-    // For backward compatibility - add these as separate methods
-    // Thymeleaf will use these getters/setters
+    @Column(name = "bus_route")
+    private Integer busRoute;
+
+    @Column(name = "transportation_fee")
+    private Double transportationFee;
+
+    // For backward compatibility
     public String getFull_name() {
         return fullName;
     }
@@ -196,7 +204,6 @@ public class Employee {
         this.employmentStatus = employmentStatus;
     }
 
-    // Add getters/setters for new fields - these will be used by Thymeleaf
     public String getEmployeeId() {
         return employeeId;
     }
@@ -245,7 +252,6 @@ public class Employee {
         this.managementLevel = managementLevel;
     }
 
-    // Add getters/setters for other fields that might be needed
     public String getEducationLevel() {
         return educationLevel;
     }
@@ -268,5 +274,67 @@ public class Employee {
 
     public void setJapaneseLevel(String japaneseLevel) {
         this.japaneseLevel = japaneseLevel;
+    }
+
+    public Integer getBusRoute() {
+        return busRoute;
+    }
+
+    public void setBusRoute(Integer busRoute) {
+        this.busRoute = busRoute;
+    }
+
+    public Double getTransportationFee() {
+        return transportationFee;
+    }
+
+    public void setTransportationFee(Double transportationFee) {
+        this.transportationFee = transportationFee;
+    }
+
+    public Double getEducationAllowanceValue() {
+        if ("Master".equals(educationLevel))
+            return 50000.0;
+        if ("Diploma".equals(educationLevel) || "FE Passer".equals(educationLevel))
+            return 30000.0;
+        return 0.0;
+    }
+
+    public Double getEvaluationAllowanceValue() {
+        if ("A".equals(evaluationGrade))
+            return 100000.0;
+        if ("B".equals(evaluationGrade))
+            return 50000.0;
+        if ("C".equals(evaluationGrade))
+            return 10000.0;
+        return 0.0;
+    }
+
+    public Double getJapaneseJlptAllowanceValue() {
+        if ("N1".equals(japaneseLevel))
+            return 300000.0;
+        if ("N2".equals(japaneseLevel))
+            return 150000.0;
+        if ("N3".equals(japaneseLevel))
+            return 40000.0;
+        return 0.0;
+    }
+
+    public Double getJapaneseNatAllowanceValue() {
+        if ("N1".equals(japaneseNatTest))
+            return 150000.0;
+        if ("N2".equals(japaneseNatTest))
+            return 75000.0;
+        if ("N3".equals(japaneseNatTest))
+            return 20000.0;
+        return 0.0;
+    }
+
+    public Double getEnglishAllowanceValue() {
+        if ("TOEIC 730+/TOEFL 550+/IELTS 6.5+".equals(englishLevel))
+            return 100000.0;
+        if ("TOEIC 600+/TOEFL 505+/IELTS 5.5+".equals(englishLevel))
+            return 50000.0;
+        return 0.0;
     }
 }
