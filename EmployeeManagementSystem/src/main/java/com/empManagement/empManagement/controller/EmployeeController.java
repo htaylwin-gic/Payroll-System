@@ -19,7 +19,6 @@ public class EmployeeController {
     @Autowired
     private EmployeeService employeeService;
 
-    // Band to salary mapping
     private static final Map<String, Double> BAND_SALARIES = new HashMap<>();
 
     static {
@@ -37,6 +36,14 @@ public class EmployeeController {
     @GetMapping("/manage")
     public String employeeManagement(Model model) {
         List<Employee> employees = employeeService.getAllEmployees();
+        // Sort employees by employeeId numerically
+        employees.sort(Comparator.comparing(emp -> {
+            try {
+                return Integer.parseInt(emp.getEmployeeId());
+            } catch (NumberFormatException e) {
+                return 0; // Fallback for non-numeric IDs
+            }
+        }));
         model.addAttribute("employees", employees);
         return "pages/employee/management";
     }

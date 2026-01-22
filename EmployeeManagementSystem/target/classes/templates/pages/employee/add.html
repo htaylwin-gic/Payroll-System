@@ -395,6 +395,14 @@
                     feeField.value = '';
                 }
             });
+
+            // This currently generates 6-digit IDs like 204532
+            document.getElementById('employeeId').addEventListener('blur', function() {
+                if (!this.value) {
+                    const randomDigits = Math.floor(1000 + Math.random() * 9000);
+                    this.value = '20' + randomDigits;
+                }
+            });
         </script>
     </th:block>
 </body>
