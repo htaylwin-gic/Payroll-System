@@ -268,7 +268,7 @@
                     </div>
                     <div class="card-body">
                         <div class="d-grid gap-2">
-                            <a th:href="@{/employee/details/{id}(id=${employee.id})}" 
+                            <a th:href="@{/employees/details/{id}(id=${employee.id})}" 
                                class="btn btn-outline-info">
                                 <i class="fas fa-eye me-2"></i> View Full Profile
                             </a>
@@ -347,6 +347,9 @@
                 } else {
                     reasonSection.style.display = 'none';
                 }
+
+                // REMOVE THIS LINE - don't modify the form action
+                // form.action = '/status/update/' + employeeId + '?status=' + encodeURIComponent(status);
             }
 
             // Reset form
