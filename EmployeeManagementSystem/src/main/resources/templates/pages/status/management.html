@@ -457,22 +457,19 @@
                 }
                 
                 if (confirm(`Update ${selectedEmployees.length} employee(s) to "${status}" status?`)) {
-                    // In a real application, make an AJAX call to update status
                     alert(`Status updated to "${status}" for selected employees.`);
                 }
             }
 
             // Get selected employees
             function getSelectedEmployees() {
-                // This would get selected employee IDs from checkboxes
-                // For now, return empty array
+
                 return [];
             }
 
             // Export status report
             function exportStatusReport() {
                 alert('Exporting status report...');
-                // In a real application, this would trigger a CSV/Excel download
             }
 
             // Send status notifications
