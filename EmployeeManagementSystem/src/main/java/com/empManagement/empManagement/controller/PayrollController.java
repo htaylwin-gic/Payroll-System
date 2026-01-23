@@ -325,7 +325,7 @@ public class PayrollController {
                 payrolls.addAll(employeeService.getEmployeePayroll(id));
             }
 
-            // Generate CSV data (simplified example)
+            // Generate CSV data
             StringBuilder csvData = new StringBuilder();
             csvData.append("Employee ID,Employee Name,Month,Basic Salary,Allowances,Total Payment\n");
 
