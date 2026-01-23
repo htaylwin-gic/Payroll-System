@@ -5,6 +5,9 @@ import com.empManagement.empManagement.entity.Employee;
 import com.empManagement.empManagement.entity.EmployeePayroll;
 import com.empManagement.empManagement.service.EmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -13,8 +16,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Controller
@@ -47,7 +49,8 @@ public class PayrollController {
 
         // Set default values
         payrollRequest.setWorkingDays(22);
-        payrollRequest.setLeaveDays(2);
+        payrollRequest.setLeaveDays(0);
+        payrollRequest.setPresentDays(22);
 
         // Calculate Present Days (Working Days - Leave Days)
         int presentDays = payrollRequest.getWorkingDays() - payrollRequest.getLeaveDays();
@@ -84,6 +87,17 @@ public class PayrollController {
             payrollRequest.setTravelFee(travelFee);
         }
 
+        // Set other default values
+        payrollRequest.setIncomeTax(0.0);
+        payrollRequest.setLoanReturn(0.0);
+        payrollRequest.setSsc(0.0);
+        payrollRequest.setBonus(0.0);
+        payrollRequest.setBusinessTrip(0.0);
+        payrollRequest.setOvertime(0.0);
+        payrollRequest.setAllowance(0.0);
+        payrollRequest.setLeaveDeduction(0.0);
+        payrollRequest.setLateDeduction(0.0);
+
         model.addAttribute("employee", emp);
         model.addAttribute("payrollRequest", payrollRequest);
 
@@ -108,7 +122,30 @@ public class PayrollController {
                 payrollRequest.setBonus(0.0);
             if (payrollRequest.getBusinessTrip() == null)
                 payrollRequest.setBusinessTrip(0.0);
-            // Add similar for all other Double fields...
+            if (payrollRequest.getOvertime() == null)
+                payrollRequest.setOvertime(0.0);
+            if (payrollRequest.getAllowance() == null)
+                payrollRequest.setAllowance(0.0);
+            if (payrollRequest.getLeaveDeduction() == null)
+                payrollRequest.setLeaveDeduction(0.0);
+            if (payrollRequest.getLateDeduction() == null)
+                payrollRequest.setLateDeduction(0.0);
+            if (payrollRequest.getTravelFee() == null)
+                payrollRequest.setTravelFee(0.0);
+            if (payrollRequest.getHome() == null)
+                payrollRequest.setHome(0.0);
+            if (payrollRequest.getContinuedYear() == null)
+                payrollRequest.setContinuedYear(0.0);
+            if (payrollRequest.getHomeTownVisit() == null)
+                payrollRequest.setHomeTownVisit(0.0);
+            if (payrollRequest.getManualAdjust() == null)
+                payrollRequest.setManualAdjust(0.0);
+            if (payrollRequest.getAttendancePerfect() == null)
+                payrollRequest.setAttendancePerfect(0.0);
+            if (payrollRequest.getExchangeBenefit() == null)
+                payrollRequest.setExchangeBenefit(0.0);
+            if (payrollRequest.getCompanyTrip() == null)
+                payrollRequest.setCompanyTrip(0.0);
 
             EmployeePayroll payroll = employeeService.calculatePayroll(
                     payrollRequest.getEmployeeId(),
@@ -132,7 +169,7 @@ public class PayrollController {
 
         // Calculate totals here to avoid SpEL errors in HTML
         double totalPaid = payrolls.stream()
-                .mapToDouble(p -> p.getTotalPayment())
+                .mapToDouble(p -> p.getTotalPayment() != null ? p.getTotalPayment() : 0)
                 .sum();
 
         double averageMonthly = payrolls.isEmpty() ? 0 : totalPaid / payrolls.size();
@@ -142,6 +179,80 @@ public class PayrollController {
         model.addAttribute("totalPaidAmount", totalPaid);
         model.addAttribute("averageMonthlyAmount", averageMonthly);
         return "pages/payroll/history";
+    }
+
+    @PostMapping("/bulk-calculate")
+    public String bulkCalculatePayroll(
+            @RequestParam("employeeIds") String employeeIdsStr,
+            @RequestParam("month") String month,
+            RedirectAttributes redirectAttributes) {
+        try {
+            if (employeeIdsStr == null || employeeIdsStr.isEmpty()) {
+                redirectAttributes.addFlashAttribute("error", "No employees selected");
+                return "redirect:/payroll/manage";
+            }
+
+            // 1. Parse IDs from the comma-separated string
+            List<Integer> employeeIds = Arrays.stream(employeeIdsStr.split(","))
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty())
+                    .map(Integer::parseInt)
+                    .collect(Collectors.toList());
+
+            int successCount = 0;
+            List<String> failedEmployees = new ArrayList<>();
+
+            // 2. Format the month from YYYY-MM to MMM,yyyy if necessary
+            String formattedMonth = month;
+            if (month.matches("\\d{4}-\\d{2}")) {
+                LocalDate date = LocalDate.parse(month + "-01");
+                formattedMonth = date.format(DateTimeFormatter.ofPattern("MMM,yyyy"));
+            }
+
+            // 3. Process each employee
+            for (Integer id : employeeIds) {
+                try {
+                    Employee emp = employeeService.getEmployeeById(id);
+                    if (emp == null)
+                        continue;
+
+                    // Create default request
+                    PayrollRequest req = new PayrollRequest();
+                    req.setEmployeeId(id);
+                    req.setMonthYear(formattedMonth);
+                    req.setWorkingDays(22); // Default
+                    req.setLeaveDays(0);
+                    req.setPresentDays(22);
+
+                    // Map employee allowances to the request
+                    req.setEducationAllowance(emp.getEducationAllowanceValue());
+                    req.setJapaneseJlptAllowance(emp.getJapaneseJlptAllowanceValue());
+                    req.setEnglishAllowance(emp.getEnglishAllowanceValue());
+
+                    if (emp.getTransportationFee() != null) {
+                        req.setTravelFee(emp.getTransportationFee() * 22);
+                    }
+
+                    // Call service to persist and calculate
+                    employeeService.calculatePayroll(id, formattedMonth, req);
+                    successCount++;
+                } catch (Exception e) {
+                    failedEmployees.add("ID " + id);
+                }
+            }
+
+            // 4. Feedback to user
+            String msg = "Successfully calculated payroll for " + successCount + " employees.";
+            if (!failedEmployees.isEmpty()) {
+                redirectAttributes.addFlashAttribute("error", msg + " Failed: " + String.join(", ", failedEmployees));
+            } else {
+                redirectAttributes.addFlashAttribute("success", msg);
+            }
+
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Bulk error: " + e.getMessage());
+        }
+        return "redirect:/payroll/manage";
     }
 
     @GetMapping("/monthly")
@@ -158,18 +269,31 @@ public class PayrollController {
         Map<String, Double> departmentTotals = payrolls.stream()
                 .collect(Collectors.groupingBy(
                         p -> p.getEmployee().getDepartment(),
-                        Collectors.summingDouble(EmployeePayroll::getTotalPayment)));
+                        Collectors.summingDouble(p -> p.getTotalPayment() != null ? p.getTotalPayment() : 0)));
 
         // Calculate payment breakdown
-        double totalBasicSalary = payrolls.stream().mapToDouble(EmployeePayroll::getBasicSalary).sum();
+        double totalBasicSalary = payrolls.stream()
+                .mapToDouble(p -> p.getBasicSalary() != null ? p.getBasicSalary() : 0)
+                .sum();
         double totalAdditions = payrolls.stream()
-                .mapToDouble(p -> p.getAllowance() + p.getOvertime() + p.getBonus() + p.getHome() +
-                        p.getBusinessTrip() + p.getContinuedYear() + p.getHomeTownVisit() +
-                        p.getManualAdjust() + p.getAttendancePerfect() + p.getExchangeBenefit())
+                .mapToDouble(p -> (p.getAllowance() != null ? p.getAllowance() : 0) +
+                        (p.getOvertime() != null ? p.getOvertime() : 0) +
+                        (p.getBonus() != null ? p.getBonus() : 0) +
+                        (p.getHome() != null ? p.getHome() : 0) +
+                        (p.getBusinessTrip() != null ? p.getBusinessTrip() : 0) +
+                        (p.getContinuedYear() != null ? p.getContinuedYear() : 0) +
+                        (p.getHomeTownVisit() != null ? p.getHomeTownVisit() : 0) +
+                        (p.getManualAdjust() != null ? p.getManualAdjust() : 0) +
+                        (p.getAttendancePerfect() != null ? p.getAttendancePerfect() : 0) +
+                        (p.getExchangeBenefit() != null ? p.getExchangeBenefit() : 0))
                 .sum();
         double totalDeductions = payrolls.stream()
-                .mapToDouble(p -> p.getLeaveDeduction() + p.getLateDeduction() + p.getIncomeTax() +
-                        p.getLoanReturn() + p.getSsc() + p.getCompanyTrip())
+                .mapToDouble(p -> (p.getLeaveDeduction() != null ? p.getLeaveDeduction() : 0) +
+                        (p.getLateDeduction() != null ? p.getLateDeduction() : 0) +
+                        (p.getIncomeTax() != null ? p.getIncomeTax() : 0) +
+                        (p.getLoanReturn() != null ? p.getLoanReturn() : 0) +
+                        (p.getSsc() != null ? p.getSsc() : 0) +
+                        (p.getCompanyTrip() != null ? p.getCompanyTrip() : 0))
                 .sum();
 
         model.addAttribute("payrolls", payrolls);
@@ -181,7 +305,95 @@ public class PayrollController {
         model.addAttribute("totalBasicSalary", totalBasicSalary);
         model.addAttribute("totalAdditions", totalAdditions);
         model.addAttribute("totalDeductions", totalDeductions);
-
         return "pages/payroll/monthly-report";
+    }
+
+    @GetMapping("/export/selected")
+    public ResponseEntity<byte[]> exportSelectedPayrolls(
+            @RequestParam("employeeIds") String employeeIdsStr) {
+        try {
+            // Parse employee IDs
+            List<Integer> employeeIds = Arrays.stream(employeeIdsStr.split(","))
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty())
+                    .map(Integer::parseInt)
+                    .collect(Collectors.toList());
+
+            // Get payroll data for selected employees
+            List<EmployeePayroll> payrolls = new ArrayList<>();
+            for (Integer id : employeeIds) {
+                payrolls.addAll(employeeService.getEmployeePayroll(id));
+            }
+
+            // Generate CSV data (simplified example)
+            StringBuilder csvData = new StringBuilder();
+            csvData.append("Employee ID,Employee Name,Month,Basic Salary,Allowances,Total Payment\n");
+
+            for (EmployeePayroll payroll : payrolls) {
+                csvData.append(payroll.getEmployee().getId()).append(",");
+                csvData.append(payroll.getEmployee().getFull_name()).append(",");
+                csvData.append(payroll.getMonthYear()).append(",");
+                csvData.append(payroll.getBasicSalary() != null ? payroll.getBasicSalary() : 0).append(",");
+                csvData.append(payroll.getAllowance() != null ? payroll.getAllowance() : 0).append(",");
+                csvData.append(payroll.getTotalPayment() != null ? payroll.getTotalPayment() : 0).append("\n");
+            }
+
+            byte[] csvBytes = csvData.toString().getBytes();
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION,
+                            "attachment; filename=selected_payrolls_" +
+                                    LocalDate.now() + ".csv")
+                    .contentType(MediaType.parseMediaType("text/csv"))
+                    .body(csvBytes);
+
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @GetMapping("/export/all")
+    public ResponseEntity<byte[]> exportAllPayrolls() {
+        try {
+            List<EmployeePayroll> allPayrolls = employeeService.getAllPayrolls();
+
+            // Generate CSV data
+            StringBuilder csvData = new StringBuilder();
+            csvData.append("Employee ID,Employee Name,Department,Month,Basic Salary,Allowances,Total Payment,Status\n");
+
+            for (EmployeePayroll payroll : allPayrolls) {
+                csvData.append(payroll.getEmployee().getId()).append(",");
+                csvData.append(payroll.getEmployee().getFull_name()).append(",");
+                csvData.append(payroll.getEmployee().getDepartment()).append(",");
+                csvData.append(payroll.getMonthYear()).append(",");
+                csvData.append(payroll.getBasicSalary() != null ? payroll.getBasicSalary() : 0).append(",");
+                csvData.append(payroll.getAllowance() != null ? payroll.getAllowance() : 0).append(",");
+                csvData.append(payroll.getTotalPayment() != null ? payroll.getTotalPayment() : 0).append(",");
+                csvData.append("Processed").append("\n");
+            }
+
+            byte[] csvBytes = csvData.toString().getBytes();
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION,
+                            "attachment; filename=all_payrolls_" +
+                                    LocalDate.now() + ".csv")
+                    .contentType(MediaType.parseMediaType("text/csv"))
+                    .body(csvBytes);
+
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @GetMapping("/reports")
+    public String generateReports(@RequestParam(value = "month", required = false) String month,
+            Model model) {
+        String selectedMonth = (month != null && !month.isEmpty()) ? month
+                : LocalDate.now().format(DateTimeFormatter.ofPattern("MMM,yyyy"));
+
+        model.addAttribute("selectedMonth", selectedMonth);
+        model.addAttribute("reportData", employeeService.getPayrollReportData(selectedMonth));
+        return "pages/payroll/reports";
     }
 }

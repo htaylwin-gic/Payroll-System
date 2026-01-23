@@ -512,4 +512,14 @@ public class EmployeeService {
         return percentages;
     }
 
+    public List<EmployeePayroll> getAllPayrolls() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getAllPayrolls'");
+    }
+
+    public Object getPayrollReportData(String selectedMonth) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getPayrollReportData'");
+    }
+
 }

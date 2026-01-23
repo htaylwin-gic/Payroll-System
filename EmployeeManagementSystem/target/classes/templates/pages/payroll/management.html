@@ -150,6 +150,10 @@
                 <div class="col-md-6 col-xl-4 mb-3 employee-item" 
                      th:data-processed="${emp.isPayroll == 'Yes'}">
                     <div class="employee-card">
+                        <div class="form-check mb-2">
+                            <input class="form-check-input employee-checkbox" type="checkbox" th:value="${emp.id}" th:id="'check' + ${emp.id}">
+                            <label class="form-check-label text-muted" th:for="'check' + ${emp.id}" style="font-size: 0.8rem;">Select for Bulk Action</label>
+                        </div>
                         <div class="d-flex justify-content-between align-items-start mb-3">
                             <div class="d-flex align-items-center">
                                 <div class="employee-avatar me-3" 
@@ -210,27 +214,38 @@
         <!-- Bulk Actions -->
         <div class="card mt-4">
             <div class="card-body">
-                <h6 class="card-title">Bulk Actions</h6>
-                <div class="row">
-                    <div class="col-md-4">
-                        <button class="btn btn-outline-primary w-100" onclick="calculateAllPending()">
-                            <i class="fas fa-calculator me-2"></i> Calculate All Pending
-                        </button>
+                <h6 class="card-title d-flex justify-content-between">
+                    Bulk Actions
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="selectAll">
+                        <label class="form-check-label" for="selectAll">Select All Visible</label>
                     </div>
-                    <div class="col-md-4">
-                        <button class="btn btn-outline-success w-100" onclick="exportPayrollData()">
-                            <i class="fas fa-file-export me-2"></i> Export All Data
-                        </button>
+                </h6>
+                
+                <form id="bulkActionForm" th:action="@{/payroll/bulk-calculate}" method="post">
+                    <input type="hidden" name="employeeIds" id="selectedIdsInput">
+                    <input type="hidden" name="month" id="bulkMonthInput">
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <button type="button" class="btn btn-outline-primary w-100" onclick="handleBulkAction('calculate')">
+                                <i class="fas fa-calculator me-2"></i> Calculate Selected
+                            </button>
+                        </div>
+                        <div class="col-md-4">
+                            <button type="button" class="btn btn-outline-success w-100" onclick="handleBulkAction('export')">
+                                <i class="fas fa-file-export me-2"></i> Export Selected
+                            </button>
+                        </div>
+                        <div class="col-md-4">
+                            <a th:href="@{/payroll/export/all}" class="btn btn-outline-info w-100">
+                                <i class="fas fa-file-csv me-2"></i> Export All History
+                            </a>
+                        </div>
                     </div>
-                    <div class="col-md-4">
-                        <button class="btn btn-outline-info w-100" onclick="generateReports()">
-                            <i class="fas fa-chart-bar me-2"></i> Generate Reports
-                        </button>
-                    </div>
-                </div>
+                </form>
             </div>
         </div>
-    </div>
 
     <th:block layout:fragment="scripts">
         <script>
@@ -286,6 +301,40 @@
 
             function generateReports() {
                 alert('Report generation would be implemented here.');
+            }
+
+            // Handle Select All
+            document.getElementById('selectAll').addEventListener('change', function() {
+                const isChecked = this.checked;
+                // Only select checkboxes of visible employees (respecting filters)
+                document.querySelectorAll('.employee-item:not([style*="display: none"]) .employee-checkbox')
+                    .forEach(cb => cb.checked = isChecked);
+            });
+
+            function handleBulkAction(actionType) {
+                const selectedCheckboxes = document.querySelectorAll('.employee-checkbox:checked');
+                const selectedIds = Array.from(selectedCheckboxes).map(cb => cb.value);
+                
+                if (selectedIds.length === 0) {
+                    alert('Please select at least one employee.');
+                    return;
+                }
+
+                const monthValue = document.getElementById('monthSelect').value;
+                if (!monthValue) {
+                    alert('Please select a month first.');
+                    return;
+                }
+
+                if (actionType === 'calculate') {
+                    if (confirm(`Calculate payroll for ${selectedIds.length} employees for ${monthValue}?`)) {
+                        document.getElementById('selectedIdsInput').value = selectedIds.join(',');
+                        document.getElementById('bulkMonthInput').value = monthValue;
+                        document.getElementById('bulkActionForm').submit();
+                    }
+                } else if (actionType === 'export') {
+                    window.location.href = `/payroll/export/selected?employeeIds=${selectedIds.join(',')}`;
+                }
             }
         </script>
     </th:block>
