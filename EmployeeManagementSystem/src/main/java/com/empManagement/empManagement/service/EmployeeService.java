@@ -513,13 +513,10 @@ public class EmployeeService {
     }
 
     public List<EmployeePayroll> getAllPayrolls() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getAllPayrolls'");
+        return payrollRepository.findAll();
     }
 
     public Object getPayrollReportData(String selectedMonth) {
-        // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'getPayrollReportData'");
     }
-
 }

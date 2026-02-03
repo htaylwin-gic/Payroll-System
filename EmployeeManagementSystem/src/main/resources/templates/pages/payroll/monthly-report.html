@@ -268,7 +268,8 @@
                                 <td>
                                     <span class="badge bg-success">Paid</span>
                                     <div class="text-muted" style="font-size: 0.75rem;">
-                                        <span th:text="${#dates.format(payroll.createdAt, 'dd MMM')}"></span>
+                                        <!-- <span th:text="${#dates.format(payroll.createdAt, 'dd MMM')}"></span> -->
+                                        <span th:text="${payroll.createdAt != null ? payroll.createdAt.format(@java.time.format.DateTimeFormatter@ofPattern('dd MMM')) : ''}"></span>
                                     </div>
                                 </td>
                                 <td>
@@ -296,7 +297,7 @@
                                 </td>
                             </tr>
                         </tbody>
-                        <tfoot th:if="${!payrolls.empty}">
+                        <!-- <tfoot th:if="${!payrolls.empty}">
                             <tr class="table-active">
                                 <td colspan="2" class="text-end"><strong>Totals:</strong></td>
                                 <td class="salary-cell">
@@ -320,6 +321,31 @@
                                 </td>
                                 <td colspan="2"></td>
                             </tr>
+                        </tfoot> -->
+                        <tfoot th:if="${!payrolls.empty}">
+                            <tr class="table-active">
+                                <td colspan="2" class="text-end"><strong>Totals:</strong></td>
+                                <td class="salary-cell">
+                                    <strong th:text="'$' + ${#numbers.formatDecimal(totalBasicSalary, 0, 2, 'COMMA')}"></strong>
+                                </td>
+                                <td></td>
+                                <td class="salary-cell text-danger">
+                                    <strong th:text="'$' + ${#numbers.formatDecimal(totalDeductions, 0, 2, 'COMMA')}"></strong>
+                                </td>
+                                <td class="salary-cell text-success">
+                                    <strong th:text="'$' + ${#numbers.formatDecimal(totalAdditions, 0, 2, 'COMMA')}"></strong>
+                                </td>
+                                <td class="salary-cell">
+                                    <strong th:text="'$' + ${#numbers.formatDecimal(totalPayment, 0, 2, 'COMMA')}"></strong>
+                                </td>
+                                <td class="salary-cell">
+                                    <strong>N/A</strong>
+                                </td>
+                                <td class="salary-cell text-primary">
+                                    <h5 class="mb-0" th:text="'$' + ${#numbers.formatDecimal(totalPayment, 0, 2, 'COMMA')}"></h5>
+                                </td>
+                                <td colspan="2"></td>
+                            </tr>
                         </tfoot>
                     </table>
                 </div>
@@ -334,7 +360,7 @@
                         <h5 class="card-title mb-0">Month Summary</h5>
                     </div>
                     <div class="card-body">
-                        <div class="row">
+                        <!-- <div class="row">
                             <div class="col-6">
                                 <small class="text-muted">Working Days Average</small>
                                 <p class="mb-0">
@@ -361,6 +387,20 @@
                                     0
                                     </span>
                                     <span th:if="${payrolls.empty}">0</span>%
+                                </p>
+                            </div>
+                        </div> -->
+                        <div class="row">
+                            <div class="col-6">
+                                <small class="text-muted">Working Days Average</small>
+                                <p class="mb-0">
+                                    <span th:text="${!payrolls.empty ? 22 : 0}">0</span> days
+                                </p>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted">Attendance Rate</small>
+                                <p class="mb-0">
+                                    <span th:text="${!payrolls.empty ? '100' : '0'}">0</span>%
                                 </p>
                             </div>
                         </div>

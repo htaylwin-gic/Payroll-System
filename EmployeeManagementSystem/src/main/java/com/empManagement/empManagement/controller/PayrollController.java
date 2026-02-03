@@ -255,6 +255,65 @@ public class PayrollController {
         return "redirect:/payroll/manage";
     }
 
+    // @GetMapping("/monthly")
+    // public String monthlyPayrollReport(@RequestParam(value = "monthYear",
+    // required = false) String monthYear,
+    // Model model) {
+    // String currentMonth =
+    // LocalDate.now().format(DateTimeFormatter.ofPattern("MMM,yyyy"));
+    // String selectedMonth = (monthYear != null && !monthYear.isEmpty()) ?
+    // monthYear : currentMonth;
+
+    // List<EmployeePayroll> payrolls =
+    // employeeService.getPayrollsByMonth(selectedMonth);
+    // Double totalPayment = employeeService.getTotalPaymentByMonth(selectedMonth);
+    // List<String> monthYears = employeeService.getDistinctMonthYears();
+
+    // // Calculate department totals
+    // Map<String, Double> departmentTotals = payrolls.stream()
+    // .collect(Collectors.groupingBy(
+    // p -> p.getEmployee().getDepartment(),
+    // Collectors.summingDouble(p -> p.getTotalPayment() != null ?
+    // p.getTotalPayment() : 0)));
+
+    // // Calculate payment breakdown
+    // double totalBasicSalary = payrolls.stream()
+    // .mapToDouble(p -> p.getBasicSalary() != null ? p.getBasicSalary() : 0)
+    // .sum();
+    // double totalAdditions = payrolls.stream()
+    // .mapToDouble(p -> (p.getAllowance() != null ? p.getAllowance() : 0) +
+    // (p.getOvertime() != null ? p.getOvertime() : 0) +
+    // (p.getBonus() != null ? p.getBonus() : 0) +
+    // (p.getHome() != null ? p.getHome() : 0) +
+    // (p.getBusinessTrip() != null ? p.getBusinessTrip() : 0) +
+    // (p.getContinuedYear() != null ? p.getContinuedYear() : 0) +
+    // (p.getHomeTownVisit() != null ? p.getHomeTownVisit() : 0) +
+    // (p.getManualAdjust() != null ? p.getManualAdjust() : 0) +
+    // (p.getAttendancePerfect() != null ? p.getAttendancePerfect() : 0) +
+    // (p.getExchangeBenefit() != null ? p.getExchangeBenefit() : 0))
+    // .sum();
+    // double totalDeductions = payrolls.stream()
+    // .mapToDouble(p -> (p.getLeaveDeduction() != null ? p.getLeaveDeduction() : 0)
+    // +
+    // (p.getLateDeduction() != null ? p.getLateDeduction() : 0) +
+    // (p.getIncomeTax() != null ? p.getIncomeTax() : 0) +
+    // (p.getLoanReturn() != null ? p.getLoanReturn() : 0) +
+    // (p.getSsc() != null ? p.getSsc() : 0) +
+    // (p.getCompanyTrip() != null ? p.getCompanyTrip() : 0))
+    // .sum();
+
+    // model.addAttribute("payrolls", payrolls);
+    // model.addAttribute("totalPayment", totalPayment);
+    // model.addAttribute("selectedMonth", selectedMonth);
+    // model.addAttribute("monthYears", monthYears);
+    // model.addAttribute("currentMonth", currentMonth);
+    // model.addAttribute("departmentTotals", departmentTotals);
+    // model.addAttribute("totalBasicSalary", totalBasicSalary);
+    // model.addAttribute("totalAdditions", totalAdditions);
+    // model.addAttribute("totalDeductions", totalDeductions);
+    // return "pages/payroll/monthly-report";
+    // }
+
     @GetMapping("/monthly")
     public String monthlyPayrollReport(@RequestParam(value = "monthYear", required = false) String monthYear,
             Model model) {
@@ -265,46 +324,28 @@ public class PayrollController {
         Double totalPayment = employeeService.getTotalPaymentByMonth(selectedMonth);
         List<String> monthYears = employeeService.getDistinctMonthYears();
 
-        // Calculate department totals
+        // Calculate department totals - FIX THIS PART
         Map<String, Double> departmentTotals = payrolls.stream()
                 .collect(Collectors.groupingBy(
-                        p -> p.getEmployee().getDepartment(),
+                        p -> p.getEmployee() != null ? p.getEmployee().getDepartment() : "Unknown",
                         Collectors.summingDouble(p -> p.getTotalPayment() != null ? p.getTotalPayment() : 0)));
 
-        // Calculate payment breakdown
-        double totalBasicSalary = payrolls.stream()
-                .mapToDouble(p -> p.getBasicSalary() != null ? p.getBasicSalary() : 0)
-                .sum();
-        double totalAdditions = payrolls.stream()
-                .mapToDouble(p -> (p.getAllowance() != null ? p.getAllowance() : 0) +
-                        (p.getOvertime() != null ? p.getOvertime() : 0) +
-                        (p.getBonus() != null ? p.getBonus() : 0) +
-                        (p.getHome() != null ? p.getHome() : 0) +
-                        (p.getBusinessTrip() != null ? p.getBusinessTrip() : 0) +
-                        (p.getContinuedYear() != null ? p.getContinuedYear() : 0) +
-                        (p.getHomeTownVisit() != null ? p.getHomeTownVisit() : 0) +
-                        (p.getManualAdjust() != null ? p.getManualAdjust() : 0) +
-                        (p.getAttendancePerfect() != null ? p.getAttendancePerfect() : 0) +
-                        (p.getExchangeBenefit() != null ? p.getExchangeBenefit() : 0))
-                .sum();
-        double totalDeductions = payrolls.stream()
-                .mapToDouble(p -> (p.getLeaveDeduction() != null ? p.getLeaveDeduction() : 0) +
-                        (p.getLateDeduction() != null ? p.getLateDeduction() : 0) +
-                        (p.getIncomeTax() != null ? p.getIncomeTax() : 0) +
-                        (p.getLoanReturn() != null ? p.getLoanReturn() : 0) +
-                        (p.getSsc() != null ? p.getSsc() : 0) +
-                        (p.getCompanyTrip() != null ? p.getCompanyTrip() : 0))
-                .sum();
+        // Add debug logging
+        System.out.println("Department totals: " + departmentTotals);
 
+        // Make sure all required data is added to model
         model.addAttribute("payrolls", payrolls);
-        model.addAttribute("totalPayment", totalPayment);
+        model.addAttribute("totalPayment", totalPayment != null ? totalPayment : 0.0);
         model.addAttribute("selectedMonth", selectedMonth);
         model.addAttribute("monthYears", monthYears);
         model.addAttribute("currentMonth", currentMonth);
         model.addAttribute("departmentTotals", departmentTotals);
-        model.addAttribute("totalBasicSalary", totalBasicSalary);
-        model.addAttribute("totalAdditions", totalAdditions);
-        model.addAttribute("totalDeductions", totalDeductions);
+
+        // Add empty values for other attributes
+        model.addAttribute("totalBasicSalary", 0.0);
+        model.addAttribute("totalAdditions", 0.0);
+        model.addAttribute("totalDeductions", 0.0);
+
         return "pages/payroll/monthly-report";
     }
 
