@@ -276,17 +276,53 @@
             }
 
             function calculateAllPending() {
-                if (confirm('Calculate payroll for all pending employees? This may take a while.')) {
-                    alert('This feature would calculate payroll for all pending employees.');
+                // 1. Find all employees that are NOT processed
+                const pendingItems = document.querySelectorAll('.employee-item[data-processed="false"]');
+                
+                if (pendingItems.length === 0) {
+                    alert('No pending payrolls to calculate.');
+                    return;
+                }
+
+                if (confirm(`Calculate payroll for ${pendingItems.length} pending employees?`)) {
+                    // 2. Extract the IDs from the calculation links
+                    const ids = Array.from(pendingItems).map(item => {
+                        const link = item.querySelector('a[href*="/payroll/calculate/"]').getAttribute('href');
+                        return link.split('/').pop().split('?')[0]; // Extract ID from URL
+                    });
+
+                    const month = document.getElementById('monthSelect').value;
+                    
+                    // 3. Create a hidden form to POST the data
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '/payroll/bulk-calculate';
+
+                    const idInput = document.createElement('input');
+                    idInput.type = 'hidden';
+                    idInput.name = 'employeeIds';
+                    idInput.value = ids.join(',');
+
+                    const monthInput = document.createElement('input');
+                    monthInput.type = 'hidden';
+                    monthInput.name = 'month';
+                    monthInput.value = month;
+
+                    form.appendChild(idInput);
+                    form.appendChild(monthInput);
+                    document.body.appendChild(form);
+                    form.submit();
                 }
             }
 
             function exportPayrollData() {
-                alert('Export functionality would be implemented here.');
+                window.location.href = '/payroll/export/all';
             }
 
             function generateReports() {
-                alert('Report generation would be implemented here.');
+                const month = document.getElementById('monthSelect').value;
+                // Redirects to the reports page with the selected month
+                window.location.href = '/payroll/reports?month=' + month;     
             }
         </script>
     </th:block>
