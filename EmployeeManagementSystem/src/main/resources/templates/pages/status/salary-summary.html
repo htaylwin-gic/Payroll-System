@@ -238,13 +238,18 @@
                                     <span th:if="${emp.salary != null}">$<span th:text="${#numbers.formatDecimal(emp.salary, 1, 2)}"></span></span>
                                     <span th:unless="${emp.salary != null}">N/A</span>
                                 </td>
+                                <!-- <td class="salary-cell">
+                                    <span th:if="${emp.netSalary != null}">$<span th:text="${#numbers.formatDecimal(emp.netSalary, 1, 2)}"></span></span>
+                                    <span th:unless="${emp.netSalary != null}">N/A</span>
+                                </td> -->
                                 <td class="salary-cell">
                                     <span th:if="${emp.netSalary != null}">$<span th:text="${#numbers.formatDecimal(emp.netSalary, 1, 2)}"></span></span>
                                     <span th:unless="${emp.netSalary != null}">N/A</span>
                                 </td>
                                 <td>
                                     <span th:if="${emp.netSalary != null and averageSalary > 0}">
-                                        <span th:text="${#numbers.formatDecimal((emp.netSalary / averageSalary * 100), 1, 1)}">0</span>%
+                                        <!-- <span th:text="${#numbers.formatDecimal((emp.netSalary / averageSalary * 100), 1, 1)}">0</span>% -->
+                                        <span th:text="${#numbers.formatDecimal((#numbers.parseDouble(emp.netSalary) / averageSalary * 100), 1, 1)}">0</span>%
                                     </span>
                                     <span th:unless="${emp.netSalary != null and averageSalary > 0}">N/A</span>
                                 </td>

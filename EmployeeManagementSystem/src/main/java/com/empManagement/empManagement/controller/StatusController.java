@@ -261,8 +261,8 @@ public class StatusController {
         double medianSalary = 0.0;
 
         if (!salaries.isEmpty()) {
-            highestSalary = salaries.get(salaries.size() - 1); // Last element is highest after sorting
-            lowestSalary = salaries.get(0); // First element is lowest after sorting
+            highestSalary = salaries.get(salaries.size() - 1);
+            lowestSalary = salaries.get(0);
 
             int size = salaries.size();
             if (size % 2 == 0) {
