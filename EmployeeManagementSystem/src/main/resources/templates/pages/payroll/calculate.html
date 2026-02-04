@@ -179,7 +179,7 @@
                     <i class="fas fa-calendar-check me-2"></i>Attendance Details
                 </h5>
                 <div class="row">
-                    <div class="col-md-4 mb-3">
+                    <div class="col-md-3 mb-3">
                         <label for="leaveDays" class="form-label">Leave Days</label>
                         <input type="number" 
                                class="form-control" 
@@ -187,7 +187,7 @@
                                th:field="*{leaveDays}"
                                min="0">
                     </div>
-                    <div class="col-md-4 mb-3">
+                    <div class="col-md-3 mb-3">
                         <label for="lateDays" class="form-label">Late Days</label>
                         <input type="number" 
                                class="form-control" 
@@ -195,7 +195,7 @@
                                th:field="*{lateDays}"
                                min="0">
                     </div>
-                    <div class="col-md-4 mb-3">
+                    <div class="col-md-3 mb-3">
                         <label for="presentDays" class="form-label">Present Days</label>
                         <input type="number" 
                                class="form-control readonly-field" 
@@ -204,9 +204,7 @@
                                readonly>
                         <div class="form-text">Auto-calculated: Working Days - Leave Days</div>
                     </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
+                    <div class="col-md-3 mb-3">
                         <label for="overtimeHours" class="form-label">Overtime Hours</label>
                         <input type="number" 
                                class="form-control" 
@@ -214,7 +212,9 @@
                                th:field="*{overtimeHours}"
                                min="0">
                     </div>
-                    <div class="col-md-6 mb-3">
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
                         <div class="calculation-box">
                             <small class="text-muted">Overtime Amount</small>
                             <h4 class="mb-0 addition-amount" id="overtimeAmountDisplay">0 MMK</h4>
@@ -262,7 +262,7 @@
                     <i class="fas fa-users me-2"></i>Assignment & Management
                 </h5>
                 <div class="row">
-                    <div class="col-md-6 mb-3">
+                    <div class="col-md-4 mb-3">
                         <label for="assignmentLevel" class="form-label">Assignment Level</label>
                         <select class="form-control addition-amount" 
                                 id="assignmentLevel" 
@@ -274,7 +274,7 @@
                             <option value="Senior PL" th:selected="${employee.assignmentLevel == 'Senior PL'}">Senior PL (+300,000)</option>
                         </select>
                     </div>
-                    <div class="col-md-6 mb-3">
+                    <div class="col-md-4 mb-3">
                         <label for="managementLevel" class="form-label">Management Level</label>
                         <select class="form-control addition-amount" 
                                 id="managementLevel" 
@@ -286,9 +286,7 @@
                             <option value="Manager" th:selected="${employee.managementLevel == 'Manager'}">Manager (+1,100,000)</option>
                         </select>
                     </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-12">
+                    <div class="col-md-4 mb-3">
                         <div class="calculation-box">
                             <small class="text-muted">Management & Assignment Allowance</small>
                             <h4 class="mb-0 addition-amount" id="managementAssignmentAllowanceDisplay">0 MMK</h4>
@@ -438,7 +436,7 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-md-4 mb-3">
+                    <div class="col-md-3 mb-3">
                         <label for="ssc" class="form-label">SSC Contribution</label>
                         <div class="input-group">
                             <span class="input-group-text">MMK</span>
@@ -451,7 +449,7 @@
                         </div>
                         <div class="form-text">Depends on salary</div>
                     </div>
-                    <div class="col-md-4 mb-3">
+                    <div class="col-md-3 mb-3">
                         <label for="companyTrip" class="form-label">Company Trip</label>
                         <select class="form-control deduction-amount" 
                                 id="companyTrip" 
@@ -511,7 +509,7 @@
                                    min="0">
                         </div>
                     </div>
-                    <div class="col-md-3 mb-3">
+                    <!-- <div class="col-md-3 mb-3">
                         <label for="continuedYear" class="form-label">Continued Year</label>
                         <div class="input-group">
                             <span class="input-group-text">Year</span>
@@ -522,10 +520,8 @@
                                    step="1"
                                    min="0">
                         </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-4 mb-3">
+                    </div> -->
+                   <div class="col-md-3 mb-3">
                         <label for="attendancePerfect" class="form-label">Perfect Attendance</label>
                         <select class="form-control addition-amount" 
                                 id="attendancePerfect" 
@@ -534,7 +530,10 @@
                             <option value="10000">Yes (+10,000 MMK)</option>
                         </select>
                     </div>
-                    <div class="col-md-8 mb-3">
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
                         <div class="calculation-box">
                             <small class="text-muted">Total Additions</small>
                             <h4 class="mb-0 addition-amount" id="totalAdditionsDisplay">0 MMK</h4>
@@ -868,11 +867,11 @@
                 
                 // Final calculation
                 let finalNetSalary = monthNetSalary;
-                finalNetSalary += totalAdditions; // Add bonus, home, etc.
-                finalNetSalary += serviceAllowance; // Add service allowance
-                finalNetSalary += managementAssignmentAllowance; // Add assignment/management
-                finalNetSalary += overtimeAmount; // Add overtime
-                finalNetSalary += homeTownVisit + manualAdjust + exchangeBenefit; // Add other adjustments
+                finalNetSalary += totalAdditions; 
+                finalNetSalary += serviceAllowance; 
+                finalNetSalary += managementAssignmentAllowance; 
+                finalNetSalary += overtimeAmount; 
+                finalNetSalary += homeTownVisit + manualAdjust + exchangeBenefit; 
                 finalNetSalary -= (calculateTotalDeductions() - parseFloat(document.getElementById('leaveDeduction').value || 0) - parseFloat(document.getElementById('lateDeduction').value || 0)); // Subtract other deductions
                 
                 document.getElementById('finalNetSalary').textContent = formatCurrency(finalNetSalary);
@@ -888,11 +887,26 @@
                 basicSalary = getBandSalary(bandLevel);
                 workingDays = parseInt(document.getElementById('workingDays').value) || 0;
                 
-                // Display basic salary
                 document.getElementById('displayBasicSalary').textContent = formatCurrency(basicSalary);
                 document.getElementById('summaryBasicSalary').textContent = formatCurrency(basicSalary);
                 document.getElementById('bandBasicSalary').textContent = formatCurrency(basicSalary);
                 
+                // Auto-set Perfect Attendance to "No" if there are leave or late days
+                const leaveDays = parseInt(document.getElementById('leaveDays').value) || 0;
+                const lateDays = parseInt(document.getElementById('lateDays').value) || 0;
+                const attendancePerfectSelect = document.getElementById('attendancePerfect');
+
+                if (leaveDays > 0 || lateDays > 0) {
+                    attendancePerfectSelect.value = "0"; // Set to "No"
+                    // Optional: Disable the select so the user can't manually change it to "Yes"
+                    attendancePerfectSelect.style.backgroundColor = "#e9ecef";
+                    attendancePerfectSelect.style.pointerEvents = "none";
+                } else {
+                    // Re-enable if days are cleared
+                    attendancePerfectSelect.style.backgroundColor = "";
+                    attendancePerfectSelect.style.pointerEvents = "auto";
+                }
+
                 // Calculate all components
                 calculatePresentDays();
                 calculateTravelFee();
@@ -914,14 +928,12 @@
 
             // Initialize on page load
             document.addEventListener('DOMContentLoaded', function() {
-                // Set up event listeners for all inputs
                 const inputs = document.querySelectorAll('input, select');
                 inputs.forEach(input => {
                     input.addEventListener('change', calculateAll);
                     input.addEventListener('input', calculateAll);
                 });
                 
-                // Initial calculation
                 calculateAll();
             });
 
