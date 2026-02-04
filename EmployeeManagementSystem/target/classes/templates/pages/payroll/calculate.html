@@ -640,7 +640,7 @@
                 <button type="submit" class="btn btn-primary btn-lg">
                     <i class="fas fa-calculator me-2"></i> Calculate & Save Payroll
                 </button>
-                <button type="button" class="btn btn-outline-secondary btn-lg" onclick="calculateAll()">
+                <button type="button" class="btn btn-outline-secondary btn-lg" onclick="resetToInitial()">
                     <i class="fas fa-sync-alt me-2"></i> Recalculate
                 </button>
                 <a th:href="@{/payroll/manage}" class="btn btn-outline-danger btn-lg">
@@ -940,6 +940,15 @@
                     e.preventDefault();
                 }
             });
+
+            function resetToInitial() {
+                const form = document.querySelector('form');
+                if (form) {
+                    form.reset(); 
+                    calculateAll(); 
+                }
+                location.reload();
+            }
         </script>
     </th:block>
 </body>
