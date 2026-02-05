@@ -5,6 +5,7 @@ import com.empManagement.empManagement.entity.Employee;
 import com.empManagement.empManagement.entity.EmployeePayroll;
 import com.empManagement.empManagement.service.EmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -436,5 +437,72 @@ public class PayrollController {
         model.addAttribute("selectedMonth", selectedMonth);
         model.addAttribute("reportData", employeeService.getPayrollReportData(selectedMonth));
         return "pages/payroll/reports";
+    }
+
+    @GetMapping("/edit/{id}")
+    public String editPayroll(@PathVariable Long id, Model model) {
+        // Use your existing employeeService and EmployeePayroll entity
+        EmployeePayroll payroll = employeeService.getPayrollById(id);
+        Employee emp = payroll.getEmployee();
+
+        // Manually map existing data to the request object
+        PayrollRequest payrollRequest = new PayrollRequest();
+        payrollRequest.setId(id); // Ensure your PayrollRequest has an id field
+        payrollRequest.setEmployeeId(emp.getId());
+        payrollRequest.setMonthYear(payroll.getMonthYear());
+        payrollRequest.setWorkingDays(payroll.getWorkingDays());
+        payrollRequest.setLeaveDays(payroll.getLeaveDays());
+        payrollRequest.setPresentDays(payroll.getPresentDays());
+        payrollRequest.setOvertimeHours(payroll.getOvertimeHours());
+
+        // Map all other necessary fields (Allowances, Deductions, etc.)
+        payrollRequest.setBasicSalary(payroll.getBasicSalary());
+        payrollRequest.setAllowance(payroll.getAllowance());
+        payrollRequest.setBonus(payroll.getBonus());
+        payrollRequest.setTravelFee(payroll.getTravelFee());
+
+        model.addAttribute("payrollRequest", payrollRequest);
+        model.addAttribute("employee", emp);
+
+        return "pages/payroll/calculate";
+    }
+
+    @GetMapping("/delete/{id}")
+    public String deletePayroll(@PathVariable Long id, RedirectAttributes ra) {
+        try {
+            EmployeePayroll payroll = employeeService.getPayrollById(id);
+            int employeeId = payroll.getEmployee().getId();
+
+            employeeService.deletePayroll(id); // Uses the method from your EmployeeService.java
+
+            ra.addFlashAttribute("success", "Payroll record deleted successfully.");
+            return "redirect:/payroll/view/" + employeeId;
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", "Error deleting record: " + e.getMessage());
+            return "redirect:/payroll/manage";
+        }
+    }
+
+    @GetMapping("/download-slip/{id}")
+    public ResponseEntity<byte[]> downloadPayslip(@PathVariable Long id) {
+        try {
+            EmployeePayroll payroll = employeeService.getPayrollById(id);
+
+            StringBuilder csv = new StringBuilder();
+            csv.append("Field,Value\n");
+            csv.append("Employee Name,").append(payroll.getEmployee().getFull_name()).append("\n");
+            csv.append("Month,").append(payroll.getMonthYear()).append("\n");
+            csv.append("Basic Salary,").append(payroll.getBasicSalary()).append("\n");
+            csv.append("Net Salary,").append(payroll.getNetSalary()).append("\n");
+            csv.append("Total Payment,").append(payroll.getTotalPayment()).append("\n");
+
+            byte[] data = csv.toString().getBytes();
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=payslip_" + id + ".csv")
+                    .contentType(MediaType.parseMediaType("text/csv"))
+                    .body(data);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
     }
 }

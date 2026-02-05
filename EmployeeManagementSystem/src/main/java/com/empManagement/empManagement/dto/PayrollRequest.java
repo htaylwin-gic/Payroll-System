@@ -8,6 +8,9 @@ import lombok.AllArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PayrollRequest {
+    private Long id;
+    private Double basicSalary;
+
     private Integer employeeId;
     private String monthYear;
     private Integer workingDays;
