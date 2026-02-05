@@ -135,7 +135,7 @@
         <input type="hidden" id="employeeTransportationFee" th:value="${employee.transportationFee}">
 
         <!-- Payroll Calculation Form -->
-        <form th:action="@{/payroll/calculate}" method="post" th:object="${payrollRequest}">
+        <form id="payrollForm" th:action="@{/payroll/calculate}" method="post" th:object="${payrollRequest}">
             <input type="hidden" th:field="*{employeeId}" th:value="${employee.id}">
             <input type="hidden" id="bandLevel" th:value="${employee.bandLevel}">
             
@@ -694,13 +694,13 @@
             // 3. Calculate Overtime Amount
             function calculateOvertimeAmount() {
                 const overtimeHours = parseInt(document.getElementById('overtimeHours').value) || 0;
-                if (overtimeHours === 0 || workingDays === 0 || basicSalary === 0) {
+                
+                if (overtimeHours === 0 || !workingDays || workingDays <= 0 || !basicSalary) {
                     document.getElementById('overtimeAmountDisplay').textContent = formatCurrency(0);
                     document.getElementById('overtime').value = 0;
                     return 0;
                 }
                 
-                // Assuming 8 working hours per day
                 const hourlyRate = basicSalary / (workingDays * 8);
                 const overtimeAmount = overtimeHours * hourlyRate;
                 document.getElementById('overtimeAmountDisplay').textContent = formatCurrency(overtimeAmount);
@@ -776,12 +776,12 @@
             // 7. Calculate Leave Deduction
             function calculateLeaveDeduction() {
                 const leaveDays = parseInt(document.getElementById('leaveDays').value) || 0;
-                if (leaveDays === 0 || workingDays === 0) {
+                
+                if (leaveDays === 0 || !workingDays || workingDays <= 0) {
                     document.getElementById('leaveDeduction').value = 0;
                     return 0;
                 }
                 
-                // Calculate daily rate: (Basic Salary + Total Basic Allowance) / Working Days
                 const totalBasicAllowance = calculateTotalBasicAllowanceForLeaveDeduction();
                 const dailyRate = (basicSalary + totalBasicAllowance) / workingDays;
                 const deduction = leaveDays * dailyRate;
@@ -831,10 +831,10 @@
                 const bonus = parseFloat(document.getElementById('bonus').value) || 0;
                 const homeAllowance = parseFloat(document.getElementById('home').value) || 0;
                 const businessTrip = parseFloat(document.getElementById('businessTrip').value) || 0;
-                const continuedYear = parseFloat(document.getElementById('continuedYear').value) || 0;
+                // const continuedYear = parseFloat(document.getElementById('continuedYear').value) || 0;
                 const attendancePerfect = parseFloat(document.getElementById('attendancePerfect').value) || 0;
                 
-                const total = bonus + homeAllowance + businessTrip + continuedYear + attendancePerfect;
+                const total = bonus + homeAllowance + businessTrip + attendancePerfect;
                 document.getElementById('totalAdditionsDisplay').textContent = formatCurrency(total);
                 document.getElementById('summaryAdditions').textContent = formatCurrency(total);
                 return total;
@@ -882,32 +882,35 @@
 
             // Main calculation function
             function calculateAll() {
-                // Get band level and set basic salary
+                // 1. Re-fetch Band Level and Salary EVERY time to prevent 0 values
                 const bandLevel = document.getElementById('bandLevel').value;
                 basicSalary = getBandSalary(bandLevel);
-                workingDays = parseInt(document.getElementById('workingDays').value) || 0;
                 
-                document.getElementById('displayBasicSalary').textContent = formatCurrency(basicSalary);
-                document.getElementById('summaryBasicSalary').textContent = formatCurrency(basicSalary);
-                document.getElementById('bandBasicSalary').textContent = formatCurrency(basicSalary);
+                // Ensure workingDays is treated as a number
+                const workingDaysInput = document.getElementById('workingDays');
+                workingDays = parseInt(workingDaysInput.value) || 0;
                 
-                // Auto-set Perfect Attendance to "No" if there are leave or late days
+                // Update the static basic salary displays immediately
+                const formattedSalary = formatCurrency(basicSalary);
+                document.getElementById('displayBasicSalary').textContent = formattedSalary;
+                document.getElementById('summaryBasicSalary').textContent = formattedSalary;
+                document.getElementById('bandBasicSalary').textContent = formattedSalary;
+                
+                // 2. Attendance Validation Logic (The "No" to Perfect Attendance logic)
                 const leaveDays = parseInt(document.getElementById('leaveDays').value) || 0;
                 const lateDays = parseInt(document.getElementById('lateDays').value) || 0;
                 const attendancePerfectSelect = document.getElementById('attendancePerfect');
 
                 if (leaveDays > 0 || lateDays > 0) {
-                    attendancePerfectSelect.value = "0"; // Set to "No"
-                    // Optional: Disable the select so the user can't manually change it to "Yes"
+                    attendancePerfectSelect.value = "0"; 
                     attendancePerfectSelect.style.backgroundColor = "#e9ecef";
                     attendancePerfectSelect.style.pointerEvents = "none";
                 } else {
-                    // Re-enable if days are cleared
                     attendancePerfectSelect.style.backgroundColor = "";
                     attendancePerfectSelect.style.pointerEvents = "auto";
                 }
 
-                // Calculate all components
+                // 3. Run sub-calculations in order
                 calculatePresentDays();
                 calculateTravelFee();
                 calculateOvertimeAmount();
@@ -919,6 +922,8 @@
                 calculateTotalDeductions();
                 calculateTotalAdditions();
                 calculateMonthNetSalary();
+                
+                // 4. Final step: update the big summary boxes
                 calculateFinalNetSalary();
             }
 
@@ -954,12 +959,14 @@
             });
 
             function resetToInitial() {
-                const form = document.querySelector('form');
+                const form = document.getElementById('payrollForm');
                 if (form) {
-                    form.reset(); 
-                    calculateAll(); 
+                    form.reset();
+                    
+                    setTimeout(() => {
+                        calculateAll();
+                    }, 100);
                 }
-                location.reload();
             }
         </script>
     </th:block>
