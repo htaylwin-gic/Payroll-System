@@ -99,7 +99,7 @@
                             </option>
                         </select>
                     </div>
-                    <div class="col-md-4">
+                    <!-- <div class="col-md-4">
                         <div class="form-check mt-4">
                             <input class="form-check-input" type="checkbox" id="showDetails" checked 
                                    onchange="toggleDetails()">
@@ -107,7 +107,7 @@
                                 Show detailed view
                             </label>
                         </div>
-                    </div>
+                    </div> -->
                     <div class="col-md-4 text-end">
                         <button class="btn btn-outline-primary" onclick="exportHistory()">
                             <i class="fas fa-file-export me-2"></i> Export History
@@ -180,9 +180,27 @@
                                 </td>
                                 <td>
                                     <div class="action-buttons">
-                                        <button class="btn btn-sm btn-outline-info mb-1" 
+                                        <!-- <button class="btn btn-sm btn-outline-info mb-1" 
                                                 onclick="viewDetails(this)"
                                                 th:data-id="${payroll.id}">
+                                            <i class="fas fa-eye"></i>
+                                        </button> -->
+                                        <button class="btn btn-sm btn-outline-info"
+                                                onclick="viewDetails(this)"
+                                                th:data-id="${payroll.id}"
+                                                th:data-basic="${payroll.basicSalary}"
+                                                th:data-leave="${payroll.leaveDeduction}"
+                                                th:data-late="${payroll.lateDeduction}"
+                                                th:data-tax="${payroll.incomeTax}"
+                                                th:data-loan="${payroll.loanReturn}"
+                                                th:data-ssc="${payroll.ssc}"
+                                                th:data-companyTrip="${payroll.companyTrip}"
+                                                th:data-allowance="${payroll.allowance}"
+                                                th:data-overtime="${payroll.overtime}"
+                                                th:data-bonus="${payroll.bonus}"
+                                                th:data-home="${payroll.home}"
+                                                th:data-businessTrip="${payroll.businessTrip}"
+                                                th:data-net="${payroll.netSalary}">
                                             <i class="fas fa-eye"></i>
                                         </button>
                                         <button class="btn btn-sm btn-outline-warning mb-1" 
@@ -270,63 +288,116 @@
                 });
             }
 
-            function toggleDetails() {
-                const showDetails = document.getElementById('showDetails').checked;
-                const detailedView = document.getElementById('detailedView');
-                detailedView.style.display = showDetails ? 'block' : 'none';
+            // function toggleDetails() {
+            //     const showDetails = document.getElementById('showDetails').checked;
+            //     const detailedView = document.getElementById('detailedView');
+            //     detailedView.style.display = showDetails ? 'block' : 'none';
+            // }
+
+            // function viewDetails(button) {
+            //     const payrollId = button.dataset.id;
+            //     const sampleContent = `
+            //         <div class="row">
+            //             <div class="col-md-6">
+            //                 <h6>Deductions Breakdown:</h6>
+            //                 <ul class="list-unstyled">
+            //                     <li>Leave Deduction: 50.00 MMK</li>
+            //                     <li>Late Deduction: 25.00 MMK</li>
+            //                     <li>Income Tax: 150.00 MMK</li>
+            //                     <li>Loan Return: 100.00 MMK</li>
+            //                     <li>SSC: 30.00 MMK</li>
+            //                     <li>Company Trip: 20.00 MMK</li>
+            //                 </ul>
+            //             </div>
+            //             <div class="col-md-6">
+            //                 <h6>Additions Breakdown:</h6>
+            //                 <ul class="list-unstyled">
+            //                     <li>Allowance: 100.00 MMK</li>
+            //                     <li>Overtime: 200.00 MMK</li>
+            //                     <li>Bonus: 150.00 MMK</li>
+            //                     <li>Home Allowance: 80.00 MMK</li>
+            //                     <li>Business Trip: 120.00 MMK</li>
+            //                 </ul>
+            //             </div>
+            //         </div>
+            //         <div class="row mt-3">
+            //             <div class="col-12">
+            //                 <hr>
+            //                 <div class="d-flex justify-content-between">
+            //                     <strong>Basic Salary:</strong>
+            //                     <span>2,000.00 MMK</span>
+            //                 </div>
+            //                 <div class="d-flex justify-content-between">
+            //                     <strong>Total Deductions:</strong>
+            //                     <span class="text-danger">375.00 MMK</span>
+            //                 </div>
+            //                 <div class="d-flex justify-content-between">
+            //                     <strong>Total Additions:</strong>
+            //                     <span class="text-success">650.00 MMK</span>
+            //                 </div>
+            //                 <hr>
+            //                 <div class="d-flex justify-content-between">
+            //                     <h5>Net Salary:</h5>
+            //                     <h5 class="text-primary">2,275.00 MMK</h5>
+            //                 </div>
+            //             </div>
+            //         </div>
+            //     `;
+                
+            //     document.getElementById('detailedContent').innerHTML = sampleContent;
+            //     document.getElementById('detailedView').style.display = 'block';
+            // }
+
+            function formatMMK(value) {
+                return (value ? Number(value).toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                }) : '0.00') + ' MMK';
             }
 
             function viewDetails(button) {
-                const payrollId = button.dataset.id;
-                const sampleContent = `
+                const d = button.dataset;
+
+                const content = `
                     <div class="row">
                         <div class="col-md-6">
                             <h6>Deductions Breakdown:</h6>
                             <ul class="list-unstyled">
-                                <li>Leave Deduction: 50.00 MMK</li>
-                                <li>Late Deduction: 25.00 MMK</li>
-                                <li>Income Tax: 150.00 MMK</li>
-                                <li>Loan Return: 100.00 MMK</li>
-                                <li>SSC: 30.00 MMK</li>
-                                <li>Company Trip: 20.00 MMK</li>
+                                <li>Leave Deduction: ${formatMMK(d.leave)}</li>
+                                <li>Late Deduction: ${formatMMK(d.late)}</li>
+                                <li>Income Tax: ${formatMMK(d.tax)}</li>
+                                <li>Loan Return: ${formatMMK(d.loan)}</li>
+                                <li>SSC: ${formatMMK(d.ssc)}</li>
+                                <li>Company Trip: ${formatMMK(d.companyTrip)}</li>
                             </ul>
                         </div>
+
                         <div class="col-md-6">
                             <h6>Additions Breakdown:</h6>
                             <ul class="list-unstyled">
-                                <li>Allowance: 100.00 MMK</li>
-                                <li>Overtime: 200.00 MMK</li>
-                                <li>Bonus: 150.00 MMK</li>
-                                <li>Home Allowance: 80.00 MMK</li>
-                                <li>Business Trip: 120.00 MMK</li>
+                                <li>Allowance: ${formatMMK(d.allowance)}</li>
+                                <li>Overtime: ${formatMMK(d.overtime)}</li>
+                                <li>Bonus: ${formatMMK(d.bonus)}</li>
+                                <li>Home Allowance: ${formatMMK(d.home)}</li>
+                                <li>Business Trip: ${formatMMK(d.businessTrip)}</li>
                             </ul>
                         </div>
                     </div>
-                    <div class="row mt-3">
-                        <div class="col-12">
-                            <hr>
-                            <div class="d-flex justify-content-between">
-                                <strong>Basic Salary:</strong>
-                                <span>2,000.00 MMK</span>
-                            </div>
-                            <div class="d-flex justify-content-between">
-                                <strong>Total Deductions:</strong>
-                                <span class="text-danger">375.00 MMK</span>
-                            </div>
-                            <div class="d-flex justify-content-between">
-                                <strong>Total Additions:</strong>
-                                <span class="text-success">650.00 MMK</span>
-                            </div>
-                            <hr>
-                            <div class="d-flex justify-content-between">
-                                <h5>Net Salary:</h5>
-                                <h5 class="text-primary">2,275.00 MMK</h5>
-                            </div>
-                        </div>
+
+                    <hr>
+
+                    <div class="d-flex justify-content-between">
+                        <strong>Basic Salary:</strong>
+                        <span>${formatMMK(d.basic)}</span>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-2">
+                        <h5>Net Salary:</h5>
+                        <h5 class="text-primary">${formatMMK(d.net)}</h5>
                     </div>
                 `;
-                
-                document.getElementById('detailedContent').innerHTML = sampleContent;
+
+                document.getElementById('detailedContent').innerHTML = content;
                 document.getElementById('detailedView').style.display = 'block';
             }
 
