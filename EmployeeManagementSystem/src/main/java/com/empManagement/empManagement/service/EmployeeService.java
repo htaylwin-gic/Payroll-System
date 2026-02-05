@@ -492,6 +492,10 @@ public class EmployeeService {
         return employeeRepository.countByDepartment("Finance");
     }
 
+    public List<EmployeePayroll> getPayrollHistoryByEmployee(Integer employeeId) {
+        return payrollRepository.findByEmployeeId(employeeId);
+    }
+
     public Map<String, Double> getSectionPercentages() {
         long totalEmployees = getEmployeeCount();
         if (totalEmployees == 0)

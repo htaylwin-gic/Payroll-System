@@ -505,4 +505,24 @@ public class PayrollController {
             return ResponseEntity.internalServerError().build();
         }
     }
+
+    @GetMapping("/export-history/{employeeId}")
+    public ResponseEntity<byte[]> exportEmployeeHistory(@PathVariable Integer employeeId) {
+        List<EmployeePayroll> history = employeeService.getPayrollHistoryByEmployee(employeeId);
+
+        StringBuilder csv = new StringBuilder("Month,Basic,Allowance,Deductions,Net Salary\n");
+        for (EmployeePayroll p : history) {
+            csv.append(p.getMonthYear()).append(",")
+                    .append(p.getBasicSalary()).append(",")
+                    .append(p.getAllowance()).append(",")
+                    .append(p.getLeaveDeduction()).append(",")
+                    .append(p.getNetSalary()).append("\n");
+        }
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=history_emp_" + employeeId + ".csv")
+                .contentType(MediaType.parseMediaType("text/csv"))
+                .body(csv.toString().getBytes());
+    }
+
 }

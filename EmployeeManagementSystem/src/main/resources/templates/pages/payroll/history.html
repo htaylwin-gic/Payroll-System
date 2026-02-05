@@ -18,6 +18,28 @@
             border-radius: 12px;
             font-size: 0.75rem;
         }
+
+        .action-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4px;                     
+            width: 160px;                   
+        }
+
+        .action-grid .btn {
+            padding: 0.25rem 0.2rem;
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            height: 30px;
+        }
+
+        .action-grid .btn i {
+            font-size: 0.7rem;
+        }
+
         .action-buttons .btn {
             min-width: 80px;
         }
@@ -333,11 +355,13 @@
             }
 
             function downloadSlip(payrollId) {
-                alert(`Downloading payslip for record ${payrollId}`);
+                // alert(`Downloading payslip for record ${payrollId}`);
+                window.location.href = `/payroll/download-slip/${payrollId}`;
             }
 
             function exportHistory() {
-                alert('Export functionality would generate a CSV/Excel file of all payroll history.');
+                // alert('Export functionality would generate a CSV/Excel file of all payroll history.');
+                window.location.href = `/payroll/export-history/${employeeId}`;
             }
         </script>
     </th:block>
