@@ -99,6 +99,7 @@
                             </option>
                         </select>
                     </div>
+                    <div class="col-md-4"></div>
                     <div class="col-md-4 text-end">
                         <button class="btn btn-outline-primary" onclick="exportHistory()">
                             <i class="fas fa-file-export me-2"></i> Export History
@@ -357,16 +358,17 @@
             }
 
             function downloadSlip(payrollId) {
-                // alert(`Downloading payslip for record ${payrollId}`);
-                window.location.href = `/payroll/download-slip/${payrollId}`;
+                if (confirm(`Downloading payslip for record ${payrollId}`)) {
+                    window.location.href = `/payroll/download-slip/${payrollId}`;
+                }
             }
 
             function exportHistory() {
-                // alert('Export functionality would generate a CSV/Excel file of all payroll history.');
-                const pathParts = window.location.pathname.split('/');
+                if (confirm('Export functionality would generate a CSV/Excel file of all payroll history.')){
+                    const pathParts = window.location.pathname.split('/');
                     const employeeId = pathParts[pathParts.length - 1];
-                    
                     window.location.href = '/payroll/export-history/' + employeeId;
+                }
             }
         </script>
     </th:block>
