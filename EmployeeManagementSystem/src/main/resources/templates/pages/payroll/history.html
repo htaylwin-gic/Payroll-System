@@ -361,7 +361,10 @@
 
             function exportHistory() {
                 // alert('Export functionality would generate a CSV/Excel file of all payroll history.');
-                window.location.href = `/payroll/export-history/${employeeId}`;
+                const pathParts = window.location.pathname.split('/');
+                    const employeeId = pathParts[pathParts.length - 1];
+                    
+                    window.location.href = '/payroll/export-history/' + employeeId;
             }
         </script>
     </th:block>
