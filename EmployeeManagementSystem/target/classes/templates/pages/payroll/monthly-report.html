@@ -99,7 +99,7 @@
                             <small class="opacity-75">Employees Paid</small>
                         </div>
                         <div class="col-md-4 text-center">
-                            <h5 class="mb-1" th:text="'$' + ${#numbers.formatDecimal(totalPayment, 0, 2, 'COMMA')}">$0.00</h5>
+                            <h5 class="mb-1" th:text="${totalPayment != null ? #numbers.formatDecimal(totalPayment, 0, 'COMMA', 2, 'POINT') + ' MMK' : '0.0 MMK'}"></h5>
                             <small class="opacity-75">Total Payment</small>
                         </div>
                     </div>
@@ -114,7 +114,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h6 class="text-muted mb-2">Total Payment</h6>
-                            <h3 class="text-success mb-0" th:text="'$' + ${#numbers.formatDecimal(totalPayment, 0, 2, 'COMMA')}"></h3>
+                            <h3 class="text-success mb-0" th:text="${totalPayment != null ? #numbers.formatDecimal(totalPayment, 0, 'COMMA', 2, 'POINT') + ' MMK' : '0.0 MMK'}"></h3>
                         </div>
                         <div class="icon-circle bg-success">
                             <i class="fas fa-money-bill-wave text-white"></i>
@@ -134,7 +134,7 @@
                         <div>
                             <h6 class="text-muted mb-2">Average Salary</h6>
                             <h3 class="text-warning mb-0" 
-                                th:text="'$' + ${#numbers.formatDecimal(payrolls.empty ? 0 : totalPayment / payrolls.size(), 0, 2, 'COMMA')}">
+                                th:text="${payrolls.empty ? '0.0 MMK' : #numbers.formatDecimal(totalPayment / payrolls.size(), 0, 'COMMA', 2, 'POINT') + ' MMK'}">
                             </h3>
                         </div>
                         <div class="icon-circle bg-warning">
@@ -224,7 +224,7 @@
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" 
-                                             style="width: 35px; height: 35px;">
+                                            style="width: 35px; height: 35px;">
                                             <span th:text="${payroll.employee.full_name?.substring(0,1)?.toUpperCase()}"></span>
                                         </div>
                                         <div>
@@ -235,50 +235,50 @@
                                 </td>
                                 <td>
                                     <span th:classappend="'badge department-badge ' + ${payroll.employee.department == 'IT' ? 'bg-primary' : 
-                                                                                      payroll.employee.department == 'HRM' ? 'bg-success' : 
-                                                                                      payroll.employee.department == 'Technical' ? 'bg-warning' : 
-                                                                                      payroll.employee.department == 'Finance' ? 'bg-dark' :
-                                                                                      payroll.employee.department == 'Design' ? 'bg-info' : 'bg-secondary'}"
-                                          th:text="${payroll.employee.department}">
+                                                        payroll.employee.department == 'HRM' ? 'bg-success' : 
+                                                        payroll.employee.department == 'Technical' ? 'bg-warning' : 
+                                                        payroll.employee.department == 'Finance' ? 'bg-dark' :
+                                                        payroll.employee.department == 'Design' ? 'bg-info' : 'bg-secondary'}"
+                                        th:text="${payroll.employee.department}">
                                     </span>
                                 </td>
-                                <td class="salary-cell" th:text="'$' + ${payroll.basicSalary}"></td>
+                                <td class="salary-cell" th:text="${payroll.basicSalary != null ? #numbers.formatDecimal(payroll.basicSalary, 0, 'COMMA', 2, 'POINT') + ' MMK' : '0.0 MMK'}"></td>
                                 <td>
                                     <span th:text="${payroll.presentDays} + '/' + ${payroll.workingDays}"></span>
                                     <div class="text-muted" style="font-size: 0.75rem;">
                                         <span th:if="${payroll.leaveDays > 0}" 
-                                              class="text-warning">L: <span th:text="${payroll.leaveDays}"></span></span>
+                                            class="text-warning">L: <span th:text="${payroll.leaveDays}"></span></span>
                                         <span th:if="${payroll.lateDays > 0}" 
-                                              class="text-danger ms-1">T: <span th:text="${payroll.lateDays}"></span></span>
+                                            class="text-danger ms-1">T: <span th:text="${payroll.lateDays}"></span></span>
                                     </div>
                                 </td>
                                 <td class="salary-cell text-danger" 
-                                    th:text="'$' + (payroll.leaveDeduction + payroll.lateDeduction + payroll.incomeTax + payroll.loanReturn + payroll.ssc + payroll.companyTrip)">
+                                    th:text="${#numbers.formatDecimal((payroll.leaveDeduction ?: 0) + (payroll.lateDeduction ?: 0) + (payroll.incomeTax ?: 0) + 
+                                        (payroll.loanReturn ?: 0) + (payroll.ssc ?: 0) + (payroll.companyTrip ?: 0), 0, 'COMMA', 2, 'POINT')} + ' MMK'">
                                 </td>
                                 <td class="salary-cell text-success" 
-                                    th:text="'$' + (payroll.allowance + payroll.overtime + payroll.bonus + payroll.home + payroll.businessTrip + payroll.continuedYear + payroll.homeTownVisit + payroll.manualAdjust + payroll.attendancePerfect + payroll.exchangeBenefit)">
+                                    th:text="${#numbers.formatDecimal((payroll.allowance ?: 0) + (payroll.overtime ?: 0) + (payroll.bonus ?: 0) + 
+                                        (payroll.home ?: 0) + (payroll.businessTrip ?: 0) + (payroll.continuedYear ?: 0) + 
+                                        (payroll.homeTownVisit ?: 0) + (payroll.manualAdjust ?: 0) + (payroll.attendancePerfect ?: 0) + 
+                                        (payroll.exchangeBenefit ?: 0), 0, 'COMMA', 2, 'POINT')} + ' MMK'">
                                 </td>
                                 <td class="salary-cell">
-                                    <strong th:text="'$' + ${payroll.netSalary}"></strong>
+                                    <strong th:text="${payroll.netSalary != null ? #numbers.formatDecimal(payroll.netSalary, 0, 'COMMA', 2, 'POINT') + ' MMK' : '0.0 MMK'}"></strong>
                                 </td>
-                                <td class="salary-cell" th:text="'K' + ${payroll.travelFee}"></td>
+                                <td class="salary-cell" th:text="${payroll.travelFee != null ? #numbers.formatDecimal(payroll.travelFee, 0, 'COMMA', 2, 'POINT') + ' MMK' : '0.0 MMK'}"></td>
                                 <td class="salary-cell">
-                                    <h6 class="mb-0 text-primary" th:text="'$' + ${payroll.totalPayment}"></h6>
+                                    <h6 class="mb-0 text-primary" th:text="${payroll.totalPayment != null ? #numbers.formatDecimal(payroll.totalPayment, 0, 'COMMA', 2, 'POINT') + ' MMK' : '0.0 MMK'}"></h6>
                                 </td>
                                 <td>
                                     <span class="badge bg-success">Paid</span>
                                     <div class="text-muted" style="font-size: 0.75rem;">
-                                        <!-- <span th:text="${#dates.format(payroll.createdAt, 'dd MMM')}"></span> -->
-                                        <td th:text="${payroll.createdAt != null 
-                                            ? #temporals.format(payroll.createdAt, 'dd MMM') 
-                                            : ''}">
-                                        </td>
+                                        <span th:text="${payroll.createdAt != null ? #temporals.format(payroll.createdAt, 'dd MMM') : ''}"></span>
                                     </div>
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm">
                                         <a th:href="@{/payroll/view/{employeeId}(employeeId=${payroll.employee.id})}" 
-                                           class="btn btn-outline-info" title="View History">
+                                        class="btn btn-outline-info" title="View History">
                                             <i class="fas fa-history"></i>
                                         </a>
                                         <button class="btn btn-outline-primary" 
@@ -300,28 +300,27 @@
                                 </td>
                             </tr>
                         </tbody>
-
                         <tfoot th:if="${!payrolls.empty}">
                             <tr class="table-active">
                                 <td colspan="2" class="text-end"><strong>Totals:</strong></td>
                                 <td class="salary-cell">
-                                    <strong th:text="'$' + ${#numbers.formatDecimal(totalBasicSalary, 0, 2, 'COMMA')}"></strong>
+                                    <strong th:text="${totalBasicSalary != null ? #numbers.formatDecimal(totalBasicSalary, 0, 'COMMA', 2, 'POINT') + ' MMK' : '0.0 MMK'}"></strong>
                                 </td>
                                 <td></td>
                                 <td class="salary-cell text-danger">
-                                    <strong th:text="'$' + ${#numbers.formatDecimal(totalDeductions, 0, 2, 'COMMA')}"></strong>
+                                    <strong th:text="${totalDeductions != null ? #numbers.formatDecimal(totalDeductions, 0, 'COMMA', 2, 'POINT') + ' MMK' : '0.0 MMK'}"></strong>
                                 </td>
                                 <td class="salary-cell text-success">
-                                    <strong th:text="'$' + ${#numbers.formatDecimal(totalAdditions, 0, 2, 'COMMA')}"></strong>
+                                    <strong th:text="${totalAdditions != null ? #numbers.formatDecimal(totalAdditions, 0, 'COMMA', 2, 'POINT') + ' MMK' : '0.0 MMK'}"></strong>
                                 </td>
                                 <td class="salary-cell">
-                                    <strong th:text="'$' + ${#numbers.formatDecimal(totalPayment, 0, 2, 'COMMA')}"></strong>
+                                    <strong th:text="${totalPayment != null ? #numbers.formatDecimal(totalPayment, 0, 'COMMA', 2, 'POINT') + ' MMK' : '0.0 MMK'}"></strong>
                                 </td>
                                 <td class="salary-cell">
                                     <strong>N/A</strong>
                                 </td>
                                 <td class="salary-cell text-primary">
-                                    <h5 class="mb-0" th:text="'$' + ${#numbers.formatDecimal(totalPayment, 0, 2, 'COMMA')}"></h5>
+                                    <h5 class="mb-0" th:text="${totalPayment != null ? #numbers.formatDecimal(totalPayment, 0, 'COMMA', 2, 'POINT') + ' MMK' : '0.0 MMK'}"></h5>
                                 </td>
                                 <td colspan="2"></td>
                             </tr>
@@ -349,7 +348,7 @@
                             <div class="col-6">
                                 <small class="text-muted">Attendance Rate</small>
                                 <p class="mb-0">
-                                    <span th:text="${!payrolls.empty ? '100' : '0'}">0</span>%
+                                    <span th:text="${attendanceRate}">0</span>%
                                 </p>
                             </div>
                         </div>
@@ -358,29 +357,13 @@
                             <div class="col-6">
                                 <small class="text-muted">Highest Salary</small>
                                 <p class="mb-0">
-                                    <span th:if="${!payrolls.empty}"
-                                        th:text="'$' + ${#numbers.formatDecimal(
-                                            payrolls.stream()
-                                                .mapToDouble(p -> p.totalPayment)
-                                                .max()
-                                                .orElse(0), 0, 2, 'COMMA')}">
-                                    $0.00
-                                    </span>
-                                    <span th:if="${payrolls.empty}">$0.00</span>
+                                    <span th:text="${#numbers.formatDecimal(highestSalary, 0, 'COMMA', 2, 'POINT') + ' MMK'}">0.0 MMK</span>
                                 </p>
                             </div>
                             <div class="col-6">
                                 <small class="text-muted">Lowest Salary</small>
                                 <p class="mb-0">
-                                    <span th:if="${!payrolls.empty}"
-                                        th:text="'$' + ${#numbers.formatDecimal(
-                                            payrolls.stream()
-                                                .mapToDouble(p -> p.totalPayment)
-                                                .min()
-                                                .orElse(0), 0, 2, 'COMMA')}">
-                                    $0.00
-                                    </span>
-                                    <span th:if="${payrolls.empty}">$0.00</span>
+                                    <span th:text="${#numbers.formatDecimal(lowestSalary, 0, 'COMMA', 2, 'POINT') + ' MMK'}">0.0 MMK</span>
                                 </p>
                             </div>
                         </div>
@@ -414,15 +397,16 @@
             </div>
         </div>
     </div>
+    <input type="hidden" id="departmentData" th:value="${#strings.mapToString(departmentTotals)}">
 
     <th:block layout:fragment="scripts">
         <script>
             // Initialize charts
             let departmentChart, paymentChart;
-            const departmentData = /*[[${#strings.mapToString(departmentTotals)}]]*/ {};
             const basicSalaryTotal = /*[[${totalBasicSalary}]]*/ 0;
             const additionsTotal = /*[[${totalAdditions}]]*/ 0;
             const deductionsTotal = /*[[${totalDeductions}]]*/ 0;
+            const departmentData = JSON.parse(document.getElementById('departmentData').value || '{}');
 
             function initializeCharts() {
 
@@ -505,15 +489,30 @@
             }
 
             function printReport() {
+                const elementsToHide = document.querySelectorAll('.btn, .month-selector, .summary-card .icon-circle');
+                const originalStyles = [];
+                
+                elementsToHide.forEach(el => {
+                    originalStyles.push({
+                        element: el,
+                        display: el.style.display
+                    });
+                    el.style.display = 'none';
+                });
+                
                 window.print();
+                
+                originalStyles.forEach(item => {
+                    item.element.style.display = item.display;
+                });
             }
 
             function exportReport() {
-                alert('Exporting monthly report to Excel...');
+                window.location.href = '/payroll/export/all';
             }
 
             function downloadPayslip(payrollId) {
-                alert(`Downloading payslip for payroll ID: ${payrollId}`);
+                window.location.href = '/payroll/download-slip/' + payrollId;
             }
 
             function sendPaymentNotifications() {
@@ -526,11 +525,9 @@
                 alert('Generating detailed monthly report...');
             }
 
-            // Initialize charts when page loads
             document.addEventListener('DOMContentLoaded', function() {
                 initializeCharts();
                 
-                // Style for print
                 const style = document.createElement('style');
                 style.textContent = `
                     @media print {

@@ -264,27 +264,46 @@ public class PayrollController {
         Double totalPayment = employeeService.getTotalPaymentByMonth(selectedMonth);
         List<String> monthYears = employeeService.getDistinctMonthYears();
 
-        // Calculate department totals
+        // Calculate Highest and Lowest Salary safely
+        double highestSalary = payrolls.stream()
+                .mapToDouble(p -> p.getTotalPayment() != null ? p.getTotalPayment() : 0)
+                .max().orElse(0.0);
+
+        double lowestSalary = payrolls.stream()
+                .mapToDouble(p -> p.getTotalPayment() != null ? p.getTotalPayment() : 0)
+                .min().orElse(0.0);
+
+        // Calculate Average Attendance Rate
+        double attendanceRate = 0.0;
+        if (!payrolls.isEmpty()) {
+            double totalPresent = payrolls.stream()
+                    .mapToDouble(p -> p.getPresentDays() != null ? p.getPresentDays() : 0).sum();
+            double totalWorking = payrolls.stream()
+                    .mapToDouble(p -> p.getWorkingDays() != null ? p.getWorkingDays() : 0).sum();
+            attendanceRate = (totalWorking > 0) ? (totalPresent / totalWorking) * 100 : 0;
+        }
+
+        // Existing department and total calculations
         Map<String, Double> departmentTotals = payrolls.stream()
                 .collect(Collectors.groupingBy(
                         p -> p.getEmployee() != null ? p.getEmployee().getDepartment() : "Unknown",
                         Collectors.summingDouble(p -> p.getTotalPayment() != null ? p.getTotalPayment() : 0)));
 
-        // Add debug logging
-        System.out.println("Department totals: " + departmentTotals);
+        double totalBasicSalary = payrolls.stream()
+                .mapToDouble(p -> p.getBasicSalary() != null ? p.getBasicSalary() : 0).sum();
 
-        // Make sure all required data is added to model
+        // Pass all calculated data to the view
         model.addAttribute("payrolls", payrolls);
         model.addAttribute("totalPayment", totalPayment != null ? totalPayment : 0.0);
         model.addAttribute("selectedMonth", selectedMonth);
         model.addAttribute("monthYears", monthYears);
-        model.addAttribute("currentMonth", currentMonth);
         model.addAttribute("departmentTotals", departmentTotals);
+        model.addAttribute("totalBasicSalary", totalBasicSalary);
 
-        // Add empty values for other attributes
-        model.addAttribute("totalBasicSalary", 0.0);
-        model.addAttribute("totalAdditions", 0.0);
-        model.addAttribute("totalDeductions", 0.0);
+        // New attributes for the report
+        model.addAttribute("highestSalary", highestSalary);
+        model.addAttribute("lowestSalary", lowestSalary);
+        model.addAttribute("attendanceRate", String.format("%.2f", attendanceRate));
 
         return "pages/payroll/monthly-report";
     }
