@@ -4,15 +4,62 @@
       layout:decorate="~{layouts/dashboard-layout}">
 <head>
     <title th:text="'Salary Breakdown - ' + ${employee.full_name}"></title>
+    <style>
+        .breakdown-card {
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .breakdown-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px 10px 0 0;
+        }
+        .breakdown-section {
+            padding: 20px;
+        }
+        .breakdown-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .breakdown-item:last-child {
+            border-bottom: none;
+        }
+        .total-section {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .amount {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+        }
+        .positive {
+            color: #28a745;
+        }
+        .negative {
+            color: #dc3545;
+        }
+        .badge-level {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+        }
+    </style>
 </head>
 <body>
     <div layout:fragment="dashboard-content">
         <div class="row">
             <div class="col-12">
+                <!-- Page Header -->
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <div>
                         <h4 class="mb-0" th:text="'Salary Breakdown: ' + ${employee.full_name}"></h4>
-                        <p class="text-muted mb-0">Detailed salary components analysis</p>
+                        <p class="text-muted mb-0">Detailed salary components and allowances</p>
                     </div>
                     <div>
                         <a th:href="@{/status}" class="btn btn-outline-secondary">
@@ -20,20 +67,226 @@
                         </a>
                     </div>
                 </div>
-                
-                <div class="alert alert-info">
-                    <i class="fas fa-info-circle me-2"></i>
-                    Salary breakdown view is under development. Please check back later.
+
+                <!-- Employee Summary Card -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <small class="text-muted">Employee ID</small>
+                                <h6 th:text="'EMP-' + ${employee.id}"></h6>
+                            </div>
+                            <div class="col-md-3">
+                                <small class="text-muted">Position</small>
+                                <h6 th:text="${employee.position}"></h6>
+                            </div>
+                            <div class="col-md-3">
+                                <small class="text-muted">Department</small>
+                                <h6 th:text="${employee.department}"></h6>
+                            </div>
+                            <div class="col-md-3">
+                                <small class="text-muted">Band Level</small>
+                                <h6>
+                                    <span class="badge bg-primary badge-level" th:text="${employee.bandLevel}"></span>
+                                </h6>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                
-                <div class="card">
-                    <div class="card-body text-center py-5">
-                        <i class="fas fa-chart-pie fa-4x text-muted mb-4"></i>
-                        <h5 class="text-muted">Salary Breakdown View Coming Soon</h5>
-                        <p class="text-muted">This feature will show detailed salary components and calculations.</p>
-                        <a th:href="@{/payroll/calculate/{employeeId}(employeeId=${employee.id})}" class="btn btn-primary mt-3">
-                            <i class="fas fa-calculator me-2"></i> Calculate Payroll Instead
-                        </a>
+
+                <div class="row">
+                    <!-- Basic Salary Card -->
+                    <div class="col-md-4">
+                        <div class="card breakdown-card">
+                            <div class="breakdown-header">
+                                <h5 class="mb-0"><i class="fas fa-coins me-2"></i>Basic Salary</h5>
+                            </div>
+                            <div class="breakdown-section">
+                                <div class="breakdown-item">
+                                    <span>Base Salary (Band <span th:text="${employee.bandLevel}"></span>)</span>
+                                    <span class="amount" th:text="${#numbers.formatDecimal(employee.salary, 0, 'COMMA', 2, 'POINT') + ' MMK'}"></span>
+                                </div>
+                                <div class="breakdown-item" th:if="${employee.totalBasicSalary != null and employee.totalBasicSalary != ''}">
+                                    <span>Total Basic Salary</span>
+                                    <span class="amount" th:text="${#numbers.formatDecimal(employee.totalBasicSalary, 0, 'COMMA', 2, 'POINT') + ' MMK'}"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Allowances Card -->
+                    <div class="col-md-8">
+                        <div class="card breakdown-card">
+                            <div class="breakdown-header">
+                                <h5 class="mb-0"><i class="fas fa-plus-circle me-2"></i>Allowances & Additions</h5>
+                            </div>
+                            <div class="breakdown-section">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="breakdown-item">
+                                            <span>🏠 House Allowance</span>
+                                            <span class="amount positive" th:text="${employee.houseAllowance != null and employee.houseAllowance != '' ? #numbers.formatDecimal(employee.houseAllowance, 0, 'COMMA', 2, 'POINT') + ' MMK' : '0.00 MMK'}"></span>
+                                        </div>
+                                        <div class="breakdown-item">
+                                            <span>🚗 Transportation Allowance</span>
+                                            <span class="amount positive" th:text="${employee.transportationAllowance != null and employee.transportationAllowance != '' ? #numbers.formatDecimal(employee.transportationAllowance, 0, 'COMMA', 2, 'POINT') + ' MMK' : '0.00 MMK'}"></span>
+                                        </div>
+                                        <div class="breakdown-item">
+                                            <span>📚 Education Allowance</span>
+                                            <span class="amount positive" th:text="${employee.educationAllowance != null and employee.educationAllowance != '' ? #numbers.formatDecimal(employee.educationAllowance, 0, 'COMMA', 2, 'POINT') + ' MMK' : '0.00 MMK'}"></span>
+                                            <small class="text-muted" th:if="${employee.educationLevel}" th:text="'(' + ${employee.educationLevel} + ')'"></small>
+                                        </div>
+                                        <div class="breakdown-item">
+                                            <span>📊 Evaluation Allowance</span>
+                                            <span class="amount positive" th:text="${employee.evaluationAllowance != null and employee.evaluationAllowance != '' ? #numbers.formatDecimal(employee.evaluationAllowance, 0, 'COMMA', 2, 'POINT') + ' MMK' : '0.00 MMK'}"></span>
+                                            <small class="text-muted" th:if="${employee.evaluationGrade}" th:text="'(' + ${employee.evaluationGrade} + ')'"></small>
+                                        </div>
+                                        <div class="breakdown-item">
+                                            <span>🇯🇵 Japanese Allowance</span>
+                                            <span class="amount positive" th:text="${employee.japaneseAllowance != null and employee.japaneseAllowance != '' ? #numbers.formatDecimal(employee.japaneseAllowance, 0, 'COMMA', 2, 'POINT') + ' MMK' : '0.00 MMK'}"></span>
+                                            <small class="text-muted" th:if="${employee.japaneseLevel}" th:text="'(' + ${employee.japaneseLevel} + ')'"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="breakdown-item">
+                                            <span>🇬🇧 English Allowance</span>
+                                            <span class="amount positive" th:text="${employee.englishAllowance != null and employee.englishAllowance != '' ? #numbers.formatDecimal(employee.englishAllowance, 0, 'COMMA', 2, 'POINT') + ' MMK' : '0.00 MMK'}"></span>
+                                        </div>
+                                        <div class="breakdown-item">
+                                            <span>⭐ Service Allowance</span>
+                                            <span class="amount positive" th:text="${employee.serviceAllowance != null and employee.serviceAllowance != '' ? #numbers.formatDecimal(employee.serviceAllowance, 0, 'COMMA', 2, 'POINT') + ' MMK' : '0.00 MMK'}"></span>
+                                            <small class="text-muted" th:if="${employee.myanmarServiceYears}" th:text="'(' + ${employee.myanmarServiceYears} + ' yrs)'"></small>
+                                        </div>
+                                        <div class="breakdown-item">
+                                            <span>📋 Assignment Allowance</span>
+                                            <span class="amount positive" th:text="${employee.assignmentAllowance != null and employee.assignmentAllowance != '' ? #numbers.formatDecimal(employee.assignmentAllowance, 0, 'COMMA', 2, 'POINT') + ' MMK' : '0.00 MMK'}"></span>
+                                            <small class="text-muted" th:if="${employee.assignmentLevel}" th:text="'(' + ${employee.assignmentLevel} + ')'"></small>
+                                        </div>
+                                        <div class="breakdown-item">
+                                            <span>👔 Management Allowance</span>
+                                            <span class="amount positive" th:text="${employee.managementAllowance != null and employee.managementAllowance != '' ? #numbers.formatDecimal(employee.managementAllowance, 0, 'COMMA', 2, 'POINT') + ' MMK' : '0.00 MMK'}"></span>
+                                            <small class="text-muted" th:if="${employee.managementLevel}" th:text="'(' + ${employee.managementLevel} + ')'"></small>
+                                        </div>
+                                        <div class="breakdown-item">
+                                            <span>🏆 Perfect Attendance</span>
+                                            <span class="amount positive" th:text="${employee.perfectAttendanceAllowance != null and employee.perfectAttendanceAllowance != '' ? #numbers.formatDecimal(employee.perfectAttendanceAllowance, 0, 'COMMA', 2, 'POINT') + ' MMK' : '0.00 MMK'}"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Total Allowances -->
+                                <div class="total-section mt-3" th:if="${employee.totalAllowances != null and employee.totalAllowances != ''}">
+                                    <div class="breakdown-item">
+                                        <strong>Total Allowances</strong>
+                                        <strong class="amount positive" th:text="${#numbers.formatDecimal(employee.totalAllowances, 0, 'COMMA', 2, 'POINT') + ' MMK'}"></strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-4">
+                    <!-- Deductions Card -->
+                    <div class="col-md-6">
+                        <div class="card breakdown-card">
+                            <div class="breakdown-header bg-danger">
+                                <h5 class="mb-0"><i class="fas fa-minus-circle me-2"></i>Deductions</h5>
+                            </div>
+                            <div class="breakdown-section">
+                                <div class="breakdown-item">
+                                    <span>💰 SSC Deduction</span>
+                                    <span class="amount negative" th:text="${employee.sscDeduction != null and employee.sscDeduction != '' ? #numbers.formatDecimal(employee.sscDeduction, 0, 'COMMA', 2, 'POINT') + ' MMK' : '0.00 MMK'}"></span>
+                                </div>
+                                <div class="breakdown-item">
+                                    <span>✈️ Company Trip Deduction</span>
+                                    <span class="amount negative" th:text="${employee.companyTripDeduction != null and employee.companyTripDeduction != '' ? #numbers.formatDecimal(employee.companyTripDeduction, 0, 'COMMA', 2, 'POINT') + ' MMK' : '0.00 MMK'}"></span>
+                                </div>
+                                
+                                <!-- Total Deductions -->
+                                <div class="total-section mt-3" th:if="${employee.totalDeductions != null and employee.totalDeductions != ''}">
+                                    <div class="breakdown-item">
+                                        <strong>Total Deductions</strong>
+                                        <strong class="amount negative" th:text="${#numbers.formatDecimal(employee.totalDeductions, 0, 'COMMA', 2, 'POINT') + ' MMK'}"></strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Net Salary Card -->
+                    <div class="col-md-6">
+                        <div class="card breakdown-card">
+                            <div class="breakdown-header bg-success">
+                                <h5 class="mb-0"><i class="fas fa-wallet me-2"></i>Net Salary</h5>
+                            </div>
+                            <div class="breakdown-section">
+                                <div class="breakdown-item">
+                                    <span>Basic Salary</span>
+                                    <span class="amount" th:text="${#numbers.formatDecimal(employee.salary, 0, 'COMMA', 2, 'POINT') + ' MMK'}"></span>
+                                </div>
+                                <div class="breakdown-item">
+                                    <span>Total Allowances</span>
+                                    <span class="amount positive" th:text="${employee.totalAllowances != null and employee.totalAllowances != '' ? #numbers.formatDecimal(employee.totalAllowances, 0, 'COMMA', 2, 'POINT') + ' MMK' : '0.00 MMK'}"></span>
+                                </div>
+                                <div class="breakdown-item">
+                                    <span>Total Deductions</span>
+                                    <span class="amount negative" th:text="${employee.totalDeductions != null and employee.totalDeductions != '' ? '- ' + #numbers.formatDecimal(employee.totalDeductions, 0, 'COMMA', 2, 'POINT') + ' MMK' : '0.00 MMK'}"></span>
+                                </div>
+                                <hr>
+                                <div class="breakdown-item">
+                                    <h5 class="mb-0">Net Salary</h5>
+                                    <h5 class="mb-0 amount text-primary" th:text="${employee.netSalary != null and employee.netSalary != '' ? #numbers.formatDecimal(employee.netSalary, 0, 'COMMA', 2, 'POINT') + ' MMK' : #numbers.formatDecimal(employee.salary, 0, 'COMMA', 2, 'POINT') + ' MMK'}"></h5>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex gap-2 mt-3">
+                            <a th:href="@{/payroll/calculate/{employeeId}(employeeId=${employee.id})}" 
+                               class="btn btn-primary flex-fill">
+                                <i class="fas fa-calculator me-2"></i> Calculate Payroll
+                            </a>
+                            <a th:href="@{/payroll/view/{employeeId}(employeeId=${employee.id})}" 
+                               class="btn btn-info flex-fill">
+                                <i class="fas fa-history me-2"></i> View History
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Service Years Information -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Service Information</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <small class="text-muted">Start Date</small>
+                                        <h6 th:text="${employee.start_date}"></h6>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <small class="text-muted">Myanmar Service Years</small>
+                                        <h6 th:text="${employee.myanmarServiceYears != null ? employee.myanmarServiceYears : '0'} + ' years'"></h6>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <small class="text-muted">GICP Service Years</small>
+                                        <h6 th:text="${employee.gicpServiceYears != null ? employee.gicpServiceYears : '0'} + ' years'"></h6>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <small class="text-muted">Employment Status</small>
+                                        <h6>
+                                            <span class="badge" 
+                                                  th:classappend="${employee.employment_status == 'Permanent' ? 'bg-success' : 'bg-info'}"
+                                                  th:text="${employee.employment_status}"></span>
+                                        </h6>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

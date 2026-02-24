@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/dashboard-layout}">
+<head>
+    <title>Upload Excel - Employee Management</title>
+    <style>
+        .upload-area {
+            border: 2px dashed #dee2e6;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            background: #f8f9fa;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .upload-area:hover {
+            border-color: #0d6efd;
+            background: #e9ecef;
+        }
+        .upload-area.dragover {
+            border-color: #0d6efd;
+            background: #e2e3e5;
+        }
+        .template-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+        }
+        .file-info {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div layout:fragment="dashboard-content">
+        <div class="row">
+            <div class="col-12">
+                <!-- Page Header -->generateAndDownloadTemplate
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h4 class="mb-0">Upload Excel File</h4>
+                        <p class="text-muted mb-0">Bulk import employees from Excel file</p>
+                    </div>
+                    <div>
+                        <a th:href="@{/employees/manage}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i> Back to List
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Alert Messages -->
+                <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-2"></i> <span th:text="${success}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                
+                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-circle me-2"></i> <span th:text="${error}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                
+                <div th:if="${warning}" class="alert alert-warning alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i> <span th:text="${warning}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                
+                <div th:if="${warnings}" class="alert alert-warning" role="alert">
+                    <h6 class="alert-heading"><i class="fas fa-exclamation-triangle me-2"></i>Import Warnings:</h6>
+                    <ul class="mb-0">
+                        <li th:each="warning : ${warnings}" th:text="${warning}"></li>
+                    </ul>
+                </div>
+
+                <div class="row">
+                    <!-- Upload Form -->
+                    <div class="col-md-8">
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <form th:action="@{/employees/upload-excel}" 
+                                      method="post" 
+                                      enctype="multipart/form-data"
+                                      id="uploadForm">
+                                    
+                                    <div class="mb-4">
+                                        <label class="form-label fw-bold">Select Excel File</label>
+                                        <div class="upload-area" id="uploadArea">
+                                            <i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
+                                            <h5>Drag & Drop or Click to Upload</h5>
+                                            <p class="text-muted mb-2">Supported formats: .xlsx, .xls</p>
+                                            <p class="text-muted small">Maximum file size: 10MB</p>
+                                            <input type="file" 
+                                                   name="file" 
+                                                   id="fileInput" 
+                                                   accept=".xlsx,.xls"
+                                                   class="d-none"
+                                                   required>
+                                            <button type="button" class="btn btn-primary" id="browseBtn">
+                                                <i class="fas fa-folder-open me-2"></i>Browse Files
+                                            </button>
+                                        </div>
+                                        <div id="fileInfo" class="file-info bg-light d-none">
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-file-excel fa-2x text-success me-3"></i>
+                                                <div class="flex-grow-1">
+                                                    <h6 class="mb-1" id="fileName">filename.xlsx</h6>
+                                                    <p class="text-muted small mb-0" id="fileSize">0 KB</p>
+                                                </div>
+                                                <button type="button" class="btn btn-sm btn-outline-danger" id="removeFile">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Import Options -->
+                                    <div class="mb-4">
+                                        <label class="form-label fw-bold">Import Options</label>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="skipDuplicates" checked>
+                                            <label class="form-check-label" for="skipDuplicates">
+                                                Skip duplicate Employee IDs
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="validateData" checked>
+                                            <label class="form-check-label" for="validateData">
+                                                Validate data before import
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <!-- Submit Buttons -->
+                                    <div class="d-flex gap-2">
+                                        <button type="submit" class="btn btn-primary" id="uploadBtn" disabled>
+                                            <i class="fas fa-upload me-2"></i>Upload & Import
+                                        </button>
+                                        <button type="reset" class="btn btn-outline-secondary" id="resetBtn">
+                                            <i class="fas fa-redo me-2"></i>Reset
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Template & Instructions -->
+                    <div class="col-md-4">
+                        <!-- Template Download -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-primary text-white">
+                                <h6 class="mb-0"><i class="fas fa-download me-2"></i>Download Template</h6>
+                            </div>
+                            <div class="card-body">
+                                <p class="small text-muted mb-3">
+                                    Download our Excel template to ensure correct format for bulk import.
+                                </p>
+                                <a href="#" class="btn btn-outline-primary w-100 mb-2" id="downloadTemplate">
+                                    <i class="fas fa-file-excel me-2"></i>Employee Template.xlsx
+                                </a>
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle"></i> Includes all required fields and data validation
+                                </small>
+                            </div>
+                        </div>
+
+                        <!-- Instructions -->
+                        <div class="card">
+                            <div class="card-header bg-secondary text-white">
+                                <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Instructions</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="small">
+                                    <p class="fw-bold mb-2">File Requirements:</p>
+                                    <ul class="text-muted ps-3">
+                                        <li>Use the provided template format</li>
+                                        <li>First row must be headers</li>
+                                        <li>Required fields: Employee ID, Full Name, Email, Phone, Department</li>
+                                        <li>Date format: YYYY-MM-DD</li>
+                                        <li>Band levels: Band1 through Band8</li>
+                                        <li>Departments: IT, HRM, Technical, Design, Finance</li>
+                                        <li>Employment status: Active, Inactive, On Leave, Contract, Probation</li>
+                                    </ul>
+                                    
+                                    <p class="fw-bold mb-2 mt-3">Auto-calculated Fields:</p>
+                                    <ul class="text-muted ps-3">
+                                        <li>Salary - Based on Band Level</li>
+                                        <li>Transportation Fee - Based on Bus Route (Route × 800 MMK)</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <th:block layout:fragment="scripts">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+        <script>
+            // File upload handling
+            const uploadArea = document.getElementById('uploadArea');
+            const fileInput = document.getElementById('fileInput');
+            const browseBtn = document.getElementById('browseBtn');
+            const fileInfo = document.getElementById('fileInfo');
+            const fileName = document.getElementById('fileName');
+            const fileSize = document.getElementById('fileSize');
+            const removeFile = document.getElementById('removeFile');
+            const uploadBtn = document.getElementById('uploadBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const uploadForm = document.getElementById('uploadForm');
+
+            // Browse button click
+            browseBtn.addEventListener('click', () => {
+                fileInput.click();
+            });
+
+            // File selection change
+            fileInput.addEventListener('change', handleFileSelect);
+
+            // Drag and drop events
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('dragover');
+            });
+
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    fileInput.files = files;
+                    handleFileSelect();
+                }
+            });
+
+            // Handle file selection
+            function handleFileSelect() {
+                if (fileInput.files.length > 0) {
+                    const file = fileInput.files[0];
+                    
+                    // Validate file type
+                    const validTypes = ['.xlsx', '.xls', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.ms-excel'];
+                    if (!validTypes.includes(file.type) && !file.name.match(/\.(xlsx|xls)$/)) {
+                        alert('Please upload a valid Excel file (.xlsx or .xls)');
+                        fileInput.value = '';
+                        return;
+                    }
+                    
+                    // Validate file size (10MB max)
+                    const maxSize = 10 * 1024 * 1024; // 10MB
+                    if (file.size > maxSize) {
+                        alert('File size must be less than 10MB');
+                        fileInput.value = '';
+                        return;
+                    }
+                    
+                    // Display file info
+                    fileName.textContent = file.name;
+                    const sizeInKB = (file.size / 1024).toFixed(2);
+                    fileSize.textContent = sizeInKB + ' KB';
+                    fileInfo.classList.remove('d-none');
+                    uploadBtn.disabled = false;
+                }
+            }
+
+            // Remove file
+            removeFile.addEventListener('click', () => {
+                fileInput.value = '';
+                fileInfo.classList.add('d-none');
+                uploadBtn.disabled = true;
+            });
+
+            // Reset button
+            resetBtn.addEventListener('click', () => {
+                fileInput.value = '';
+                fileInfo.classList.add('d-none');
+                uploadBtn.disabled = true;
+            });
+
+            // Download template
+            document.getElementById('downloadTemplate').addEventListener('click', function(e) {
+                e.preventDefault();
+                generateAndDownloadTemplate();
+            });
+
+            // Generate and download Excel template
+            // Generate and download Excel template
+            function generateAndDownloadTemplate() {
+                // Template headers
+                const headers = [
+                    'Employee ID',
+                    'Full Name',
+                    'Date of Birth',
+                    'Gender',
+                    'Nationality',
+                    'NIC',
+                    'Email',
+                    'Phone Number',
+                    'Address',
+                    'Assignment Level',
+                    'Management Level',
+                    'Bus Route',
+                    'Education Level',
+                    'Evaluation Grade',
+                    'Japanese Level',
+                    'Japanese NAT Test',
+                    'English Level',
+                    'Department',
+                    'Position',
+                    'Band Level',
+                    'Start Date',
+                    'Employment Status'
+                ];
+                
+                // Sample data
+                const sampleData = [
+                    '201234',
+                    'John Doe',
+                    '1990-01-01',
+                    'Male',
+                    'Myanmar',
+                    '12/UKN(N)123456',
+                    'john.doe@example.com',
+                    '09123456789',
+                    '123 Example Street',
+                    'TL',
+                    'Leader',
+                    '1',
+                    'Master',
+                    'A',
+                    'N2',
+                    'N2',
+                    'TOEIC 730+/TOEFL 550+/IELTS 6.5+',
+                    'IT',
+                    'Software Engineer',
+                    'Band3',
+                    '2024-01-01',
+                    'Active'
+                ];
+                
+                // Create workbook and worksheet
+                const wb = XLSX.utils.book_new();
+                const ws = XLSX.utils.aoa_to_sheet([headers, sampleData]);
+                
+                // Set column widths (optional but recommended)
+                const colWidths = [
+                    { wch: 12 }, // Employee ID
+                    { wch: 20 }, // Full Name
+                    { wch: 15 }, // Date of Birth
+                    { wch: 8 },  // Gender
+                    { wch: 12 }, // Nationality
+                    { wch: 18 }, // NIC
+                    { wch: 25 }, // Email
+                    { wch: 15 }, // Phone Number
+                    { wch: 30 }, // Address
+                    { wch: 10 }, // Assignment Level
+                    { wch: 15 }, // Management Level
+                    { wch: 10 }, // Bus Route
+                    { wch: 15 }, // Education Level
+                    { wch: 15 }, // Evaluation Grade
+                    { wch: 15 }, // Japanese Level
+                    { wch: 15 }, // Japanese NAT Test
+                    { wch: 30 }, // English Level
+                    { wch: 12 }, // Department
+                    { wch: 25 }, // Position
+                    { wch: 8 },  // Band Level
+                    { wch: 12 }, // Start Date
+                    { wch: 15 }  // Employment Status
+                ];
+                ws['!cols'] = colWidths;
+                
+                // Add the worksheet to the workbook
+                XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+                
+                // Generate and download the Excel file
+                XLSX.writeFile(wb, 'employee_template.xlsx');
+            }
+
+            // Form submit validation
+            uploadForm.addEventListener('submit', function(e) {
+                if (fileInput.files.length === 0) {
+                    e.preventDefault();
+                    alert('Please select a file to upload');
+                }
+            });
+        </script>
+    </th:block>
+</body>
+</html>
