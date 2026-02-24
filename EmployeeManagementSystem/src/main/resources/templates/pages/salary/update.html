@@ -92,15 +92,15 @@
                 </div>
                 <div class="col-md-3">
                     <small class="text-muted">Current Band Level</small>
-                    <p class="mb-0" th:text="${employee.bandLevel ?: 'Not Set'}"></p>
+                    <p class="mb-0" th:text="${employee.bandLevel != null ? employee.bandLevel : 'Not Set'}"></p>
                 </div>
                 <div class="col-md-3">
                     <small class="text-muted">Current Basic Salary</small>
-                    <p class="mb-0 fw-bold" th:text="${employee.salary ? '$' + employee.salary : 'Not Set'}"></p>
+                    <p class="mb-0 fw-bold" th:text="${employee.salary != null ? '$' + #numbers.formatDecimal(employee.salary, 0, 'COMMA', 2, 'POINT') : 'Not Set'}"></p>
                 </div>
                 <div class="col-md-3">
                     <small class="text-muted">Current Net Salary</small>
-                    <p class="mb-0 fw-bold text-primary" th:text="${employee.netSalary ? '$' + employee.netSalary : 'Not Calculated'}"></p>
+                    <p class="mb-0 fw-bold text-primary" th:text="${employee.netSalary != null and employee.netSalary != '' ? '$' + #numbers.formatDecimal(employee.netSalary, 0, 'COMMA', 2, 'POINT') : 'Not Calculated'}"></p>
                 </div>
             </div>
         </div>
@@ -136,7 +136,7 @@
                                            class="form-control fw-bold" 
                                            id="calculatedSalary"
                                            readonly
-                                           th:value="${@salaryService.calculateBasicSalary(employee.bandLevel)}">
+                                           th:value="${@salaryCalculationService.calculateBasicSalary(employee.bandLevel)}">
                                 </div>
                                 <div class="form-text">Based on selected band level</div>
                             </div>
@@ -361,8 +361,7 @@
                                            id="houseAllowance"
                                            th:field="*{houseAllowance}"
                                            step="0.01"
-                                           min="0"
-                                           th:value="${employee.houseAllowance ?: '100000'}">
+                                           min="0">
                                 </div>
                             </div>
                             <div class="col-md-6 mb-3">
@@ -374,8 +373,7 @@
                                            id="transportationAllowance"
                                            th:field="*{transportationAllowance}"
                                            step="0.01"
-                                           min="0"
-                                           th:value="${employee.transportationAllowance ?: '50000'}">
+                                           min="0">
                                 </div>
                             </div>
                         </div>
@@ -389,8 +387,7 @@
                                            id="perfectAttendanceAllowance"
                                            th:field="*{perfectAttendanceAllowance}"
                                            step="0.01"
-                                           min="0"
-                                           th:value="${employee.perfectAttendanceAllowance ?: '10000'}">
+                                           min="0">
                                 </div>
                             </div>
                         </div>
@@ -435,7 +432,7 @@
                             <div class="mb-3">
                                 <small class="text-muted">Education Allowance</small>
                                 <div class="d-flex justify-content-between">
-                                    <span id="summaryEducationLevel" th:text="${employee.educationLevel ?: 'Not set'}"></span>
+                                    <span id="summaryEducationLevel" th:text="${employee.educationLevel != null ? employee.educationLevel : 'Not set'}"></span>
                                     <span class="allowance-amount" id="summaryEducationAllowance">$0.00</span>
                                 </div>
                             </div>
@@ -443,7 +440,7 @@
                             <div class="mb-3">
                                 <small class="text-muted">Evaluation Allowance</small>
                                 <div class="d-flex justify-content-between">
-                                    <span id="summaryEvaluationGrade" th:text="${employee.evaluationGrade ?: 'Not set'}"></span>
+                                    <span id="summaryEvaluationGrade" th:text="${employee.evaluationGrade != null ? employee.evaluationGrade : 'Not set'}"></span>
                                     <span class="allowance-amount" id="summaryEvaluationAllowance">$0.00</span>
                                 </div>
                             </div>
@@ -451,7 +448,7 @@
                             <div class="mb-3">
                                 <small class="text-muted">Japanese Allowance</small>
                                 <div class="d-flex justify-content-between">
-                                    <span id="summaryJapaneseLevel" th:text="${employee.japaneseLevel ?: 'Not set'}"></span>
+                                    <span id="summaryJapaneseLevel" th:text="${employee.japaneseLevel != null ? employee.japaneseLevel : 'Not set'}"></span>
                                     <span class="allowance-amount" id="summaryJapaneseAllowance">$0.00</span>
                                 </div>
                             </div>
@@ -467,12 +464,12 @@
                             <div class="mb-3">
                                 <small class="text-muted">Assignment Allowance</small>
                                 <div class="d-flex justify-content-between">
-                                    <span id="summaryAssignmentLevel" th:text="${employee.assignmentLevel ?: 'Not set'}"></span>
+                                    <span id="summaryAssignmentLevel" th:text="${employee.assignmentLevel != null ? employee.assignmentLevel : 'Not set'}"></span>
                                     <span class="allowance-amount" id="summaryAssignmentAllowance">$0.00</span>
                                 </div>
                             </div>
                             
-                            <div th:if="${employee.managementLevel}">
+                            <div th:if="${employee.managementLevel != null}" class="mb-3">
                                 <small class="text-muted">Management Allowance</small>
                                 <div class="d-flex justify-content-between">
                                     <span id="summaryManagementLevel" th:text="${employee.managementLevel}"></span>
@@ -596,9 +593,9 @@
             // Assignment allowance mapping
             const assignmentAllowances = {
                 'Sub TL': 100000,
-                'TL': 200000,
-                'PL': 200000,
-                'Senior PL': 1000000
+                'TL': 300000,
+                'HL': 200000,
+                'Senior TL': 300000
             };
 
             // Management allowance mapping
@@ -649,9 +646,9 @@
                 const myanmarYears = parseInt(document.getElementById('myanmarServiceYears').value) || 0;
                 const gicpYears = parseInt(document.getElementById('gicpServiceYears').value) || 0;
                 
-                const houseAllowance = parseFloat(document.getElementById('houseAllowance').value) || 100000;
-                const transportationAllowance = parseFloat(document.getElementById('transportationAllowance').value) || 50000;
-                const perfectAttendance = parseFloat(document.getElementById('perfectAttendanceAllowance').value) || 10000;
+                const houseAllowance = parseFloat(document.getElementById('houseAllowance').value) || 0;
+                const transportationAllowance = parseFloat(document.getElementById('transportationAllowance').value) || 0;
+                const perfectAttendance = parseFloat(document.getElementById('perfectAttendanceAllowance').value) || 0;
 
                 // Calculate values
                 const basicSalary = bandSalaries[bandLevel] || 0;

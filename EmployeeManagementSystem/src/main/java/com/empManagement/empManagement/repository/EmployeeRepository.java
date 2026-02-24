@@ -46,4 +46,6 @@ public interface EmployeeRepository extends JpaRepository<Employee, Integer> {
 
     @Query("SELECT e FROM Employee e WHERE e.busRoute = :busRoute")
     List<Employee> findByBusRoute(@Param("busRoute") Integer busRoute);
+
+    Employee findByEmployeeId(String employeeId);
 }

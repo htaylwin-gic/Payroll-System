@@ -56,6 +56,10 @@ public class EmployeeService {
         return employeeRepository.findByKeyword(keyword);
     }
 
+    public Employee findByEmployeeId(String employeeId) {
+        return employeeRepository.findByEmployeeId(employeeId);
+    }
+
     // Payroll operations
     @Transactional
     public EmployeePayroll calculatePayroll(Integer employeeId, String monthYear, PayrollRequest payrollRequest) {
