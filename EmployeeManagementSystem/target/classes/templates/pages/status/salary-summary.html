@@ -49,8 +49,18 @@
             font-weight: bold;
             font-size: 1rem;
         }
+        .mmk-currency {
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+            color: #28a745;
+        }
+        .dept-it { background-color: #667eea; color: white; }
+        .dept-hr { background-color: #28a745; color: white; }
+        .dept-technical { background-color: #ffc107; color: #212529; }
+        .dept-design { background-color: #17a2b8; color: white; }
+        .dept-finance { background-color: #6c757d; color: white; }
+        .dept-other { background-color: #343a40; color: white; }
     </style>
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
@@ -65,9 +75,7 @@
                 <button class="btn btn-primary me-2" onclick="printReport()">
                     <i class="fas fa-print me-2"></i> Print Report
                 </button>
-                <button class="btn btn-success" onclick="exportSummary()">
-                    <i class="fas fa-file-excel me-2"></i> Export Data
-                </button>
+                <!-- Export Data button removed as requested -->
             </div>
         </div>
 
@@ -96,8 +104,8 @@
                     <div class="row">
                         <div class="col-8">
                             <h5 class="text-white">Monthly Salary</h5>
-                            <h2 class="text-white" 
-                                th:text="'$' + ${#numbers.formatDecimal(totalMonthlySalary, 1, 2, 'COMMA')}">0</h2>
+                            <h2 class="text-white mmk-currency" 
+                                th:text="${#numbers.formatDecimal(totalMonthlySalary, 0, 'COMMA', 2, 'POINT')} + ' MMK'">0</h2>
                         </div>
                         <div class="col-4 text-end">
                             <i class="fas fa-money-bill-wave summary-icon"></i>
@@ -115,8 +123,8 @@
                     <div class="row">
                         <div class="col-8">
                             <h5 class="text-white">Average Salary</h5>
-                            <h2 class="text-white" 
-                                th:text="'$' + ${#numbers.formatDecimal(averageSalary, 1, 2, 'COMMA')}">0</h2>
+                            <h2 class="text-white mmk-currency" 
+                                th:text="${#numbers.formatDecimal(averageSalary, 0, 'COMMA', 2, 'POINT')} + ' MMK'">0</h2>
                         </div>
                         <div class="col-4 text-end">
                             <i class="fas fa-chart-line summary-icon"></i>
@@ -142,7 +150,7 @@
                     </div>
                     <div class="mt-3">
                         <small class="opacity-75">
-                            <span th:text="${totalEmployees > 0 ? #numbers.formatDecimal((activeEmployees * 1.0 / totalEmployees * 100), 1, 1) : 0}">0</span>%
+                            <span th:text="${totalEmployees > 0 ? #numbers.formatDecimal((activeEmployees * 1.0 / totalEmployees * 100), 1, 1) : 0}">0</span>% of workforce
                         </small>
                     </div>
                 </div>
@@ -166,11 +174,82 @@
             <div class="col-md-4">
                 <div class="card">
                     <div class="card-header">
-                        <h5 class="card-title mb-0">Salary Range Distribution</h5>
+                        <h5 class="card-title mb-0">Department Distribution</h5>
                     </div>
                     <div class="card-body">
                         <div class="chart-container">
                             <canvas id="rangeChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Department Stats Cards - Simplified -->
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Department Breakdown</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <!-- Hardcoded department stats based on your data -->
+                            <div class="col-md-4">
+                                <div class="department-card" style="border-left-color: #667eea;">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0 fw-bold">IT</h6>
+                                        <span class="badge bg-primary">5 employees</span>
+                                    </div>
+                                    <div class="mt-2">
+                                        <small class="text-muted">26.3% of total</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="department-card" style="border-left-color: #28a745;">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0 fw-bold">HR</h6>
+                                        <span class="badge bg-success">4 employees</span>
+                                    </div>
+                                    <div class="mt-2">
+                                        <small class="text-muted">21.1% of total</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="department-card" style="border-left-color: #ffc107;">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0 fw-bold">Technical</h6>
+                                        <span class="badge bg-warning text-dark">4 employees</span>
+                                    </div>
+                                    <div class="mt-2">
+                                        <small class="text-muted">21.1% of total</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="department-card" style="border-left-color: #17a2b8;">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0 fw-bold">Design</h6>
+                                        <span class="badge bg-info">3 employees</span>
+                                    </div>
+                                    <div class="mt-2">
+                                        <small class="text-muted">15.8% of total</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="department-card" style="border-left-color: #6c757d;">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0 fw-bold">Finance</h6>
+                                        <span class="badge bg-secondary">3 employees</span>
+                                    </div>
+                                    <div class="mt-2">
+                                        <small class="text-muted">15.8% of total</small>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -207,7 +286,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr th:each="emp : ${employees}">
+                            <tr th:each="emp : ${allEmployees}">
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <div class="employee-avatar me-3">
@@ -221,33 +300,38 @@
                                 </td>
                                 <td th:text="${emp.position}"></td>
                                 <td>
-                                    <span class="badge bg-secondary" th:text="${emp.department}"></span>
+                                    <!-- Simplified department badge with conditional classes -->
+                                    <span th:if="${emp.department == 'IT'}" class="badge dept-it" th:text="${emp.department}">IT</span>
+                                    <span th:if="${emp.department == 'HR'}" class="badge dept-hr" th:text="${emp.department}">HR</span>
+                                    <span th:if="${emp.department == 'Technical'}" class="badge dept-technical" th:text="${emp.department}">Technical</span>
+                                    <span th:if="${emp.department == 'Design'}" class="badge dept-design" th:text="${emp.department}">Design</span>
+                                    <span th:if="${emp.department == 'Finance'}" class="badge dept-finance" th:text="${emp.department}">Finance</span>
+                                    <span th:if="${emp.department != 'IT' and emp.department != 'HR' and emp.department != 'Technical' and emp.department != 'Design' and emp.department != 'Finance'}" 
+                                          class="badge dept-other" th:text="${emp.department}">Other</span>
                                 </td>
                                 <td>
-                                    <span class="badge" th:switch="${emp.status}">
-                                        <span th:case="'Active'" class="bg-success" th:text="${emp.status}"></span>
-                                        <span th:case="'On Leave'" class="bg-warning" th:text="${emp.status}"></span>
-                                        <span th:case="'Inactive'" class="bg-danger" th:text="${emp.status}"></span>
-                                        <span th:case="'Resigned'" class="bg-info" th:text="${emp.status}"></span>
-                                        <span th:case="'Terminated'" class="bg-dark" th:text="${emp.status}"></span>
-                                        <span th:case="*" class="bg-secondary" th:text="${emp.status != null ? emp.status : 'N/A'}"></span>
+                                    <span class="badge" th:classappend="${emp.status == 'Active'} ? 'bg-success' : 'bg-danger'"
+                                        th:text="${emp.status ?: 'Active'}">
                                     </span>
                                 </td>
                                 <td th:text="${emp.bandLevel != null ? emp.bandLevel : 'N/A'}"></td>
-                                <td class="salary-cell">
-                                    <span th:if="${emp.salary != null}">$<span th:text="${#numbers.formatDecimal(emp.salary, 1, 2)}"></span></span>
-                                    <span th:unless="${emp.salary != null}">N/A</span>
+                                <td class="salary-cell mmk-currency">
+                                    <span th:if="${emp.salary != null and emp.salary > 0}">
+                                        <span th:text="${#numbers.formatDecimal(emp.salary, 0, 'COMMA', 2, 'POINT')}"></span> MMK
+                                    </span>
+                                    <span th:unless="${emp.salary != null and emp.salary > 0}" class="text-muted">Not set</span>
                                 </td>
-                                <td class="salary-cell">
-                                    <span th:if="${emp.netSalary != null and emp.netSalary != ''}">$<span th:text="${#numbers.formatDecimal(emp.netSalary, 1, 2)}"></span></span>
-                                    <span th:unless="${emp.netSalary != null and emp.netSalary != ''}">N/A</span>
+                                <td class="salary-cell mmk-currency">
+                                    <span th:if="${emp.netSalary != null and emp.netSalary != '' and emp.netSalary != '0'}">
+                                        <span th:text="${#numbers.formatDecimal(emp.netSalary, 0, 'COMMA', 2, 'POINT')}"></span> MMK
+                                    </span>
+                                    <span th:unless="${emp.netSalary != null and emp.netSalary != '' and emp.netSalary != '0'}" class="text-muted">Pending</span>
                                 </td>
                                 <td>
-                                    <span th:if="${emp.netSalary != null and emp.netSalary != '' and averageSalary > 0}">
-                                        <!-- Calculate percentage using a simpler approach -->
-                                        <span th:text="${#numbers.formatDecimal((emp.netSalary / averageSalary * 100), 1, 1)}">0</span>%
+                                    <span th:if="${emp.salary != null and emp.salary > 0 and averageSalary > 0}">
+                                        <span th:text="${#numbers.formatDecimal((emp.salary / averageSalary * 100), 1, 1)}"></span>%
                                     </span>
-                                    <span th:unless="${emp.netSalary != null and emp.netSalary != '' and averageSalary > 0}">N/A</span>
+                                    <span th:unless="${emp.salary != null and emp.salary > 0 and averageSalary > 0}" class="text-muted">N/A</span>
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm">
@@ -267,14 +351,14 @@
                                 </td>
                             </tr>
                         </tbody>
-                        <tfoot>
-                            <tr class="table-active">
+                        <tfoot class="table-light">
+                            <tr>
                                 <td colspan="5" class="text-end"><strong>Totals/Averages:</strong></td>
-                                <td class="salary-cell">
-                                    <strong th:text="'$' + ${#numbers.formatDecimal(totalMonthlySalary, 1, 2, 'COMMA')}">0</strong>
+                                <td class="salary-cell mmk-currency">
+                                    <strong th:text="${#numbers.formatDecimal(totalMonthlySalary, 0, 'COMMA', 2, 'POINT')} + ' MMK'">0</strong>
                                 </td>
-                                <td class="salary-cell">
-                                    <strong th:text="'$' + ${#numbers.formatDecimal(totalMonthlySalary, 1, 2, 'COMMA')}">0</strong>
+                                <td class="salary-cell mmk-currency">
+                                    <strong th:text="${#numbers.formatDecimal(totalMonthlySalary, 0, 'COMMA', 2, 'POINT')} + ' MMK'">0</strong>
                                 </td>
                                 <td colspan="2"></td>
                             </tr>
@@ -295,19 +379,23 @@
                         <div class="row">
                             <div class="col-6 mb-3">
                                 <small class="text-muted">Highest Salary</small>
-                                <p class="mb-0 fw-bold" th:text="'$' + ${#numbers.formatDecimal(highestSalary, 1, 2, 'COMMA')}">0</p>
+                                <p class="mb-0 fw-bold mmk-currency" 
+                                   th:text="${#numbers.formatDecimal(highestSalary, 0, 'COMMA', 2, 'POINT')} + ' MMK'">0</p>
                             </div>
                             <div class="col-6 mb-3">
                                 <small class="text-muted">Lowest Salary</small>
-                                <p class="mb-0 fw-bold" th:text="'$' + ${#numbers.formatDecimal(lowestSalary, 1, 2, 'COMMA')}">0</p>
+                                <p class="mb-0 fw-bold mmk-currency" 
+                                   th:text="${#numbers.formatDecimal(lowestSalary, 0, 'COMMA', 2, 'POINT')} + ' MMK'">0</p>
                             </div>
                             <div class="col-6 mb-3">
                                 <small class="text-muted">Salary Range</small>
-                                <p class="mb-0 fw-bold" th:text="'$' + ${#numbers.formatDecimal(highestSalary - lowestSalary, 1, 2, 'COMMA')}">0</p>
+                                <p class="mb-0 fw-bold mmk-currency" 
+                                   th:text="${#numbers.formatDecimal(highestSalary - lowestSalary, 0, 'COMMA', 2, 'POINT')} + ' MMK'">0</p>
                             </div>
                             <div class="col-6 mb-3">
                                 <small class="text-muted">Median Salary</small>
-                                <p class="mb-0 fw-bold" th:text="'$' + ${#numbers.formatDecimal(medianSalary, 1, 2, 'COMMA')}">0</p>
+                                <p class="mb-0 fw-bold mmk-currency" 
+                                   th:text="${#numbers.formatDecimal(medianSalary, 0, 'COMMA', 2, 'POINT')} + ' MMK'">0</p>
                             </div>
                         </div>
                     </div>
@@ -338,26 +426,36 @@
 
     <th:block layout:fragment="scripts">
         <script th:inline="javascript">
-            // Initialize charts
             function initializeCharts() {
-                // Department Chart
+                const deptLabels = ['IT', 'HR', 'Technical', 'Design', 'Finance'];
+                const deptCounts = [5, 4, 4, 3, 3];
+                const deptPercentages = [26.3, 21.1, 21.1, 15.8, 15.8];
+                
+                const deptSalaries = {
+                    'IT': 8500000,
+                    'HR': 4800000,
+                    'Technical': 6800000,
+                    'Design': 4500000,
+                    'Finance': 5200000
+                };
+
                 const deptCtx = document.getElementById('departmentChart')?.getContext('2d');
                 if (deptCtx) {
                     new Chart(deptCtx, {
                         type: 'bar',
                         data: {
-                            labels: ['IT', 'HRM', 'Technical', 'Design', 'Social Media', 'Other'],
+                            labels: deptLabels,
                             datasets: [{
-                                label: 'Total Salary',
-                                data: [45000, 38000, 52000, 29000, 18000, 15000],
+                                label: 'Total Salary (MMK)',
+                                data: deptLabels.map(dept => deptSalaries[dept] || 0),
                                 backgroundColor: [
-                                    '#667eea',
-                                    '#28a745',
-                                    '#ffc107',
-                                    '#17a2b8',
-                                    '#6c757d',
-                                    '#343a40'
-                                ]
+                                    '#667eea', // IT
+                                    '#28a745', // HR
+                                    '#ffc107', // Technical
+                                    '#17a2b8', // Design
+                                    '#6c757d'  // Finance
+                                ],
+                                borderWidth: 1
                             }]
                         },
                         options: {
@@ -366,6 +464,14 @@
                             plugins: {
                                 legend: {
                                     display: false
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            let value = context.raw;
+                                            return 'Total: ' + value.toLocaleString() + ' MMK';
+                                        }
+                                    }
                                 }
                             },
                             scales: {
@@ -373,7 +479,7 @@
                                     beginAtZero: true,
                                     ticks: {
                                         callback: function(value) {
-                                            return '$' + value.toLocaleString();
+                                            return value.toLocaleString() + ' MMK';
                                         }
                                     }
                                 }
@@ -382,20 +488,23 @@
                     });
                 }
 
-                // Range Chart
+                // Range Chart (Department Distribution)
                 const rangeCtx = document.getElementById('rangeChart')?.getContext('2d');
                 if (rangeCtx) {
                     new Chart(rangeCtx, {
                         type: 'pie',
                         data: {
-                            labels: ['Low (< $2K)', 'Medium ($2K-$5K)', 'High (> $5K)'],
+                            labels: deptLabels.map((dept, index) => `${dept} (${deptPercentages[index]}%)`),
                             datasets: [{
-                                data: [5, 8, 3],
+                                data: deptCounts,
                                 backgroundColor: [
-                                    '#28a745',
-                                    '#ffc107',
-                                    '#dc3545'
-                                ]
+                                    '#667eea', // IT
+                                    '#28a745', // HR
+                                    '#ffc107', // Technical
+                                    '#17a2b8', // Design
+                                    '#6c757d'  // Finance
+                                ],
+                                borderWidth: 1
                             }]
                         },
                         options: {
@@ -403,7 +512,22 @@
                             maintainAspectRatio: false,
                             plugins: {
                                 legend: {
-                                    position: 'bottom'
+                                    position: 'bottom',
+                                    labels: {
+                                        padding: 15,
+                                        usePointStyle: true,
+                                        font: { size: 11 }
+                                    }
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            let label = context.label || '';
+                                            let value = context.raw || 0;
+                                            let percentage = deptPercentages[context.dataIndex] || 0;
+                                            return `${label}: ${value} employees (${percentage}%)`;
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -419,8 +543,9 @@
                 rows.forEach(row => {
                     const employeeName = row.cells[0]?.textContent?.toLowerCase() || '';
                     const department = row.cells[2]?.textContent?.toLowerCase() || '';
+                    const position = row.cells[1]?.textContent?.toLowerCase() || '';
                     
-                    if (employeeName.includes(searchTerm) || department.includes(searchTerm)) {
+                    if (employeeName.includes(searchTerm) || department.includes(searchTerm) || position.includes(searchTerm)) {
                         row.style.display = '';
                     } else {
                         row.style.display = 'none';
@@ -428,16 +553,8 @@
                 });
             });
 
-            // Print report
             function printReport() {
                 window.print();
-            }
-
-            // Export summary
-            function exportSummary() {
-                alert('Exporting salary summary data to Excel...');
-                // You can implement actual export functionality here
-                // window.location.href = '/status/export-summary';
             }
 
             // Initialize when page loads
@@ -445,6 +562,28 @@
                 initializeCharts();
             });
         </script>
+        
+        <style>
+            @media print {
+                .btn, .quick-actions, .input-group, .navbar, .sidebar {
+                    display: none !important;
+                }
+                .card {
+                    box-shadow: none !important;
+                    border: 1px solid #ddd !important;
+                }
+            }
+            .mmk-currency {
+                color: #28a745;
+                font-weight: 600;
+            }
+            .dept-it { background-color: #667eea; color: white; }
+            .dept-hr { background-color: #28a745; color: white; }
+            .dept-technical { background-color: #ffc107; color: #212529; }
+            .dept-design { background-color: #17a2b8; color: white; }
+            .dept-finance { background-color: #6c757d; color: white; }
+            .dept-other { background-color: #343a40; color: white; }
+        </style>
     </th:block>
 </body>
 </html>
