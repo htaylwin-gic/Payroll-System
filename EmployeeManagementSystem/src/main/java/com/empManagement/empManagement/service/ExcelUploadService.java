@@ -43,7 +43,6 @@ public class ExcelUploadService {
             Sheet sheet = workbook.getSheetAt(0); // Get first sheet
             Iterator<Row> rowIterator = sheet.iterator();
 
-            // Skip header row
             if (rowIterator.hasNext()) {
                 rowIterator.next();
             }
@@ -65,30 +64,29 @@ public class ExcelUploadService {
 
         try {
             // Personal Information
-            emp.setEmployeeId(getCellValueAsString(row.getCell(0))); // Employee ID
-            emp.setFullName(getCellValueAsString(row.getCell(1))); // Full Name (using setFullName instead of
-                                                                   // setFull_name)
-            emp.setDateOfBirth(getCellValueAsString(row.getCell(2))); // Date of Birth (stored as String)
-            emp.setGender(getCellValueAsString(row.getCell(3))); // Gender
-            emp.setNationality(getCellValueAsString(row.getCell(4))); // Nationality
-            emp.setNIC(getCellValueAsString(row.getCell(5))); // NIC
+            emp.setEmployeeId(getCellValueAsString(row.getCell(0)));
+            emp.setFullName(getCellValueAsString(row.getCell(1)));
+            emp.setDateOfBirth(getCellValueAsString(row.getCell(2)));
+            emp.setGender(getCellValueAsString(row.getCell(3)));
+            emp.setNationality(getCellValueAsString(row.getCell(4)));
+            emp.setNIC(getCellValueAsString(row.getCell(5)));
 
             // Contact Information
-            emp.setEmail(getCellValueAsString(row.getCell(6))); // Email
-            emp.setPhoneNumber(getCellValueAsString(row.getCell(7))); // Phone Number
-            emp.setAddress(getCellValueAsString(row.getCell(8))); // Address
+            emp.setEmail(getCellValueAsString(row.getCell(6)));
+            emp.setPhoneNumber(getCellValueAsString(row.getCell(7)));
+            emp.setAddress(getCellValueAsString(row.getCell(8)));
 
             // Assignment & Management
-            emp.setAssignmentLevel(getCellValueAsString(row.getCell(9))); // Assignment Level
-            emp.setManagementLevel(getCellValueAsString(row.getCell(10))); // Management Level
+            emp.setAssignmentLevel(getCellValueAsString(row.getCell(9)));
+            emp.setManagementLevel(getCellValueAsString(row.getCell(10)));
 
             // Transportation
-            String busRouteStr = getCellValueAsString(row.getCell(11)); // Bus Route
+            String busRouteStr = getCellValueAsString(row.getCell(11));
             if (busRouteStr != null && !busRouteStr.isEmpty()) {
                 try {
                     Integer busRoute = Integer.parseInt(busRouteStr);
-                    emp.setBusRoute(busRoute); // busRoute is Integer
-                    emp.setTransportationFee(busRoute * 800.0); // transportationFee is Double
+                    emp.setBusRoute(busRoute);
+                    emp.setTransportationFee(busRoute * 800.0);
                 } catch (NumberFormatException e) {
                     emp.setBusRoute(0);
                     emp.setTransportationFee(0.0);
@@ -96,17 +94,17 @@ public class ExcelUploadService {
             }
 
             // Language Skills
-            emp.setEducationLevel(getCellValueAsString(row.getCell(12))); // Education Level
-            emp.setEvaluationGrade(getCellValueAsString(row.getCell(13))); // Evaluation Grade
-            emp.setJapaneseLevel(getCellValueAsString(row.getCell(14))); // Japanese Level
-            emp.setJapaneseNatTest(getCellValueAsString(row.getCell(15))); // Japanese NAT Test
-            emp.setEnglishLevel(getCellValueAsString(row.getCell(16))); // English Level
+            emp.setEducationLevel(getCellValueAsString(row.getCell(12)));
+            emp.setEvaluationGrade(getCellValueAsString(row.getCell(13)));
+            emp.setJapaneseLevel(getCellValueAsString(row.getCell(14)));
+            emp.setJapaneseNatTest(getCellValueAsString(row.getCell(15)));
+            emp.setEnglishLevel(getCellValueAsString(row.getCell(16)));
 
             // Employment Information
-            emp.setDepartment(getCellValueAsString(row.getCell(17))); // Department
-            emp.setPosition(getCellValueAsString(row.getCell(18))); // Position
-            emp.setBandLevel(getCellValueAsString(row.getCell(19))); // Band Level
-            emp.setStartDate(getCellValueAsString(row.getCell(20))); // Start Date (stored as String)
+            emp.setDepartment(getCellValueAsString(row.getCell(17)));
+            emp.setPosition(getCellValueAsString(row.getCell(18)));
+            emp.setBandLevel(getCellValueAsString(row.getCell(19)));
+            emp.setStartDate(getCellValueAsString(row.getCell(20)));
 
             // Auto-calculate salary based on band level
             String bandLevel = emp.getBandLevel();
@@ -114,7 +112,7 @@ public class ExcelUploadService {
                 emp.setSalary(BAND_SALARIES.get(bandLevel));
             }
 
-            emp.setEmploymentStatus(getCellValueAsString(row.getCell(21))); // Employment Status
+            emp.setEmploymentStatus(getCellValueAsString(row.getCell(21)));
 
             // Set default status if not provided
             if (emp.getEmploymentStatus() == null || emp.getEmploymentStatus().isEmpty()) {

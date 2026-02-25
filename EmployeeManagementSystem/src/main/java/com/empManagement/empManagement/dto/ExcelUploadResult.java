@@ -11,7 +11,6 @@ public class ExcelUploadResult {
     private List<Employee> successfulEmployees = new ArrayList<>();
     private List<String> errorMessages = new ArrayList<>();
 
-    // Getters and Setters
     public int getTotalRows() {
         return totalRows;
     }

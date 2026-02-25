@@ -11,6 +11,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+
 @Service
 @Transactional
 public class EmployeeService {
@@ -60,6 +65,11 @@ public class EmployeeService {
         return employeeRepository.findByEmployeeId(employeeId);
     }
 
+    public Page<Employee> getAllEmployees(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("employeeId").ascending());
+        return employeeRepository.findAll(pageable);
+    }
+
     // Payroll operations
     @Transactional
     public EmployeePayroll calculatePayroll(Integer employeeId, String monthYear, PayrollRequest payrollRequest) {
@@ -77,7 +87,6 @@ public class EmployeeService {
             payroll.setMonthYear(monthYear);
         }
 
-        // Set data
         payroll.setWorkingDays(payrollRequest.getWorkingDays() != null ? payrollRequest.getWorkingDays() : 0);
         payroll.setPresentDays(payrollRequest.getPresentDays() != null ? payrollRequest.getPresentDays() : 0);
         payroll.setLeaveDays(payrollRequest.getLeaveDays() != null ? payrollRequest.getLeaveDays() : 0);
@@ -122,14 +131,11 @@ public class EmployeeService {
                 payrollRequest.getExchangeBenefit() != null ? payrollRequest.getExchangeBenefit() : 0.0);
         payroll.setTravelFee(payrollRequest.getTravelFee() != null ? payrollRequest.getTravelFee() : 0.0);
 
-        // Calculate basic salary from employee
         Double basicSalary = employee.getSalary() != null ? employee.getSalary() : 0.0;
         payroll.setBasicSalary(basicSalary);
 
-        // Calculate payroll amounts
         calculatePayrollAmounts(payroll);
 
-        // Mark employee as having payroll processed
         employee.setIsPayroll("Yes");
         employeeRepository.save(employee);
 
@@ -140,35 +146,28 @@ public class EmployeeService {
         Double basicSalary = payroll.getBasicSalary() != null ? payroll.getBasicSalary() : 0.0;
         Double basicAllowance = payroll.getAllowance() != null ? payroll.getAllowance() : 0.0;
 
-        // Calculate total allowance details
         Double totalAllowanceDetails = getValueOrZero(payroll.getEducationAllowance()) +
                 getValueOrZero(payroll.getEvaluationAllowance()) +
                 getValueOrZero(payroll.getJapaneseJlptAllowance()) +
                 getValueOrZero(payroll.getJapaneseNatAllowance()) +
                 getValueOrZero(payroll.getEnglishAllowance());
 
-        // Calculate service allowance
         Double serviceAllowance = calculateServiceAllowance(
                 payroll.getMyanmarServiceYears(),
                 payroll.getGicjpServiceYears());
 
-        // Calculate assignment and management allowances
         Double assignmentAllowance = calculateAssignmentAllowance(payroll.getAssignmentLevel());
         Double managementAllowance = calculateManagementAllowance(payroll.getManagementLevel());
 
-        // Calculate overtime amount if hours are provided
         Double overtimeAmount = payroll.getOvertime() != null ? payroll.getOvertime() : 0.0;
 
-        // Calculate basic salary after deductions
         Double basicAfterDeduction = basicSalary + basicAllowance;
         basicAfterDeduction -= getValueOrZero(payroll.getLeaveDeduction());
         basicAfterDeduction -= getValueOrZero(payroll.getLateDeduction());
         payroll.setBasicSalaryAfterDeduction(basicAfterDeduction);
 
-        // Calculate net salary
         Double netSalary = basicAfterDeduction;
 
-        // Add all allowances and additions
         netSalary += getValueOrZero(payroll.getHome());
         netSalary += getValueOrZero(payroll.getBonus());
         netSalary += getValueOrZero(payroll.getBusinessTrip());
@@ -183,7 +182,6 @@ public class EmployeeService {
         netSalary += managementAllowance;
         netSalary += overtimeAmount;
 
-        // Subtract deductions
         netSalary -= getValueOrZero(payroll.getIncomeTax());
         netSalary -= getValueOrZero(payroll.getLoanReturn());
         netSalary -= getValueOrZero(payroll.getSsc());
@@ -191,7 +189,6 @@ public class EmployeeService {
 
         payroll.setNetSalary(netSalary);
 
-        // Calculate total payment
         Double totalPayment = netSalary + getValueOrZero(payroll.getTravelFee());
         payroll.setTotalPayment(totalPayment);
     }
@@ -322,7 +319,6 @@ public class EmployeeService {
     public Employee updateEmployeeWithSalary(Employee updatedEmployee) {
         Employee employee = getEmployeeById(updatedEmployee.getId());
 
-        // Update fields
         if (updatedEmployee.getBandLevel() != null) {
             employee.setBandLevel(updatedEmployee.getBandLevel());
         }
@@ -360,7 +356,6 @@ public class EmployeeService {
             employee.setPerfectAttendanceAllowance(updatedEmployee.getPerfectAttendanceAllowance());
         }
 
-        // Calculate and update salary
         salaryCalculationService.calculateAndUpdateEmployeeSalary(employee);
 
         return employeeRepository.save(employee);
@@ -371,11 +366,9 @@ public class EmployeeService {
 
         Map<String, Object> breakdown = new LinkedHashMap<>();
 
-        // Basic salary
         breakdown.put("Basic Salary",
                 employee.getSalary() != null ? String.format("$%,.2f", employee.getSalary()) : "N/A");
 
-        // Allowances
         Map<String, String> allowances = new LinkedHashMap<>();
         addIfNotEmpty(allowances, "Education Allowance", employee.getEducationAllowance());
         addIfNotEmpty(allowances, "Evaluation Allowance", employee.getEvaluationAllowance());
@@ -389,13 +382,11 @@ public class EmployeeService {
         addIfNotEmpty(allowances, "Perfect Attendance", employee.getPerfectAttendanceAllowance());
         breakdown.put("Allowances", allowances);
 
-        // Deductions
         Map<String, String> deductions = new LinkedHashMap<>();
         addIfNotEmpty(deductions, "SSC Deduction", employee.getSscDeduction());
         addIfNotEmpty(deductions, "Company Trip", employee.getCompanyTripDeduction());
         breakdown.put("Deductions", deductions);
 
-        // Totals
         breakdown.put("Total Basic Salary", formatCurrency(employee.getTotalBasicSalary()));
         breakdown.put("Total Allowances", formatCurrency(employee.getTotalAllowances()));
         breakdown.put("Total Deductions", formatCurrency(employee.getTotalDeductions()));
@@ -513,7 +504,6 @@ public class EmployeeService {
         percentages.put("Design", (getCountOfEmployeesDesign() * 100.0) / totalEmployees);
         percentages.put("Finance", (getCountOfEmployeesFinance() * 100.0) / totalEmployees);
 
-        // Calculate "Other" for remaining percentage
         double totalPercentage = percentages.values().stream().mapToDouble(Double::doubleValue).sum();
         percentages.put("Other", 100.0 - totalPercentage);
 

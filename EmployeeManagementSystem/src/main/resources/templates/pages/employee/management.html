@@ -156,6 +156,46 @@
                             </tr>
                         </tbody>
                     </table>
+                    
+                    <!-- Pagination -->
+                    <nav aria-label="Employee table pagination" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            <!-- Previous button -->
+                            <li class="page-item" th:classappend="${currentPage == 0 ? 'disabled' : ''}">
+                                <a class="page-link" 
+                                   th:href="@{/employees/manage(page=${currentPage - 1})}" 
+                                   aria-label="Previous">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                            
+                            <!-- Page numbers -->
+                            <li class="page-item" 
+                                th:each="i : ${#numbers.sequence(0, totalPages - 1)}" 
+                                th:classappend="${i == currentPage ? 'active' : ''}">
+                                <a class="page-link" 
+                                   th:href="@{/employees/manage(page=${i})}" 
+                                   th:text="${i + 1}">1</a>
+                            </li>
+                            
+                            <!-- Next button -->
+                            <li class="page-item" th:classappend="${currentPage == totalPages - 1 ? 'disabled' : ''}">
+                                <a class="page-link" 
+                                   th:href="@{/employees/manage(page=${currentPage + 1})}" 
+                                   aria-label="Next">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                    
+                    <!-- Page info -->
+                    <div class="text-center text-muted small mt-2">
+                        <span th:text="'Showing ' + (${totalElements} == 0 ? 0 : (currentPage * pageSize + 1)) 
+                                      + ' to ' + (${currentPage * pageSize + employees.size()}) 
+                                      + ' of ' + ${totalElements} + ' entries'"></span>
+                    </div>
+                </div>
                 </div>
             </div>
         </div>

@@ -13,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.*;
+import org.springframework.data.domain.Page;
 
 @Controller
 @RequestMapping("/employees")
@@ -39,17 +40,19 @@ public class EmployeeController {
     }
 
     @GetMapping("/manage")
-    public String employeeManagement(Model model) {
-        List<Employee> employees = employeeService.getAllEmployees();
-        // Sort employees by employeeId numerically
-        employees.sort(Comparator.comparing(emp -> {
-            try {
-                return Integer.parseInt(emp.getEmployeeId());
-            } catch (NumberFormatException e) {
-                return 0; // Fallback for non-numeric IDs
-            }
-        }));
-        model.addAttribute("employees", employees);
+    public String employeeManagement(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            Model model) {
+
+        Page<Employee> employeePage = employeeService.getAllEmployees(page, size);
+
+        model.addAttribute("employees", employeePage.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", employeePage.getTotalPages());
+        model.addAttribute("totalElements", employeePage.getTotalElements());
+        model.addAttribute("pageSize", size);
+
         return "pages/employee/management";
     }
 
