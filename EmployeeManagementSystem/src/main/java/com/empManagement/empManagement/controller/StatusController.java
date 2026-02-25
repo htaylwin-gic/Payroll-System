@@ -34,7 +34,12 @@ public class StatusController {
     private static final List<String> STATUS_TYPES = Arrays.asList("Active", "Inactive");
 
     @GetMapping
-    public String statusManagement(@RequestParam(required = false) String status, Model model) {
+    public String statusManagement(
+            @RequestParam(required = false) String status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            Model model) {
+
         List<Employee> allEmployees = employeeService.getAllEmployees();
 
         for (Employee emp : allEmployees) {
@@ -58,12 +63,10 @@ public class StatusController {
                 selectedStatus = status;
             }
         } else {
-            // Default to showing all employees if no status selected
             filteredEmployees = allEmployees;
             selectedStatus = "all";
         }
 
-        // Calculate counts for each status
         long activeCount = allEmployees.stream()
                 .filter(emp -> "Active".equals(emp.getStatus()))
                 .count();
@@ -71,14 +74,29 @@ public class StatusController {
                 .filter(emp -> "Inactive".equals(emp.getStatus()))
                 .count();
 
-        model.addAttribute("employees", filteredEmployees);
+        int totalFiltered = filteredEmployees.size();
+        int start = Math.min(page * size, totalFiltered);
+        int end = Math.min(start + size, totalFiltered);
+        List<Employee> paginatedEmployees = filteredEmployees.subList(start, end);
+
+        int totalPages = (int) Math.ceil((double) totalFiltered / size);
+        int currentPage = page;
+
+        model.addAttribute("employees", paginatedEmployees);
         model.addAttribute("allEmployees", allEmployees);
         model.addAttribute("statusTypes", STATUS_TYPES);
         model.addAttribute("selectedStatus", selectedStatus);
         model.addAttribute("activeCount", activeCount);
         model.addAttribute("inactiveCount", inactiveCount);
         model.addAttribute("totalCount", allEmployees.size());
-        model.addAttribute("filteredCount", filteredEmployees.size());
+        model.addAttribute("filteredCount", totalFiltered);
+
+        // Pagination attributes
+        model.addAttribute("currentPage", currentPage);
+        model.addAttribute("totalPages", totalPages);
+        model.addAttribute("pageSize", size);
+        model.addAttribute("hasNext", currentPage < totalPages - 1);
+        model.addAttribute("hasPrev", currentPage > 0);
 
         return "pages/status/management";
     }
