@@ -58,8 +58,9 @@ public class EmployeeService {
         return employeeRepository.findAll();
     }
 
-    public List<Employee> getByKeyword(String keyword) {
-        return employeeRepository.findByKeyword(keyword);
+    public Page<Employee> searchEmployees(String keyword, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("employeeId").ascending());
+        return employeeRepository.findByKeyword(keyword, pageable);
     }
 
     public Employee findByEmployeeId(String employeeId) {

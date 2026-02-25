@@ -161,9 +161,11 @@
                     <nav aria-label="Employee table pagination" class="mt-4">
                         <ul class="pagination justify-content-center">
                             <!-- Previous button -->
-                            <li class="page-item" th:classappend="${currentPage == 0 ? 'disabled' : ''}">
+                            <li class="page-item" th:classappend="${currentPage != null and currentPage == 0 ? 'disabled' : ''}">
                                 <a class="page-link" 
-                                   th:href="@{/employees/manage(page=${currentPage - 1})}" 
+                                   th:href="${searchKeyword != null} ?
+                                            @{/employees/search(keyword=${searchKeyword}, page=${currentPage - 1})} :
+                                            @{/employees/manage(page=${currentPage - 1})}" 
                                    aria-label="Previous">
                                     <span aria-hidden="true">&laquo;</span>
                                 </a>
@@ -174,14 +176,18 @@
                                 th:each="i : ${#numbers.sequence(0, totalPages - 1)}" 
                                 th:classappend="${i == currentPage ? 'active' : ''}">
                                 <a class="page-link" 
-                                   th:href="@{/employees/manage(page=${i})}" 
+                                   th:href="${searchKeyword != null} ?
+                                            @{/employees/search(keyword=${searchKeyword}, page=${i})} :
+                                            @{/employees/manage(page=${i})}" 
                                    th:text="${i + 1}">1</a>
                             </li>
                             
                             <!-- Next button -->
                             <li class="page-item" th:classappend="${currentPage == totalPages - 1 ? 'disabled' : ''}">
                                 <a class="page-link" 
-                                   th:href="@{/employees/manage(page=${currentPage + 1})}" 
+                                   th:href="${searchKeyword != null} ?
+                                            @{/employees/search(keyword=${searchKeyword}, page=${currentPage + 1})} :
+                                            @{/employees/manage(page=${currentPage + 1})}" 
                                    aria-label="Next">
                                     <span aria-hidden="true">&raquo;</span>
                                 </a>

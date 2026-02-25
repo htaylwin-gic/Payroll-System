@@ -96,10 +96,21 @@ public class EmployeeController {
     }
 
     @GetMapping("/search")
-    public String searchEmployees(@RequestParam("keyword") String keyword, Model model) {
-        List<Employee> results = employeeService.getByKeyword(keyword);
-        model.addAttribute("employees", results);
+    public String searchEmployees(
+            @RequestParam("keyword") String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            Model model) {
+
+        Page<Employee> employeePage = employeeService.searchEmployees(keyword, page, size);
+
+        model.addAttribute("employees", employeePage.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", employeePage.getTotalPages());
+        model.addAttribute("totalElements", employeePage.getTotalElements());
+        model.addAttribute("pageSize", size);
         model.addAttribute("searchKeyword", keyword);
+
         return "pages/employee/management";
     }
 
