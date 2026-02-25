@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.*;
 
 import org.springframework.data.domain.Page;
@@ -291,27 +292,40 @@ public class EmployeeService {
         return employeeRepository.save(employee);
     }
 
+    // Inside EmployeeService.java
+
     public Map<String, Long> getStatusCounts() {
-        List<Employee> allEmployees = getAllEmployees();
+        List<Employee> allEmployees = employeeRepository.findAll();
+        long total = allEmployees.size();
+
+        // Use .equalsIgnoreCase and handle nulls with Objects.equals or a null check
+        long active = allEmployees.stream()
+                .filter(e -> e.getStatus() != null && e.getStatus().equalsIgnoreCase("Active"))
+                .count();
+
+        long onLeave = allEmployees.stream()
+                .filter(e -> e.getStatus() != null && e.getStatus().equalsIgnoreCase("On Leave"))
+                .count();
+
+        // Logic for New Hires (Last 30 days)
+        LocalDate thirtyDaysAgo = LocalDate.now().minusDays(30);
+        long newHires = allEmployees.stream()
+                .filter(e -> {
+                    if (e.getStart_date() == null)
+                        return false;
+                    try {
+                        LocalDate startDate = LocalDate.parse(e.getStart_date());
+                        return !startDate.isBefore(thirtyDaysAgo);
+                    } catch (Exception ex) {
+                        return false;
+                    }
+                }).count();
 
         Map<String, Long> counts = new HashMap<>();
-        counts.put("Total", (long) allEmployees.size());
-        counts.put("Active", allEmployees.stream()
-                .filter(e -> "Active".equals(e.getStatus()))
-                .count());
-        counts.put("Inactive", allEmployees.stream()
-                .filter(e -> "Inactive".equals(e.getStatus()))
-                .count());
-        counts.put("On Leave", allEmployees.stream()
-                .filter(e -> "On Leave".equals(e.getStatus()))
-                .count());
-        counts.put("Resigned", allEmployees.stream()
-                .filter(e -> "Resigned".equals(e.getStatus()))
-                .count());
-        counts.put("Terminated", allEmployees.stream()
-                .filter(e -> "Terminated".equals(e.getStatus()))
-                .count());
-
+        counts.put("total", total);
+        counts.put("active", active);
+        counts.put("onLeave", onLeave);
+        counts.put("newHires", newHires);
         return counts;
     }
 

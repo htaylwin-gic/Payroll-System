@@ -351,7 +351,7 @@
                 const wb = XLSX.utils.book_new();
                 const ws = XLSX.utils.aoa_to_sheet([headers, sampleData]);
                 
-                // Set column widths 
+                // Set column widths (optional but recommended)
                 const colWidths = [
                     { wch: 12 }, // Employee ID
                     { wch: 20 }, // Full Name

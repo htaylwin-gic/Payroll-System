@@ -177,4 +177,14 @@ public class EmployeeController {
 
         return "redirect:/employees/manage";
     }
+
+    @PostMapping("/saveEmployee")
+    public String saveEmployee(@ModelAttribute("employee") Employee employee) {
+        if (employee.getStatus() == null || employee.getStatus().isEmpty()) {
+            employee.setStatus("Active");
+        }
+
+        employeeService.save(employee);
+        return "redirect:/dashboard";
+    }
 }
