@@ -421,9 +421,9 @@
                 const employeeNames = Array.from(selectedCheckboxes).map(cb => cb.dataset.name).join(', ');
                 
                 Swal.fire({
-                    title: `Confirm Bulk ${status}`,
+                    title: `Confirm Bulk ${status === 'Active' ? 'Activation' : 'Deactivation'}`,
                     html: `Are you sure you want to <strong>${statusText}</strong> these employees?<br><br>
-                           <div class="text-muted small" style="max-height: 200px; overflow-y: auto;">${employeeNames}</div>`,
+                        <div class="text-muted small" style="max-height: 200px; overflow-y: auto;">${employeeNames}</div>`,
                     icon: 'question',
                     showCancelButton: true,
                     confirmButtonColor: status === 'Active' ? '#28a745' : '#dc3545',
@@ -432,6 +432,10 @@
                 }).then((result) => {
                     if (result.isConfirmed) {
                         const employeeIds = Array.from(selectedCheckboxes).map(cb => cb.value).join(',');
+                        
+                        // Debug: Log the values
+                        console.log('Employee IDs:', employeeIds);
+                        console.log('New Status:', status);
                         
                         document.getElementById('bulkEmployeeIds').value = employeeIds;
                         document.getElementById('bulkNewStatus').value = status;

@@ -34,9 +34,6 @@
         }
         .status-active { background-color: #28a745; color: white; }
         .status-inactive { background-color: #dc3545; color: white; }
-        .status-leave { background-color: #ffc107; color: #212529; }
-        .status-resigned { background-color: #6c757d; color: white; }
-        .status-terminated { background-color: #343a40; color: white; }
         
         .status-option {
             border: 2px solid #e9ecef;
@@ -106,11 +103,14 @@
                 </div>
                 <div class="col-md-4 text-end">
                     <h5>Current Status</h5>
-                    <div th:if="${employee.status}" 
-                         th:classappend="'current-status status-' + ${employee.status?.toLowerCase()?.replace(' ', '-')}"
-                         th:text="${employee.status}">
+                    <div th:if="${employee.status != null and employee.status == 'Active'}" 
+                         class="current-status status-active" th:text="${employee.status}">
                     </div>
-                    <div th:unless="${employee.status}" class="current-status bg-secondary">
+                    <div th:if="${employee.status != null and employee.status == 'Inactive'}" 
+                         class="current-status status-inactive" th:text="${employee.status}">
+                    </div>
+                    <div th:if="${employee.status == null or (employee.status != 'Active' and employee.status != 'Inactive')}" 
+                         class="current-status bg-secondary">
                         Not Set
                     </div>
                     <p class="mt-2 mb-0">
@@ -132,35 +132,39 @@
                             <!-- Status Options -->
                             <div class="mb-4">
                                 <h6 class="mb-3">Choose Status:</h6>
-                                <div th:each="statusType : ${statusTypes}">
-                                    <div class="status-option" 
-                                         th:onclick="selectStatus('${statusType}')"
-                                         th:id="'status-' + ${statusType?.replace(' ', '-')?.toLowerCase()}">
-                                        <div class="d-flex align-items-center">
-                                            <div class="status-icon">
-                                                <i th:classappend="'fas fa-' + ${statusType == 'Active' ? 'check-circle text-success' : 
-                                                                                  statusType == 'On Leave' ? 'bed text-warning' : 
-                                                                                  statusType == 'Inactive' ? 'user-slash text-danger' : 
-                                                                                  statusType == 'Resigned' ? 'sign-out-alt text-info' : 
-                                                                                  'ban text-dark'}">
-                                                </i>
-                                            </div>
-                                            <div>
-                                                <h6 class="mb-1" th:text="${statusType}"></h6>
-                                                 <!-- <p class="text-muted mb-0" th:id="'desc-' + ${statusType?.replace(' ', '-')?.toLowerCase()}">
-                                                    Loading description...
-                                                </p> -->
-                                                <p class="text-muted mb-0" 
-                                                    th:text= "${statusType == 'Active' ? 'Employee is actively working.' : 
-                                                                statusType == 'On Leave' ? 'Employee is on approved leave.' : 
-                                                                statusType == 'Inactive' ? 'Employee is temporarily inactive.' : 
-                                                                statusType == 'Resigned' ? 'Employee has voluntarily resigned.' : 
-                                                                'Employee has been terminated.'}">
-                                                </p>
-                                            </div>
-                                            <div class="ms-auto">
-                                                <i class="fas fa-check text-success" style="display: none;"></i>
-                                            </div>
+                                
+                                <!-- Active Option -->
+                                <div class="status-option" 
+                                     onclick="selectStatus(this, 'Active')"
+                                     id="status-active">
+                                    <div class="d-flex align-items-center">
+                                        <div class="status-icon">
+                                            <i class="fas fa-check-circle text-success"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-1">Active</h6>
+                                            <p class="text-muted mb-0">Employee is actively working and receiving salary.</p>
+                                        </div>
+                                        <div class="ms-auto">
+                                            <i class="fas fa-check text-success" style="display: none;"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Inactive Option -->
+                                <div class="status-option" 
+                                     onclick="selectStatus(this, 'Inactive')"
+                                     id="status-inactive">
+                                    <div class="d-flex align-items-center">
+                                        <div class="status-icon">
+                                            <i class="fas fa-user-slash text-danger"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-1">Inactive</h6>
+                                            <p class="text-muted mb-0">Employee is inactive and not eligible for salary.</p>
+                                        </div>
+                                        <div class="ms-auto">
+                                            <i class="fas fa-check text-success" style="display: none;"></i>
                                         </div>
                                     </div>
                                 </div>
@@ -170,7 +174,7 @@
                             <input type="hidden" name="status" id="selectedStatus" required>
 
                             <!-- Reason for Change (Optional) -->
-                            <div class="mb-4" id="reasonSection">
+                            <div class="mb-4" id="reasonSection" style="display: none;">
                                 <label for="reason" class="form-label">
                                     Reason for Status Change (Optional)
                                 </label>
@@ -234,28 +238,24 @@
                     <div class="card-body">
                         <div class="mb-3">
                             <small class="text-muted">Employment Status</small>
-                            <p class="mb-0" th:text="${employee.employment_status ?: 'Not specified'}"></p>
+                            <p class="mb-0" th:text="${employee.employment_status != null ? employee.employment_status : 'Not specified'}"></p>
                         </div>
                         <div class="mb-3">
                             <small class="text-muted">Band Level</small>
-                            <p class="mb-0" th:text="${employee.bandLevel ?: 'Not set'}"></p>
+                            <p class="mb-0" th:text="${employee.bandLevel != null ? employee.bandLevel : 'Not set'}"></p>
                         </div>
                         <div class="mb-3">
                             <small class="text-muted">Basic Salary</small>
-                            <p class="mb-0 fw-bold" th:text="${employee.salary ? '$' + employee.salary : 'Not set'}"></p>
+                            <p class="mb-0 fw-bold">
+                                <span th:if="${employee.salary != null}" th:text="${#numbers.formatDecimal(employee.salary, 0, 'COMMA', 2, 'POINT')} + ' MMK'">0 MMK</span>
+                                <span th:unless="${employee.salary != null}">Not set</span>
+                            </p>
                         </div>
                         <div class="mb-3">
                             <small class="text-muted">Net Salary</small>
-                            <p class="mb-0 fw-bold text-primary" th:text="${employee.netSalary ? '$' + employee.netSalary : 'Not calculated'}"></p>
-                        </div>
-                        <div class="mb-3">
-                            <small class="text-muted">Service Years</small>
-                            <p class="mb-0">
-                                <span th:if="${employee.myanmarServiceYears}" 
-                                      th:text="${employee.myanmarServiceYears} + ' years'">
-                                    0 years
-                                </span>
-                                <span th:unless="${employee.myanmarServiceYears}">0 years</span>
+                            <p class="mb-0 fw-bold text-primary">
+                                <span th:if="${employee.netSalary != null and employee.netSalary != ''}" th:text="${#numbers.formatDecimal(employee.netSalary, 0, 'COMMA', 2, 'POINT')} + ' MMK'">0 MMK</span>
+                                <span th:unless="${employee.netSalary != null and employee.netSalary != ''}">Not calculated</span>
                             </p>
                         </div>
                     </div>
@@ -276,28 +276,10 @@
                                class="btn btn-outline-warning">
                                 <i class="fas fa-chart-pie me-2"></i> View Salary Breakdown
                             </a>
-                            <a th:href="@{/salary/update/{id}(id=${employee.id})}" 
-                               class="btn btn-outline-primary">
-                                <i class="fas fa-edit me-2"></i> Update Salary Details
-                            </a>
                             <a th:href="@{/payroll/calculate/{employeeId}(employeeId=${employee.id})}" 
                                class="btn btn-outline-success">
                                 <i class="fas fa-calculator me-2"></i> Calculate Payroll
                             </a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Status Change History -->
-                <div class="card mt-4">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">Recent Changes</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="text-center text-muted py-3">
-                            <i class="fas fa-history fa-2x mb-3"></i>
-                            <p class="mb-0">Status change history will appear here</p>
-                            <small>Enable logging to track status changes</small>
                         </div>
                     </div>
                 </div>
@@ -306,24 +288,9 @@
     </div>
 
     <th:block layout:fragment="scripts">
-        <script th:inline="javascript">
-
-            const employeeId = /*[[${employee.id}]]*/ '0';
-            
-             // Status descriptions
-            function getStatusDescription(status) {
-                const descriptions = {
-                    'Active': 'Employee is actively working and receiving salary.',
-                    'On Leave': 'Employee is on approved leave with or without pay.',
-                    'Inactive': 'Employee is temporarily inactive (e.g., unpaid leave).',
-                    'Resigned': 'Employee has voluntarily resigned from the company.',
-                    'Terminated': 'Employee has been terminated by the company.'
-                };
-                return descriptions[status] || 'Update employment status.';
-            }
-
+        <script>
             // Select status
-            function selectStatus(status) {
+            function selectStatus(element, status) {
                 // Remove selected class from all options
                 document.querySelectorAll('.status-option').forEach(option => {
                     option.classList.remove('selected');
@@ -331,25 +298,19 @@
                 });
 
                 // Add selected class to clicked option
-                const selectedOption = document.getElementById('status-' + status.toLowerCase().replace(' ', '-'));
-                if (selectedOption) {
-                    selectedOption.classList.add('selected');
-                    selectedOption.querySelector('.fa-check').style.display = 'inline-block';
-                }
+                element.classList.add('selected');
+                element.querySelector('.fa-check').style.display = 'inline-block';
 
                 // Update hidden input
                 document.getElementById('selectedStatus').value = status;
 
-                // Show/hide reason section for certain statuses
+                // Show/hide reason section
                 const reasonSection = document.getElementById('reasonSection');
-                if (['Resigned', 'Terminated', 'Inactive'].includes(status)) {
+                if (status === 'Inactive') {
                     reasonSection.style.display = 'block';
                 } else {
                     reasonSection.style.display = 'none';
                 }
-
-                // REMOVE THIS LINE - don't modify the form action
-                // form.action = '/status/update/' + employeeId + '?status=' + encodeURIComponent(status);
             }
 
             // Reset form
@@ -361,7 +322,11 @@
                 document.getElementById('selectedStatus').value = '';
                 document.getElementById('reason').value = '';
                 document.getElementById('notes').value = '';
-                document.getElementById('effectiveDate').value = new Date().toISOString().split('T')[0];
+                
+                // Set today's date
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('effectiveDate').value = today;
+                
                 document.getElementById('reasonSection').style.display = 'none';
             }
 
@@ -382,9 +347,9 @@
                     return;
                 }
 
-                // Confirm status change for critical statuses
-                if (['Terminated', 'Resigned'].includes(selectedStatus)) {
-                    if (!confirm(`Are you sure you want to change status to "${selectedStatus}"? This action may affect payroll and benefits.`)) {
+                // Confirm status change for Inactive
+                if (selectedStatus === 'Inactive') {
+                    if (!confirm('Are you sure you want to change status to "Inactive"? This employee will not be eligible for salary.')) {
                         e.preventDefault();
                         return;
                     }
@@ -392,23 +357,28 @@
 
                 // Show processing message
                 const submitBtn = this.querySelector('button[type="submit"]');
-                const originalText = submitBtn.innerHTML;
                 submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Updating...';
                 submitBtn.disabled = true;
             });
 
             // Initialize form with current status
             document.addEventListener('DOMContentLoaded', function() {
-                // Get current status from Thymeleaf
-                const currentStatus = /*[[${employee.status}]]*/ '';
-                if (currentStatus) {
-                    selectStatus(currentStatus);
-                }
-
                 // Set default effective date to today
                 const today = new Date().toISOString().split('T')[0];
                 document.getElementById('effectiveDate').value = today;
                 document.getElementById('effectiveDate').min = today;
+                
+                // Get current status from the page
+                const currentStatusElement = document.querySelector('.current-status');
+                if (currentStatusElement) {
+                    const currentStatus = currentStatusElement.textContent.trim();
+                    if (currentStatus === 'Active' || currentStatus === 'Inactive') {
+                        const option = document.getElementById('status-' + currentStatus.toLowerCase());
+                        if (option) {
+                            selectStatus(option, currentStatus);
+                        }
+                    }
+                }
             });
         </script>
     </th:block>

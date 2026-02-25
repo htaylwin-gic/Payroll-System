@@ -20,6 +20,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Controller
 @RequestMapping("/status")
 @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
@@ -274,5 +277,35 @@ public class StatusController {
         model.addAttribute("allEmployees", allEmployees);
 
         return "pages/status/salary-summary";
+    }
+
+    @GetMapping("/salary/{id}")
+    public String salaryBreakdown(@PathVariable("id") int id, Model model) {
+        Employee emp = employeeService.getEmployeeById(id);
+
+        if (emp == null) {
+            return "redirect:/status?error=Employee not found";
+        }
+
+        // Calculate salary breakdown
+        double basicSalary = emp.getSalary() != null ? emp.getSalary() : 0;
+        double tax = basicSalary * 0.1;
+        double insurance = basicSalary * 0.05;
+        double otherDeductions = basicSalary * 0.02;
+        double totalDeductions = tax + insurance + otherDeductions;
+        double netSalary = basicSalary - totalDeductions;
+
+        Map<String, Object> breakdown = new HashMap<>();
+        breakdown.put("basicSalary", basicSalary);
+        breakdown.put("tax", tax);
+        breakdown.put("insurance", insurance);
+        breakdown.put("otherDeductions", otherDeductions);
+        breakdown.put("totalDeductions", totalDeductions);
+        breakdown.put("netSalary", netSalary);
+
+        model.addAttribute("employee", emp);
+        model.addAttribute("breakdown", breakdown);
+
+        return "pages/status/salary-breakdown";
     }
 }
