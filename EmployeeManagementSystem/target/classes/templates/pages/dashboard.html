@@ -1,320 +1,394 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" 
-      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/base}">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Employee Management System</title>
+    <title>Dashboard</title>
     
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
-    
-    <style>
-        body { 
-            background-color: #f8f9fa; 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-        }
-        .sidebar { 
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-            min-height: 100vh; 
-            color: white; 
-            padding: 20px 0; 
-            position: fixed; 
-            width: 250px; 
-            z-index: 100; 
-        }
-        .sidebar .nav-link { 
-            color: rgba(255, 255, 255, 0.8); 
-            padding: 12px 20px; 
-            margin: 5px 0; 
-            border-radius: 8px; 
-            transition: all 0.3s; }
-        .sidebar .nav-link:hover, .sidebar .nav-link.active { 
-            color: white; 
-            background-color: rgba(255, 255, 255, 0.15); 
-            transform: translateX(5px); 
-        }
-        .sidebar .nav-link i { 
-            width: 20px; text-align: center; 
-            margin-right: 10px; 
-        }
-        .content-wrapper { 
-            margin-left: 250px; 
-            padding: 0; 
-        }
-        .navbar { 
-            background: white; 
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); 
-            padding: 15px 30px; 
-            position: sticky; 
-            top: 0; z-index: 99; 
-        }
-        .main-content { 
-            padding: 30px; 
-            min-height: calc(100vh - 70px); 
-        }
-        .card { 
-            border: none; 
-            border-radius: 15px; 
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08); 
-            margin-bottom: 25px; 
-            transition: transform 0.3s, box-shadow 0.3s; 
-            overflow: hidden; 
-        }
-        .card:hover { 
-            transform: translateY(-5px); 
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12); 
-        }
-        .stat-card { 
-            border-left: 5px solid; 
-            padding: 20px; 
-        }
-        .stat-card.total { 
-            border-left-color: #667eea; 
-        }
-        .stat-card.active { 
-            border-left-color: #28a745; 
-        }
-        .stat-card.leave { 
-            border-left-color: #ffc107; 
-        }
-        .stat-card.new { 
-            border-left-color: #17a2b8; 
-        }
-        .stat-number { 
-            font-size: 2.2rem; 
-            font-weight: 700; 
-            margin-bottom: 5px; 
-        }
-        .stat-label { 
-            color: #6c757d; 
-            font-size: 0.95rem; 
-            font-weight: 500; 
-        }
-        .welcome-card { 
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-            color: white; 
-            padding: 30px; 
-            border-radius: 15px; 
-            margin-bottom: 30px; 
-        }
-        .feature-icon { 
-            font-size: 2.5rem; 
-            margin-bottom: 15px; 
-            opacity: 0.9; 
-        }
-        .recent-activity-item { 
-            padding: 12px 15px; 
-            border-bottom: 1px solid #eee; 
-            transition: background-color 0.2s; 
-        }
-        .recent-activity-item:hover { 
-            background-color: #f8f9fa; 
-            border-radius: 8px; 
-        }
-        .progress { 
-            height: 8px; 
-            border-radius: 4px; 
-        }
-        .quick-action-btn { 
-            padding: 20px; 
-            text-align: center; 
-            border-radius: 12px; 
-            transition: all 0.3s; 
-            border: 2px solid transparent; 
-        }
-        .quick-action-btn:hover { 
-            border-color: #667eea; 
-            transform: translateY(-3px); 
-        }
-        .quick-action-btn i { 
-            font-size: 2rem; 
-            margin-bottom: 10px; 
-        }
-        .department-progress { 
-            margin-bottom: 15px; 
-        }
-        .logout-btn { 
-            background: rgba(102, 126, 234, 0.1); 
-            border: 1px solid #667eea; 
-            color: #667eea; 
-            padding: 8px 15px; 
-            border-radius: 6px; 
-            transition: all 0.3s; 
-        }
-        .logout-btn:hover { 
-            background: #667eea; 
-            color: white; 
-        }
-        @media (max-width: 768px) { 
-            .sidebar { 
-                width: 100%; 
-                min-height: auto; 
-                position: relative; 
-            } 
-            .content-wrapper {
-                 margin-left: 0; 
-            } 
-        }
-    </style>
+    <!-- Page-specific CSS -->
+    <th:block layout:fragment="styles">
+        <style>
+            .stat-card { 
+                border-left: 5px solid; 
+                padding: 1.5rem; 
+                background: white;
+                border-radius: 16px;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+                transition: all 0.3s ease;
+                height: 100%;
+            }
+            .stat-card:hover { 
+                transform: translateY(-5px); 
+                box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+            }
+            .stat-card.total { border-left-color: #3b82f6; }
+            .stat-card.active { border-left-color: #10b981; }
+            .stat-card.leave { border-left-color: #f59e0b; }
+            .stat-card.new { border-left-color: #06b6d4; }
+            
+            .stat-number { 
+                font-size: 2.2rem; 
+                font-weight: 700; 
+                margin-bottom: 0.3rem; 
+                color: #1e293b;
+            }
+            .stat-label { 
+                color: #64748b; 
+                font-size: 0.95rem; 
+                font-weight: 500; 
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+            
+            .feature-icon { 
+                font-size: 2.5rem; 
+                opacity: 0.8; 
+            }
+            
+            .welcome-card { 
+                background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); 
+                color: white; 
+                padding: 2rem; 
+                border-radius: 20px; 
+                margin-bottom: 2rem; 
+                box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+                position: relative;
+                overflow: hidden;
+            }
+            
+            .welcome-card::before {
+                content: '';
+                position: absolute;
+                top: -50%;
+                right: -50%;
+                width: 200%;
+                height: 200%;
+                background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+                animation: rotate 20s linear infinite;
+            }
+            
+            @keyframes rotate {
+                from { transform: rotate(0deg); }
+                to { transform: rotate(360deg); }
+            }
+            
+            .welcome-card h2 {
+                font-weight: 700;
+                margin-bottom: 0.5rem;
+                position: relative;
+            }
+            
+            .welcome-card p {
+                opacity: 0.9;
+                margin: 0;
+                position: relative;
+            }
+            
+            .recent-activity-item { 
+                padding: 1rem 1.2rem; 
+                border-bottom: 1px solid #e2e8f0; 
+                transition: all 0.2s ease; 
+            }
+            
+            .recent-activity-item:last-child {
+                border-bottom: none;
+            }
+            
+            .recent-activity-item:hover { 
+                background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); 
+                transform: translateX(5px);
+            }
+            
+            .recent-activity-item h6 {
+                color: #1e293b;
+                font-weight: 600;
+                margin-bottom: 0.25rem;
+            }
+            
+            .progress { 
+                height: 8px; 
+                border-radius: 4px; 
+                background-color: #e2e8f0;
+                overflow: hidden;
+            }
+            
+            .progress-bar {
+                transition: width 1s ease;
+            }
+            
+            .department-progress { 
+                margin-bottom: 1.2rem; 
+            }
+            
+            .department-progress .fw-medium {
+                font-weight: 500;
+                color: #334155;
+            }
+            
+            .department-progress .text-muted {
+                color: #64748b !important;
+                font-size: 0.9rem;
+            }
+            
+            /* Chart container */
+            .chart-container {
+                position: relative;
+                height: 250px;
+                width: 100%;
+            }
+            
+            /* Custom card header */
+            .card-header {
+                background: white;
+                border-bottom: 1px solid #e2e8f0;
+                padding: 1.2rem 1.5rem;
+            }
+            
+            .card-header h5 {
+                color: #1e293b;
+                font-weight: 600;
+                font-size: 1.1rem;
+                margin: 0;
+            }
+            
+            .card-header i {
+                color: #3b82f6;
+            }
+            
+            /* Activity badge */
+            .activity-badge {
+                background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+                color: white;
+                padding: 0.2rem 0.8rem;
+                border-radius: 20px;
+                font-size: 0.75rem;
+                font-weight: 600;
+            }
+            
+            /* User info section */
+            .user-info-card {
+                background: white;
+                border-radius: 16px;
+                padding: 1.2rem 1.5rem;
+                margin-bottom: 1.5rem;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+                border-left: 5px solid #3b82f6;
+            }
+            
+            .user-avatar {
+                width: 48px;
+                height: 48px;
+                background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                font-size: 1.5rem;
+                font-weight: 600;
+            }
+            
+            .user-details h6 {
+                color: #1e293b;
+                font-weight: 600;
+                margin-bottom: 0.25rem;
+            }
+            
+            .user-details p {
+                color: #64748b;
+                font-size: 0.9rem;
+                margin: 0;
+            }
+            
+            /* Responsive */
+            @media (max-width: 768px) {
+                .stat-card {
+                    margin-bottom: 1rem;
+                }
+                
+                .welcome-card {
+                    padding: 1.5rem;
+                }
+                
+                .chart-container {
+                    height: 200px;
+                    margin-top: 1.5rem;
+                }
+            }
+        </style>
+    </th:block>
 </head>
 <body>
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-md-3 col-lg-2 sidebar d-md-block">
-                <div class="position-sticky">
-                    <div class="text-center mb-4">
-                        <h3 class="mb-3"><i class="bi bi-people-fill"></i> EMS</h3>
-                        <p class="text-light opacity-75">Employee Management System</p>
+    <div layout:fragment="content">
+        <!-- Welcome Card -->
+        <div class="welcome-card">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h2 id="greeting">Welcome back!</h2>
+                    <p class="mb-0">You have <span class="fw-bold" th:text="${totalEmployees}">0</span> employees in your organization. Track and manage them efficiently.</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <i class="bi bi-stars feature-icon"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="row g-4 mb-4">
+            <div class="col-xl-3 col-md-6">
+                <div class="stat-card total">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="stat-number" th:text="${totalEmployees}">0</div>
+                            <div class="stat-label">Total Employees</div>
+                        </div>
+                        <div class="feature-icon text-primary">
+                            <i class="bi bi-people-fill"></i>
+                        </div>
                     </div>
-                    <ul class="nav flex-column">
-                        <li class="nav-item"><a class="nav-link active" th:href="@{/dashboard}"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
-                        <li class="nav-item"><a class="nav-link" th:href="@{/employees/manage}"><i class="bi bi-person-lines-fill"></i> Employees</a></li>
-                        <li class="nav-item"><a class="nav-link" th:href="@{/payroll/manage}"><i class="bi bi-calculator-fill"></i> Payroll</a></li>
-                        <li class="nav-item"><a class="nav-link" th:href="@{/status}"><i class="bi bi-clipboard-check-fill"></i> Status</a></li>
-                        <li class="nav-item"><a class="nav-link" th:href="@{/status/salary-summary}"><i class="bi bi-bar-chart-fill"></i> Salary Summary</a></li>
-                    </ul>
-                    <div class="mt-5 px-3">
-                        <div class="card bg-dark bg-opacity-25 border-light border-opacity-25">
-                            <div class="card-body text-center">
-                                <small class="text-light opacity-75">Logged in as</small>
-                                <p class="mb-1 fw-bold text-white">
-                                    <i class="bi bi-person-circle me-2"></i>
-                                    <span sec:authorize="hasRole('ADMIN')">Admin</span>
-                                    <!-- <span sec:authorize="hasRole('HR')">HR</span> -->
-                                </p>
+                    <div class="mt-3">
+                        <div class="progress">
+                            <div class="progress-bar bg-primary" style="width: 100%"></div>
+                        </div>
+                        <small class="text-muted mt-1 d-block">All departments</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-3 col-md-6">
+                <div class="stat-card active">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="stat-number" th:text="${activeEmployees}">0</div>
+                            <div class="stat-label">Active Employees</div>
+                        </div>
+                        <div class="feature-icon text-success">
+                            <i class="bi bi-person-check"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <div class="progress">
+                            <div class="progress-bar bg-success" 
+                                 th:style="'width: ' + ${totalEmployees > 0 ? (activeEmployees * 100.0 / totalEmployees) : 0} + '%'">
+                            </div>
+                        </div>
+                        <small class="text-muted mt-1 d-block">
+                            <span th:text="${totalEmployees > 0 ? T(java.lang.Math).round(activeEmployees * 100.0 / totalEmployees) : 0}">0</span>% of total
+                        </small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-3 col-md-6">
+                <div class="stat-card leave">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="stat-number" th:text="${onLeave}">0</div>
+                            <div class="stat-label">On Leave</div>
+                        </div>
+                        <div class="feature-icon text-warning">
+                            <i class="bi bi-calendar-event"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <div class="progress">
+                            <div class="progress-bar bg-warning" 
+                                 th:style="'width: ' + ${totalEmployees > 0 ? (onLeave * 100.0 / totalEmployees) : 0} + '%'">
+                            </div>
+                        </div>
+                        <small class="text-muted mt-1 d-block">
+                            <span th:text="${totalEmployees > 0 ? T(java.lang.Math).round(onLeave * 100.0 / totalEmployees) : 0}">0</span>% of total
+                        </small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-3 col-md-6">
+                <div class="stat-card new">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="stat-number" th:text="${newHires}">0</div>
+                            <div class="stat-label">New Hires (30d)</div>
+                        </div>
+                        <div class="feature-icon text-info">
+                            <i class="bi bi-person-plus"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <div class="progress">
+                            <div class="progress-bar bg-info" 
+                                 th:style="'width: ' + ${totalEmployees > 0 ? (newHires * 100.0 / totalEmployees) : 0} + '%'">
+                            </div>
+                        </div>
+                        <small class="text-muted mt-1 d-block">
+                            <span th:text="${totalEmployees > 0 ? T(java.lang.Math).round(newHires * 100.0 / totalEmployees) : 0}">0</span>% of total
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Area with Two Columns -->
+        <div class="row">
+            <!-- Left Column - Department Statistics -->
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header bg-white border-0">
+                        <h5 class="card-title mb-0"><i class="bi bi-building text-primary me-2"></i> Department Statistics</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">
+                                <div th:each="dept : ${departmentStats}" class="department-progress">
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <span class="fw-medium" th:text="${dept.key}">Dept</span>
+                                        <span class="text-muted" th:text="${dept.value} + ' (' + ${sectionPercentages.get(dept.key)} + '%)'">0</span>
+                                    </div>
+                                    <div class="progress">
+                                        <div class="progress-bar" 
+                                            th:classappend="${dept.key == 'IT' ? 'bg-primary' : (dept.key == 'HR' ? 'bg-success' : (dept.key == 'Technical' ? 'bg-warning' : (dept.key == 'Design' ? 'bg-info' : (dept.key == 'Finance' ? 'bg-secondary' : 'bg-dark'))))}" 
+                                            th:style="'width: ' + ${sectionPercentages.get(dept.key)} + '%'"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 text-center mt-4 mt-md-0">
+                                <canvas id="departmentChart"></canvas>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-
-            <div class="col-md-9 col-lg-10 content-wrapper">
-                <nav class="navbar">
-                    <div class="container-fluid">
-                        <div>
-                            <h4 class="mb-0 text-primary"><i class="bi bi-gem me-2"></i> Dashboard Overview</h4>
-                            <small class="text-muted">Welcome back! Here's what's happening today.</small>
+            
+            <!-- Right Column - User Info and Recent Activities -->
+            <div class="col-lg-4">
+                <!-- Logged in as section -->
+                <div class="user-info-card">
+                    <div class="d-flex align-items-center">
+                        <div class="user-avatar me-3">
+                            <span th:text="${#strings.substring(authenticatedUser?.firstName, 0, 1)}">JD</span>
                         </div>
-                        <div class="d-flex align-items-center">
-                            <span class="me-3 text-muted"><i class="bi bi-calendar3 me-2"></i><span id="currentDate"></span></span>
-                            <form th:action="@{/auth/logout}" method="post" class="d-inline">
-                                <button type="submit" class="btn logout-btn"><i class="bi bi-box-arrow-right me-2"></i> Logout</button>
-                            </form>
-                        </div>
-                    </div>
-                </nav>
-
-                <div class="main-content">
-                    <div class="welcome-card">
-                        <div class="row align-items-center">
-                            <div class="col-md-8">
-                                <h2 id="greeting">Welcome!</h2>
-                                <p class="mb-0 opacity-90">Manage your employees efficiently. You have <span class="fw-bold" th:text="${totalEmployees}">0</span> employees in your organization.</p>
-                            </div>
-                            <div class="col-md-4 text-end"><i class="bi bi-gem feature-icon"></i></div>
+                        <div class="user-details">
+                            <h6>Logged in as</h6>
+                            <!-- <p class="fw-bold" th:text="${authenticatedUser?.firstName + ' ' + authenticatedUser?.lastName}">John Doe</p>
+                            <p class="small" th:text="${authenticatedUser?.role}">Administrator</p> -->
+                            <p class="fw-bold" >Administrator</p>
                         </div>
                     </div>
-
-                    <div class="row">
-                        <div class="col-xl-3 col-md-6">
-                            <div class="card stat-card total">
-                                <div class="card-body">
-                                    <div class="d-flex justify-content-between align-items-start">
-                                        <div><div class="stat-number text-primary" th:text="${totalEmployees}">0</div><div class="stat-label">Total Employees</div></div>
-                                        <div class="feature-icon text-primary"><i class="bi bi-people-fill"></i></div>
-                                    </div>
-                                    <div class="mt-3">
-                                        <div class="progress"><div class="progress-bar bg-primary" style="width: 100%"></div></div>
-                                        <small class="text-muted">All departments</small>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-xl-3 col-md-6">
-                            <div class="card stat-card active">
-                                <div class="card-body">
-                                    <div class="d-flex justify-content-between align-items-start">
-                                        <div><div class="stat-number text-success" th:text="${activeEmployees}">0</div><div class="stat-label">Active Employees</div></div>
-                                        <div class="feature-icon text-success"><i class="bi bi-person-check"></i></div>
-                                    </div>
-                                    <div class="mt-3">
-                                        <div class="progress"><div class="progress-bar bg-success" th:style="'width: ' + ${totalEmployees > 0 ? (activeEmployees * 100.0 / totalEmployees) : 0} + '%'"></div></div>
-                                        <small class="text-muted"><span th:text="${totalEmployees > 0 ? T(java.lang.Math).round(activeEmployees * 100.0 / totalEmployees) : 0}">0</span>% of total</small>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-xl-3 col-md-6">
-                            <div class="card stat-card leave">
-                                <div class="card-body">
-                                    <div class="d-flex justify-content-between align-items-start">
-                                        <div><div class="stat-number text-warning" th:text="${onLeave}">0</div><div class="stat-label">On Leave</div></div>
-                                        <div class="feature-icon text-warning"><i class="bi bi-calendar-event"></i></div>
-                                    </div>
-                                    <div class="mt-3">
-                                        <div class="progress"><div class="progress-bar bg-warning" th:style="'width: ' + ${totalEmployees > 0 ? (onLeave * 100.0 / totalEmployees) : 0} + '%'"></div></div>
-                                        <small class="text-muted"><span th:text="${totalEmployees > 0 ? T(java.lang.Math).round(onLeave * 100.0 / totalEmployees) : 0}">0</span>% of total</small>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-xl-3 col-md-6">
-                            <div class="card stat-card new">
-                                <div class="card-body">
-                                    <div class="d-flex justify-content-between align-items-start">
-                                        <div><div class="stat-number text-info" th:text="${newHires}">0</div><div class="stat-label">New Hires</div></div>
-                                        <div class="feature-icon text-info"><i class="bi bi-person-plus"></i></div>
-                                    </div>
-                                    <div class="mt-3">
-                                        <div class="progress"><div class="progress-bar bg-info" th:style="'width: ' + ${totalEmployees > 0 ? (newHires * 100.0 / totalEmployees) : 0} + '%'"></div></div>
-                                        <small class="text-muted"><span th:text="${totalEmployees > 0 ? T(java.lang.Math).round(newHires * 100.0 / totalEmployees) : 0}">0</span>% of total</small>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                </div>
+                
+                <!-- Recent Activities -->
+                <div class="card">
+                    <div class="card-header bg-white border-0">
+                        <h5 class="card-title mb-0"><i class="bi bi-clock-history text-primary me-2"></i> Recent Activities</h5>
                     </div>
-
-                    <div class="row">
-                        <div class="col-lg-8">
-                            <div class="card">
-                                <div class="card-header bg-white border-0"><h5 class="card-title mb-0"><i class="bi bi-building text-primary me-2"></i> Department Statistics</h5></div>
-                                <div class="card-body">
-                                    <div class="row align-items-center">
-                                        <div class="col-md-6">
-                                            <div th:each="dept : ${departmentStats}" class="department-progress">
-                                                <div class="d-flex justify-content-between mb-1">
-                                                    <span class="fw-medium" th:text="${dept.key}">Dept</span>
-                                                    <span class="text-muted" th:text="${dept.value} + ' (' + ${sectionPercentages.get(dept.key)} + '%)'">0</span>
-                                                </div>
-                                                <div class="progress">
-                                                    <div class="progress-bar" 
-                                                        th:classappend="${dept.key == 'IT' ? 'bg-primary' : (dept.key == 'HR' ? 'bg-success' : (dept.key == 'Technical' ? 'bg-warning' : (dept.key == 'Design' ? 'bg-info' : (dept.key == 'Finance' ? 'bg-secondary' : 'bg-dark'))))}" 
-                                                        th:style="'width: ' + ${sectionPercentages.get(dept.key)} + '%'"></div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6 text-center mt-4 mt-md-0">
-                                            <canvas id="departmentChart"></canvas>
-                                        </div>
-                                    </div>
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
+                            <div th:each="activity : ${recentActivities}" class="recent-activity-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1 fw-bold" th:text="${activity.key}">Name</h6>
+                                    <small class="text-muted">Recent</small>
                                 </div>
-                            </div>
-                        </div>
-                        <div class="col-lg-4">
-                            <div class="card">
-                                <div class="card-header bg-white border-0"><h5 class="card-title mb-0"><i class="bi bi-clock-history text-primary me-2"></i> Recent Activities</h5></div>
-                                <div class="card-body p-0">
-                                    <div class="list-group list-group-flush">
-                                        <div th:each="activity : ${recentActivities}" class="recent-activity-item">
-                                            <div class="d-flex w-100 justify-content-between">
-                                                <h6 class="mb-1 fw-bold" th:text="${activity.key}">Name</h6>
-                                                <small class="text-muted">Recent</small>
-                                            </div>
-                                            <p class="mb-0 text-muted small" th:text="${activity.value}">Activity detail</p>
-                                        </div>
-                                    </div>
-                                </div>
+                                <p class="mb-0 text-muted small" th:text="${activity.value}">Activity detail</p>
                             </div>
                         </div>
                     </div>
@@ -323,9 +397,8 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
+    <th:block layout:fragment="scripts">
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script th:inline="javascript">
         document.addEventListener('DOMContentLoaded', function() {
             // 1. Set current date
@@ -340,19 +413,16 @@
             const greetingElement = document.getElementById('greeting');
             if(greetingElement) greetingElement.textContent = greeting + '!';
             
-            // 3. Dynamic Department Chart
+            // 3. Department Chart
             const chartCanvas = document.getElementById('departmentChart');
             if (chartCanvas) {
                 const ctx = chartCanvas.getContext('2d');
                 
-                // Get data directly from the controller's model
                 const stats = /*[[${departmentStats}]]*/ {};
                 
-                // Dynamically create labels and data from the map
                 const labels = Object.keys(stats);
                 const dataValues = labels.map(key => stats[key]);
 
-                // Only create the chart if there is data
                 if (labels.length > 0) {
                     new Chart(ctx, {
                         type: 'doughnut',
@@ -360,7 +430,6 @@
                             labels: labels,
                             datasets: [{
                                 data: dataValues,
-                                // Add enough colors for potential new departments
                                 backgroundColor: ['#667eea', '#28a745', '#ffc107', '#17a2b8', '#6c757d', '#fd7e14', '#20c997'],
                                 borderWidth: 2,
                                 borderColor: '#fff'
@@ -387,5 +456,19 @@
             }
         });
     </script>
+    </th:block>
+
+    <!-- Additional styles for custom colors -->
+    <style>
+        .bg-orange { background-color: #f97316 !important; }
+        .bg-teal { background-color: #14b8a6 !important; }
+        .bg-pink { background-color: #ec4899 !important; }
+        .bg-purple { background-color: #8b5cf6 !important; }
+        
+        .text-orange { color: #f97316; }
+        .text-teal { color: #14b8a6; }
+        .text-pink { color: #ec4899; }
+        .text-purple { color: #8b5cf6; }
+    </style>
 </body>
 </html>
