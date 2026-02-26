@@ -197,9 +197,7 @@
                     
                     <!-- Page info -->
                     <div class="text-center text-muted small mt-2">
-                        <span th:text="'Showing ' + (${totalElements} == 0 ? 0 : (currentPage * pageSize + 1)) 
-                                      + ' to ' + (${currentPage * pageSize + employees.size()}) 
-                                      + ' of ' + ${totalElements} + ' entries'"></span>
+                        <span th:text="|Showing ${totalElements == 0 ? 0 : (currentPage * pageSize + 1)} to ${currentPage * pageSize + employees.size()} of ${totalElements} entries|"></span>
                     </div>
                 </div>
                 </div>

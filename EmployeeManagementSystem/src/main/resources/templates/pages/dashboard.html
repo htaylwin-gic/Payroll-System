@@ -288,7 +288,9 @@
                                                     <span class="text-muted" th:text="${dept.value} + ' (' + ${sectionPercentages.get(dept.key)} + '%)'">0</span>
                                                 </div>
                                                 <div class="progress">
-                                                    <div class="progress-bar" th:classappend="${dept.key == 'IT' ? 'bg-primary' : (dept.key == 'HR' ? 'bg-success' : (dept.key == 'Technical' ? 'bg-warning' : (dept.key == 'Design' ? 'bg-info' : (dept.key == 'Finance' ? 'bg-secondary' : 'bg-dark'))))}" th:style="'width: ' + ${sectionPercentages.get(dept.key)} + '%'"></div>
+                                                    <div class="progress-bar" 
+                                                        th:classappend="${dept.key == 'IT' ? 'bg-primary' : (dept.key == 'HR' ? 'bg-success' : (dept.key == 'Technical' ? 'bg-warning' : (dept.key == 'Design' ? 'bg-info' : (dept.key == 'Finance' ? 'bg-secondary' : 'bg-dark'))))}" 
+                                                        th:style="'width: ' + ${sectionPercentages.get(dept.key)} + '%'"></div>
                                                 </div>
                                             </div>
                                         </div>

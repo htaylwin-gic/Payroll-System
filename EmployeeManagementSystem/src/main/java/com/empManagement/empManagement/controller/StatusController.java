@@ -97,7 +97,6 @@ public class StatusController {
         model.addAttribute("pageSize", size);
         model.addAttribute("hasNext", currentPage < totalPages - 1);
         model.addAttribute("hasPrev", currentPage > 0);
-
         return "pages/status/management";
     }
 
@@ -242,57 +241,55 @@ public class StatusController {
     public String salarySummary(Model model) {
         List<Employee> allEmployees = employeeService.getAllEmployees();
 
-        for (Employee emp : allEmployees) {
-            if (emp.getStatus() == null || emp.getStatus().trim().isEmpty()) {
-                emp.setStatus("Active");
-            }
-        }
-
+        // 1. Calculate General Metrics
         double totalMonthlySalary = employeeService.getTotalSalary();
         double averageSalary = employeeService.getAverageSalary();
-
         long activeCount = allEmployees.stream()
-                .filter(emp -> "Active".equals(emp.getStatus()))
-                .count();
-        long inactiveCount = allEmployees.stream()
-                .filter(emp -> "Inactive".equals(emp.getStatus()))
+                .filter(emp -> "Active".equals(emp.getStatus() != null ? emp.getStatus() : "Active"))
                 .count();
 
-        List<Double> salaries = new ArrayList<>();
-        for (Employee emp : allEmployees) {
-            if (emp.getSalary() != null && emp.getSalary() > 0) {
-                salaries.add(emp.getSalary());
-            }
-        }
+        List<Double> salaries = allEmployees.stream()
+                .map(Employee::getSalary)
+                .filter(s -> s != null && s > 0)
+                .collect(Collectors.toList());
 
         double highestSalary = salaries.stream().mapToDouble(Double::doubleValue).max().orElse(0);
         double lowestSalary = salaries.stream().mapToDouble(Double::doubleValue).min().orElse(0);
 
-        double medianSalary = 0;
-        if (!salaries.isEmpty()) {
-            List<Double> sortedSalaries = salaries.stream().sorted().collect(Collectors.toList());
-            int size = sortedSalaries.size();
-            if (size % 2 == 0) {
-                medianSalary = (sortedSalaries.get(size / 2 - 1) + sortedSalaries.get(size / 2)) / 2.0;
-            } else {
-                medianSalary = sortedSalaries.get(size / 2);
-            }
-        }
+        // 2. ACTUAL DATA: Department Distribution (Employee Count per Dept)
+        Map<String, Long> departmentStats = allEmployees.stream()
+                .filter(emp -> emp.getDepartment() != null && !emp.getDepartment().isEmpty())
+                .collect(Collectors.groupingBy(Employee::getDepartment, Collectors.counting()));
 
-        List<Employee> activeEmployees = allEmployees.stream()
-                .filter(emp -> "Active".equals(emp.getStatus()))
-                .collect(Collectors.toList());
+        // 3. ACTUAL DATA: Department-wise Salary Distribution (Total Salary per Dept)
+        Map<String, Double> deptSalaryDistribution = allEmployees.stream()
+                .filter(emp -> emp.getDepartment() != null && !emp.getDepartment().isEmpty())
+                .collect(Collectors.groupingBy(
+                        Employee::getDepartment,
+                        Collectors.summingDouble(emp -> emp.getSalary() != null ? emp.getSalary() : 0.0)));
 
-        model.addAttribute("totalEmployees", allEmployees.size());
+        // 4. Calculate Percentages for the Breakdown section
+        int totalEmployees = allEmployees.size();
+        Map<String, Double> sectionPercentages = new HashMap<>();
+        departmentStats.forEach((dept, count) -> {
+            double percentage = totalEmployees > 0 ? (count * 100.0) / totalEmployees : 0;
+            sectionPercentages.put(dept, Math.round(percentage * 10.0) / 10.0);
+        });
+
+        // 5. Add all attributes to the model
+        model.addAttribute("totalEmployees", totalEmployees);
         model.addAttribute("activeEmployees", activeCount);
-        model.addAttribute("inactiveEmployees", inactiveCount);
+        model.addAttribute("inactiveEmployees", totalEmployees - activeCount);
         model.addAttribute("totalMonthlySalary", totalMonthlySalary);
         model.addAttribute("averageSalary", averageSalary);
         model.addAttribute("highestSalary", highestSalary);
         model.addAttribute("lowestSalary", lowestSalary);
-        model.addAttribute("medianSalary", medianSalary);
-        model.addAttribute("activeEmployeesList", activeEmployees);
         model.addAttribute("allEmployees", allEmployees);
+
+        // Data for Charts
+        model.addAttribute("departmentStats", departmentStats);
+        model.addAttribute("deptSalaryDistribution", deptSalaryDistribution);
+        model.addAttribute("sectionPercentages", sectionPercentages);
 
         return "pages/status/salary-summary";
     }
@@ -305,7 +302,6 @@ public class StatusController {
             return "redirect:/status?error=Employee not found";
         }
 
-        // Calculate salary breakdown
         double basicSalary = emp.getSalary() != null ? emp.getSalary() : 0;
         double tax = basicSalary * 0.1;
         double insurance = basicSalary * 0.05;
