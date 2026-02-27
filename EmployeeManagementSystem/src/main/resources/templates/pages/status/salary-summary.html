@@ -83,6 +83,9 @@
                 <p class="text-muted mb-0">Comprehensive salary analysis across the organization</p>
             </div>
             <div>
+                <a th:href="@{/status}" class="btn btn-outline-primary me-2">
+                    <i class="fas fa-arrow-left me-2"></i> Back to Status
+                </a>
                 <button class="btn btn-primary me-2" onclick="window.print()">
                     <i class="fas fa-print me-2"></i> Print Report
                 </button>
@@ -232,16 +235,16 @@
                     <h5 class="card-title mb-0">Employee Salary Details</h5>
                     <div class="input-group" style="width: 300px;">
                         <input type="text" class="form-control" placeholder="Search employees..." id="employeeSearch">
-                        <button class="btn btn-outline-secondary" type="button">
+                        <button class="btn btn-outline-secondary" type="button" id="searchButton">
                             <i class="fas fa-search"></i>
                         </button>
                     </div>
                 </div>
             </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-hover" id="salaryTable">
-                        <thead>
+            <div class="card-body p-0">
+                <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                    <table class="table table-hover mb-0" id="salaryTable">
+                        <thead style="position: sticky; top: 0; background: white; z-index: 1; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                             <tr>
                                 <th>Employee</th>
                                 <th>Position</th>
@@ -276,7 +279,7 @@
                                     <span th:if="${emp.department == 'Operations'}" class="badge dept-operations" th:text="${emp.department}">Operations</span>
                                     <span th:if="${emp.department == 'Customer Support'}" class="badge dept-customer-support" th:text="${emp.department}">Customer Support</span>
                                     <span th:if="${emp.department != 'IT' and emp.department != 'HR' and emp.department != 'Technical' and emp.department != 'Design' and emp.department != 'Finance' and emp.department != 'Sales' and emp.department != 'Marketing' and emp.department != 'Operations' and emp.department != 'Customer Support'}" 
-                                          class="badge dept-other" th:text="${emp.department}">Other</span>
+                                        class="badge dept-other" th:text="${emp.department}">Other</span>
                                 </td>
                                 <td>
                                     <span class="badge" th:classappend="${emp.status == 'Active'} ? 'bg-success' : 'bg-danger'"
@@ -292,7 +295,7 @@
                                 <td>
                                     <div class="btn-group btn-group-sm">
                                         <a th:href="@{/employees/edit/{id}(id=${emp.id})}" 
-                                           class="btn btn-outline-warning" title="Edit Employee">
+                                        class="btn btn-outline-warning" title="Edit Employee">
                                             <i class="fas fa-edit"></i>
                                         </a>
                                     </div>
@@ -302,8 +305,12 @@
                     </table>
                 </div>
             </div>
+            <!--Show total count -->
+            <div class="card-footer text-muted py-2">
+                <small>Total <span th:text="${#lists.size(allEmployees)}"></span> employees</small>
+            </div>
         </div>
-
+        
         <!-- Salary Statistics -->
         <div class="row mt-4">
             <div class="col-md-6">
@@ -337,7 +344,7 @@
                             <a th:href="@{/payroll/manage}" class="btn btn-outline-primary">
                                 <i class="fas fa-calculator me-2"></i> Go to Payroll Management
                             </a>
-                            <a th:href="@{/employees/manage}" class="btn btn-outline-success">
+                            <a th:href="@{/employees/manage}" class="btn btn-outline-success border">
                                 <i class="fas fa-users me-2"></i> Manage Employees
                             </a>
                         </div>
@@ -348,8 +355,19 @@
     </div>
 
     <th:block layout:fragment="scripts">
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         <script th:inline="javascript">
         /*<![CDATA[*/
+            $(document).ready(function() {
+            // Live search functionality
+            $("#employeeSearch").on("keyup", function() {
+                var value = $(this).val().toLowerCase();
+                $("#salaryTable tbody tr").filter(function() {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                });
+            });
+        });
+
         document.addEventListener('DOMContentLoaded', function() {
             const deptStats = /*[[${departmentStats}]]*/ {}; // Counts for Pie Chart
             const deptSalaries = /*[[${deptSalaryDistribution}]]*/ {}; // Totals for Bar Chart
