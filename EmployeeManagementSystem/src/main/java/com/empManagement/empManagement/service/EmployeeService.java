@@ -72,6 +72,11 @@ public class EmployeeService {
         return employeeRepository.findAll(pageable);
     }
 
+    public org.springframework.data.domain.Page<Employee> getEmployeesPaginated(int page, int size) {
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size);
+        return employeeRepository.findAll(pageable);
+    }
+
     // Payroll operations
     @Transactional
     public EmployeePayroll calculatePayroll(Integer employeeId, String monthYear, PayrollRequest payrollRequest) {

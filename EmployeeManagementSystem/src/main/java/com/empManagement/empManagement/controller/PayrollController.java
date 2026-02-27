@@ -28,9 +28,16 @@ public class PayrollController {
     private EmployeeService employeeService;
 
     @GetMapping("/manage")
-    public String payrollManagement(Model model) {
-        List<Employee> employees = employeeService.getAllEmployees();
-        model.addAttribute("employees", employees);
+    public String payrollManagement(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "6") int size,
+            Model model) {
+        org.springframework.data.domain.Page<Employee> employeesPage = employeeService.getEmployeesPaginated(page,
+                size);
+        model.addAttribute("employees", employeesPage.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", employeesPage.getTotalPages());
+        model.addAttribute("totalItems", employeesPage.getTotalElements());
         model.addAttribute("totalSalary", employeeService.getTotalSalary());
         model.addAttribute("averageSalary", employeeService.getAverageSalary());
         return "pages/payroll/management";
