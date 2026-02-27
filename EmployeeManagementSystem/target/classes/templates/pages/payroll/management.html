@@ -64,31 +64,28 @@
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-5">
-                        <form th:action="@{/employees/search}" method="get">
-                            <div class="input-group">
-                                <input type="text" 
-                                    name="keyword" 
-                                    class="form-control" 
-                                    placeholder="Search employees by name or department...">
-                                <input type="hidden" name="page" value="0"/>
-                                <input type="hidden" name="size" value="6"/>  
-                                <button type="submit" class="btn btn-outline-primary">
-                                    <i class="fas fa-search"></i> Search
-                                </button>
-                            </div>
-                        </form>
+                        <div class="input-group">
+                            <input type="text" 
+                                id="searchInput"
+                                class="form-control" 
+                                placeholder="Search employees by name or department..."
+                                onkeyup="filterEmployees()">
+                            <button class="btn btn-outline-primary" type="button" onclick="filterEmployees()">
+                                <i class="fas fa-search"></i> Search
+                            </button>
+                        </div>
                     </div>
                     <div class="col-md-3"></div>
                     <div class="col-md-4">
                         <div class="filter-buttons">
                             <div class="btn-group w-100" role="group">
-                                <button type="button" class="btn btn-outline-secondary active" data-filter="all">
+                                <button type="button" class="btn btn-outline-secondary active" data-filter="all" onclick="filterByStatus('all')">
                                     All
                                 </button>
-                                <button type="button" class="btn btn-outline-secondary" data-filter="processed">
+                                <button type="button" class="btn btn-outline-secondary" data-filter="processed" onclick="filterByStatus('processed')">
                                     Processed
                                 </button>
-                                <button type="button" class="btn btn-outline-secondary" data-filter="pending">
+                                <button type="button" class="btn btn-outline-secondary" data-filter="pending" onclick="filterByStatus('pending')">
                                     Pending
                                 </button>
                             </div>
@@ -234,6 +231,7 @@
                 </ul>
             </nav>
         </div>
+
         <!-- Bulk Actions -->
         <div class="card mt-4">
             <div class="card-body">
@@ -260,96 +258,169 @@
     </div>
 
     <th:block layout:fragment="scripts">
-        <script>
+    <script>
+        let currentStatusFilter = 'all';
+        let currentSearchTerm = '';
+
+        function filterEmployees() {
+            currentSearchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+            applyFilters();
+        }
+
+        function filterByStatus(filter) {
+            document.querySelectorAll('.filter-buttons .btn').forEach(b => {
+                b.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            currentStatusFilter = filter;
+            applyFilters();
+        }
+
+        function applyFilters() {
+            const items = document.querySelectorAll('.employee-item');
+            let visibleCount = 0;
+
+            items.forEach(item => {
+                const employeeName = item.querySelector('h6').textContent.toLowerCase();
+                const employeeDept = item.querySelector('.col-6 p').textContent.toLowerCase();
+                const isProcessed = item.dataset.processed === 'true';
+                
+                // Check status filter
+                let statusMatch = true;
+                switch(currentStatusFilter) {
+                    case 'processed':
+                        statusMatch = isProcessed;
+                        break;
+                    case 'pending':
+                        statusMatch = !isProcessed;
+                        break;
+                    // 'all' - statusMatch remains true
+                }
+                
+                const searchMatch = currentSearchTerm === '' || 
+                                   employeeName.includes(currentSearchTerm) || 
+                                   employeeDept.includes(currentSearchTerm);
+                
+                if (statusMatch && searchMatch) {
+                    item.style.display = '';
+                    visibleCount++;
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+
+            updateEmptyState(visibleCount);
+        }
+
+        function updateEmptyState(visibleCount) {
+            let emptyState = document.querySelector('.empty-search-results');
+            
+            if (visibleCount === 0 && document.querySelectorAll('.employee-item').length > 0) {
+                if (!emptyState) {
+                    const container = document.getElementById('employeesContainer');
+                    emptyState = document.createElement('div');
+                    emptyState.className = 'col-12 empty-search-results';
+                    emptyState.innerHTML = `
+                        <div class="card">
+                            <div class="card-body text-center py-5">
+                                <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                                <h5 class="text-muted">No Matching Employees</h5>
+                                <p class="text-muted mb-3">No employees match your search criteria</p>
+                                <button class="btn btn-primary" onclick="clearSearch()">
+                                    <i class="fas fa-times me-2"></i> Clear Search
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    container.appendChild(emptyState);
+                }
+            } else if (emptyState) {
+                emptyState.remove();
+            }
+        }
+
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            currentSearchTerm = '';
+            applyFilters();
+        }
+
+        function applyMonthToAll() {
+            const month = document.getElementById('monthSelect').value;
+            if (month) {
+                const calculateButtons = document.querySelectorAll('[href*="/payroll/calculate/"]');
+                calculateButtons.forEach(btn => {
+                    const originalHref = btn.getAttribute('href');
+                    btn.setAttribute('href', originalHref + '?month=' + month);
+                });
+                alert('Month ' + month + ' applied to all calculation links');
+            }
+        }
+
+        function calculateAllPending() {
+            // 1. Find all employees that are NOT processed
+            const pendingItems = document.querySelectorAll('.employee-item[data-processed="false"]');
+            
+            if (pendingItems.length === 0) {
+                alert('No pending payrolls to calculate.');
+                return;
+            }
+
+            if (confirm(`Calculate payroll for ${pendingItems.length} pending employees?`)) {
+                // 2. Extract the IDs from the calculation links
+                const ids = Array.from(pendingItems).map(item => {
+                    const link = item.querySelector('a[href*="/payroll/calculate/"]').getAttribute('href');
+                    return link.split('/').pop().split('?')[0]; // Extract ID from URL
+                });
+
+                const month = document.getElementById('monthSelect').value;
+                
+                // 3. Create a hidden form to POST the data
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/payroll/bulk-calculate';
+
+                const idInput = document.createElement('input');
+                idInput.type = 'hidden';
+                idInput.name = 'employeeIds';
+                idInput.value = ids.join(',');
+
+                const monthInput = document.createElement('input');
+                monthInput.type = 'hidden';
+                monthInput.name = 'month';
+                monthInput.value = month;
+
+                form.appendChild(idInput);
+                form.appendChild(monthInput);
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+
+        function exportPayrollData() {
+            window.location.href = '/payroll/export/all';
+        }
+
+        function generateReports() {
+            const month = document.getElementById('monthSelect').value;
+            window.location.href = '/payroll/reports?month=' + month;     
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
             document.querySelectorAll('.filter-buttons .btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    document.querySelectorAll('.filter-buttons .btn').forEach(b => {
-                        b.classList.remove('active');
-                    });
-                    this.classList.add('active');
-                    
-                    const filter = this.dataset.filter;
-                    const items = document.querySelectorAll('.employee-item');
-                    
-                    items.forEach(item => {
-                        const isProcessed = item.dataset.processed === 'true';
-                        
-                        switch(filter) {
-                            case 'all':
-                                item.style.display = '';
-                                break;
-                            case 'processed':
-                                item.style.display = isProcessed ? '' : 'none';
-                                break;
-                            case 'pending':
-                                item.style.display = isProcessed ? 'none' : '';
-                                break;
-                        }
-                    });
+                btn.addEventListener('click', function(e) {
+                    filterByStatus(this.dataset.filter);
                 });
             });
 
-            function applyMonthToAll() {
-                const month = document.getElementById('monthSelect').value;
-                if (month) {
-                    const calculateButtons = document.querySelectorAll('[href*="/payroll/calculate/"]');
-                    calculateButtons.forEach(btn => {
-                        const originalHref = btn.getAttribute('href');
-                        btn.setAttribute('href', originalHref + '?month=' + month);
-                    });
-                    alert('Month ' + month + ' applied to all calculation links');
+            document.getElementById('searchInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    filterEmployees();
                 }
-            }
-
-            function calculateAllPending() {
-                // 1. Find all employees that are NOT processed
-                const pendingItems = document.querySelectorAll('.employee-item[data-processed="false"]');
-                
-                if (pendingItems.length === 0) {
-                    alert('No pending payrolls to calculate.');
-                    return;
-                }
-
-                if (confirm(`Calculate payroll for ${pendingItems.length} pending employees?`)) {
-                    // 2. Extract the IDs from the calculation links
-                    const ids = Array.from(pendingItems).map(item => {
-                        const link = item.querySelector('a[href*="/payroll/calculate/"]').getAttribute('href');
-                        return link.split('/').pop().split('?')[0]; // Extract ID from URL
-                    });
-
-                    const month = document.getElementById('monthSelect').value;
-                    
-                    // 3. Create a hidden form to POST the data
-                    const form = document.createElement('form');
-                    form.method = 'POST';
-                    form.action = '/payroll/bulk-calculate';
-
-                    const idInput = document.createElement('input');
-                    idInput.type = 'hidden';
-                    idInput.name = 'employeeIds';
-                    idInput.value = ids.join(',');
-
-                    const monthInput = document.createElement('input');
-                    monthInput.type = 'hidden';
-                    monthInput.name = 'month';
-                    monthInput.value = month;
-
-                    form.appendChild(idInput);
-                    form.appendChild(monthInput);
-                    document.body.appendChild(form);
-                    form.submit();
-                }
-            }
-
-            function exportPayrollData() {
-                window.location.href = '/payroll/export/all';
-            }
-
-            function generateReports() {
-                const month = document.getElementById('monthSelect').value;
-                window.location.href = '/payroll/reports?month=' + month;     
-            }
-        </script>
-    </th:block>
+            });
+        });
+    </script>
+</th:block>
 </body>
 </html>

@@ -46,6 +46,44 @@
             font-weight: bold;
             font-size: 1rem;
         }
+        
+        /* Scrollable table styles */
+        .table-responsive {
+            scrollbar-width: thin;
+            scrollbar-color: #cbd5e0 #f1f5f9;
+        }
+
+        .table-responsive::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        .table-responsive::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+
+        .table-responsive::-webkit-scrollbar-thumb {
+            background: #cbd5e0;
+            border-radius: 4px;
+        }
+
+        .table-responsive::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* Sticky header enhancement */
+        .table thead th {
+            background: white;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        /* No results message styling */
+        #noResultsRow td {
+            background: #f8fafc;
+            color: #64748b;
+        }
+
         .mmk-currency {
             font-family: 'Courier New', monospace;
             font-weight: 600;
@@ -358,15 +396,37 @@
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         <script th:inline="javascript">
         /*<![CDATA[*/
-            $(document).ready(function() {
-            // Live search functionality
-            $("#employeeSearch").on("keyup", function() {
-                var value = $(this).val().toLowerCase();
-                $("#salaryTable tbody tr").filter(function() {
-                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
-                });
+    $(document).ready(function() {
+        // Live search functionality
+        $("#employeeSearch").on("keyup", function() {
+            var value = $(this).val().toLowerCase();
+            $("#salaryTable tbody tr").filter(function() {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
             });
+            
+            // Show/hide "no results" message
+            var visibleRows = $("#salaryTable tbody tr:visible").length;
+            if (visibleRows === 0) {
+                if ($("#noResultsRow").length === 0) {
+                    $("#salaryTable tbody").append('<tr id="noResultsRow"><td colspan="6" class="text-center py-4"><i class="fas fa-search me-2"></i>No employees found matching "<span id="searchTerm"></span>"</td></tr>');
+                }
+                $("#searchTerm").text($(this).val());
+                $("#noResultsRow").show();
+            } else {
+                $("#noResultsRow").hide();
+            }
         });
+
+        // Search button click handler
+        $("#searchButton").on("click", function() {
+            $("#employeeSearch").trigger("keyup");
+        });
+
+        // Clear search on empty input
+        $("#employeeSearch").on("search", function() {
+            $(this).trigger("keyup");
+        });
+    });
 
         document.addEventListener('DOMContentLoaded', function() {
             const deptStats = /*[[${departmentStats}]]*/ {}; // Counts for Pie Chart
