@@ -1,7 +1,11 @@
 package com.empManagement.empManagement.repository;
 
 import com.empManagement.empManagement.entity.EmployeePayroll;
+
+import jakarta.transaction.Transactional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -12,6 +16,11 @@ public interface EmployeePayrollRepository extends JpaRepository<EmployeePayroll
     List<EmployeePayroll> findByEmployeeId(Integer employeeId);
 
     List<EmployeePayroll> findByMonthYear(String monthYear);
+
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM EmployeePayroll ep WHERE ep.employee.id = :employeeId")
+    void deleteByEmployeeId(@Param("employeeId") int employeeId);
 
     @Query("SELECT p FROM EmployeePayroll p WHERE p.employee.id = :employeeId AND p.monthYear = :monthYear")
     EmployeePayroll findByEmployeeAndMonthYear(@Param("employeeId") Integer employeeId,

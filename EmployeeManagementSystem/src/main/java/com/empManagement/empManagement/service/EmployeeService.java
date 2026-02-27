@@ -537,4 +537,9 @@ public class EmployeeService {
     public Object getPayrollReportData(String selectedMonth) {
         throw new UnsupportedOperationException("Unimplemented method 'getPayrollReportData'");
     }
+
+    public boolean hasPayrollRecords(int id) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'hasPayrollRecords'");
+    }
 }

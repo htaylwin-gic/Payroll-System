@@ -90,8 +90,21 @@ public class EmployeeController {
     @GetMapping("/delete/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public String deleteEmployee(@PathVariable("id") int id, RedirectAttributes redirectAttributes) {
-        employeeService.deleteById(id);
-        redirectAttributes.addFlashAttribute("success", "Employee deleted successfully!");
+        try {
+            // Check if employee has payroll records
+            boolean hasPayrolls = employeeService.hasPayrollRecords(id);
+
+            if (hasPayrolls) {
+                redirectAttributes.addFlashAttribute("error",
+                        "Cannot delete employee with existing payroll records. Please delete payroll records first.");
+                return "redirect:/employees/manage";
+            }
+
+            employeeService.deleteById(id);
+            redirectAttributes.addFlashAttribute("success", "Employee deleted successfully!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error deleting employee: " + e.getMessage());
+        }
         return "redirect:/employees/manage";
     }
 

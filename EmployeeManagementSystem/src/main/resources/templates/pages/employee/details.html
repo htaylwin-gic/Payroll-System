@@ -6,44 +6,244 @@
     <title th:text="'Details - ' + ${employee.full_name}"></title>
     <style>
         .profile-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
             color: white;
             padding: 30px;
-            border-radius: 10px;
+            border-radius: 20px;
             margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+            position: relative;
+            overflow: hidden;
         }
+        
+        .profile-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .profile-header > * {
+            position: relative;
+            z-index: 1;
+        }
+        
         .profile-photo {
             width: 120px;
             height: 120px;
             border-radius: 50%;
             object-fit: cover;
-            border: 5px solid white;
+            border: 5px solid rgba(255,255,255,0.3);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
+        
         .info-card {
             border: none;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
             margin-bottom: 20px;
+            transition: all 0.3s ease;
+            overflow: hidden;
         }
+        
+        .info-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+        }
+        
         .info-card .card-header {
-            background-color: #f8f9fa;
-            border-bottom: 2px solid #e9ecef;
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 1.2rem 1.5rem;
             font-weight: 600;
+            color: #1e293b;
         }
+        
+        .info-card .card-header i {
+            color: #3b82f6;
+        }
+        
+        .info-card .card-body {
+            padding: 1.5rem;
+        }
+        
         .info-label {
-            color: #6c757d;
+            color: #64748b;
             font-weight: 500;
+            font-size: 0.95rem;
         }
+        
         .info-value {
-            font-weight: 500;
+            font-weight: 600;
+            color: #1e293b;
         }
+        
         .action-buttons .btn {
             min-width: 120px;
+            border-radius: 8px;
+            padding: 0.5rem 1.2rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-light {
+            background: white;
+            color: #3b82f6;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        
+        .btn-light:hover {
+            background: rgba(255,255,255,0.9);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .btn-dark {
+            background: rgba(0,0,0,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        
+        .btn-dark:hover {
+            background: rgba(0,0,0,0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .btn-outline-primary {
+            color: #3b82f6;
+            border-color: #3b82f6;
+        }
+        
+        .btn-outline-primary:hover {
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            border-color: transparent;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
+        }
+        
+        .btn-outline-warning {
+            color: #f59e0b;
+            border-color: #f59e0b;
+        }
+        
+        .btn-outline-warning:hover {
+            background: #f59e0b;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(245, 158, 11, 0.3);
+        }
+        
+        .btn-outline-info {
+            color: #06b6d4;
+            border-color: #06b6d4;
+        }
+        
+        .btn-outline-info:hover {
+            background: #06b6d4;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(6, 182, 212, 0.3);
+        }
+        
+        .btn-outline-secondary {
+            color: #64748b;
+            border-color: #64748b;
+        }
+        
+        .btn-outline-secondary:hover {
+            background: #64748b;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(100, 116, 139, 0.3);
+        }
+        
+        .badge {
+            padding: 0.5rem 0.8rem;
+            font-weight: 500;
+            border-radius: 6px;
+        }
+        
+        .badge.bg-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+        }
+        
+        .badge.bg-danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+        }
+        
+        .badge.bg-warning {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+            color: white;
+        }
+        
+        .badge.bg-info {
+            background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%) !important;
+        }
+        
+        .badge.bg-secondary {
+            background: linear-gradient(135deg, #64748b 0%, #475569 100%) !important;
+        }
+        
+        .badge.bg-light {
+            background: #f1f5f9 !important;
+            color: #1e293b !important;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .d-grid .btn {
+            border-radius: 8px;
+            padding: 0.7rem 1rem;
+            font-weight: 500;
+            text-align: center;
+        }
+        
+        .d-grid .btn i {
+            width: 20px;
+            text-align: center;
+        }
+        
+        hr {
+            border-color: #e2e8f0;
+            opacity: 0.5;
+        }
+        
+        @media (max-width: 768px) {
+            .profile-header {
+                padding: 20px;
+            }
+            
+            .profile-photo {
+                width: 100px;
+                height: 100px;
+                margin-bottom: 15px;
+            }
+            
+            .action-buttons .btn {
+                min-width: 100px;
+                margin-bottom: 10px;
+            }
+            
+            .col-md-4.text-end {
+                text-align: left !important;
+                margin-top: 15px;
+            }
         }
     </style>
 </head>
 <body>
     <div layout:fragment="dashboard-content">
-        <!-- Profile Header -->
+        <!-- Profile Header with matching gradient -->
         <div class="profile-header">
             <div class="row align-items-center">
                 <div class="col-md-2 text-center">
@@ -52,8 +252,8 @@
                          class="profile-photo mb-3">
                 </div>
                 <div class="col-md-6">
-                    <h2 class="mb-2" th:text="${employee.full_name}"></h2>
-                    <p class="mb-1" th:text="${employee.position}"></p>
+                    <h2 class="mb-2 fw-bold" th:text="${employee.full_name}"></h2>
+                    <p class="mb-1 opacity-75" th:text="${employee.position}"></p>
                     <p class="mb-0">
                         <span class="badge bg-light text-dark me-2" th:text="${employee.department}"></span>
                         <span th:classappend="'badge ' + ${employee.status == 'Active' ? 'bg-success' : 
@@ -69,7 +269,7 @@
                             <i class="fas fa-edit me-2"></i> Edit
                         </a>
                         <a th:href="@{/employees/manage}" 
-                           class="btn btn-outline-light">
+                           class="btn btn-dark">
                             <i class="fas fa-arrow-left me-2"></i> Back
                         </a>
                     </div>
@@ -86,19 +286,19 @@
                         <i class="fas fa-user me-2"></i>Personal Information
                     </div>
                     <div class="card-body">
-                        <div class="row mb-2">
+                        <div class="row mb-3">
                             <div class="col-5 info-label">Date of Birth</div>
                             <div class="col-7 info-value" th:text="${employee.date_of_birth} ?: 'Not specified'"></div>
                         </div>
-                        <div class="row mb-2">
+                        <div class="row mb-3">
                             <div class="col-5 info-label">Gender</div>
                             <div class="col-7 info-value" th:text="${employee.gender} ?: 'Not specified'"></div>
                         </div>
-                        <div class="row mb-2">
+                        <div class="row mb-3">
                             <div class="col-5 info-label">Nationality</div>
                             <div class="col-7 info-value" th:text="${employee.nationality} ?: 'Not specified'"></div>
                         </div>
-                        <div class="row mb-2">
+                        <div class="row">
                             <div class="col-5 info-label">NIC</div>
                             <div class="col-7 info-value" th:text="${employee.NIC}"></div>
                         </div>
@@ -113,11 +313,11 @@
                         <i class="fas fa-address-card me-2"></i>Contact Information
                     </div>
                     <div class="card-body">
-                        <div class="row mb-2">
+                        <div class="row mb-3">
                             <div class="col-5 info-label">Email</div>
                             <div class="col-7 info-value" th:text="${employee.email}"></div>
                         </div>
-                        <div class="row mb-2">
+                        <div class="row mb-3">
                             <div class="col-5 info-label">Phone</div>
                             <div class="col-7 info-value" th:text="${employee.phone_number} ?: 'Not specified'"></div>
                         </div>
@@ -138,21 +338,21 @@
                         <i class="fas fa-briefcase me-2"></i>Employment Details
                     </div>
                     <div class="card-body">
-                        <div class="row mb-2">
+                        <div class="row mb-3">
                             <div class="col-5 info-label">Position</div>
                             <div class="col-7 info-value" th:text="${employee.position}"></div>
                         </div>
-                        <div class="row mb-2">
+                        <div class="row mb-3">
                             <div class="col-5 info-label">Department</div>
                             <div class="col-7 info-value">
                                 <span class="badge bg-secondary" th:text="${employee.department}"></span>
                             </div>
                         </div>
-                        <div class="row mb-2">
+                        <div class="row mb-3">
                             <div class="col-5 info-label">Start Date</div>
                             <div class="col-7 info-value" th:text="${employee.start_date}"></div>
                         </div>
-                        <div class="row mb-2">
+                        <div class="row mb-3">
                             <div class="col-5 info-label">Employment Status</div>
                             <div class="col-7 info-value" th:text="${employee.employment_status} ?: 'Not specified'"></div>
                         </div>
@@ -173,34 +373,36 @@
                     <div class="card-body">
                         <div class="row mb-3">
                             <div class="col-5 info-label">Basic Salary</div>
-
-                            <div class="col-7 info-value" 
+                            <div class="col-7 info-value fw-bold text-primary" 
                                  th:text="${employee.salary != null ? #numbers.formatDecimal(employee.salary, 0, 'COMMA', 2, 'POINT') + ' MMK' : 'Not set'}">
                             </div>
                         </div>
                         <div class="row mb-4">
                             <div class="col-5 info-label">Net Salary</div>
                             <div class="col-7 info-value" 
-                                 th:text="${employee.netSalary != null} ? '&#36;' + ${#numbers.formatDecimal(employee.netSalary, 1, 2)} : 'Not set'">
+                                th:text="${employee.netSalary != null ? #numbers.formatDecimal(employee.netSalary, 0, 'COMMA', 2, 'POINT') + ' MMK' : 'Not set'}">
                             </div>
                         </div>
 
                         <div class="action-buttons">
                             <div class="d-grid gap-2">
                                 <a th:href="@{/status/salary/{id}(id=${employee.id})}" 
-                                   class="btn btn-outline-info">
+                                class="btn btn-outline-primary">
                                     <i class="fas fa-chart-pie me-2"></i> View Salary Breakdown
                                 </a>
+
                                 <a th:href="@{/salary/update/{id}(id=${employee.id})}" 
-                                   class="btn btn-outline-warning">
+                                class="btn btn-outline-warning">
                                     <i class="fas fa-edit me-2"></i> Update Salary Details
                                 </a>
+
                                 <a th:href="@{/payroll/calculate/{employeeId}(employeeId=${employee.id})}" 
-                                   class="btn btn-outline-primary">
+                                class="btn btn-outline-info">
                                     <i class="fas fa-calculator me-2"></i> Calculate Payroll
                                 </a>
+
                                 <a th:href="@{/payroll/view/{employeeId}(employeeId=${employee.id})}" 
-                                   class="btn btn-outline-secondary">
+                                class="btn btn-outline-secondary">
                                     <i class="fas fa-history me-2"></i> View Payroll History
                                 </a>
                             </div>
@@ -227,7 +429,7 @@
                         <div class="row">
                             <div class="col-md-3 mb-3">
                                 <div class="info-label">Attendance Today</div>
-                                <div class="info-value">
+                                <div class="info-value mt-1">
                                     <span th:if="${employee.isAttedence == 'Yes'}" 
                                         class="badge bg-success">Present</span>
                                     <span th:if="${employee.isAttedence == 'No'}" 
@@ -238,7 +440,7 @@
                             </div>
                             <div class="col-md-3 mb-3">
                                 <div class="info-label">Payroll Status</div>
-                                <div class="info-value">
+                                <div class="info-value mt-1">
                                     <span th:switch="${employee.isPayroll}">
                                         <span th:case="'Yes'" class="badge bg-success">Processed</span>
                                         <span th:case="'No'" class="badge bg-warning">Pending</span>
@@ -248,11 +450,11 @@
                             </div>
                             <div class="col-md-3 mb-3">
                                 <div class="info-label">Service Years</div>
-                                <div class="info-value" th:text="${employee.myanmarServiceYears} ? ${employee.myanmarServiceYears} + ' years' : 'N/A'"></div>
+                                <div class="info-value mt-1 fw-bold" th:text="${employee.myanmarServiceYears} ? ${employee.myanmarServiceYears} + ' years' : 'N/A'"></div>
                             </div>
                             <div class="col-md-3 mb-3">
                                 <div class="info-label">Last Updated</div>
-                                <div class="info-value" th:text="${employee.time} ?: 'N/A'"></div>
+                                <div class="info-value mt-1" th:text="${employee.time} ?: 'N/A'"></div>
                             </div>
                         </div>
                     </div>
