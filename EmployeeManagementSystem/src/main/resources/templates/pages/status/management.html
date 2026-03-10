@@ -431,6 +431,7 @@
             }
 
             document.addEventListener('DOMContentLoaded', function() {
+                // Select All functionality
                 const selectAllCheckbox = document.getElementById('selectAll');
                 if (selectAllCheckbox) {
                     selectAllCheckbox.addEventListener('change', function() {
@@ -442,8 +443,10 @@
                     });
                 }
 
+                // Initialize selected count
                 window.updateSelectedCount();
                 
+                // Success/Error messages
                 const successMsg = /*[[${success}]]*/ null;
                 if (successMsg) {
                     Swal.fire({
@@ -465,6 +468,16 @@
                         confirmButtonColor: '#667eea'
                     });
                 }
+
+                // Add click handlers for bulk action buttons
+                document.querySelectorAll('.bulk-action').forEach(button => {
+                    button.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const status = this.getAttribute('data-status');
+                        console.log('Bulk action clicked with status:', status);
+                        window.bulkUpdateStatus(status);
+                    });
+                });
             });
 
             window.bulkUpdateStatus = function(status) {
@@ -484,7 +497,7 @@
                 }
 
                 const statusText = status === 'Active' ? 'activate' : 'deactivate';
-                const employeeNames = Array.from(selectedCheckboxes).map(cb => cb.dataset.name).join(', ');
+                const employeeNames = Array.from(selectedCheckboxes).map(cb => cb.getAttribute('data-name')).join(', ');
                 
                 Swal.fire({
                     title: `Confirm Bulk ${status === 'Active' ? 'Activation' : 'Deactivation'}`,
@@ -497,37 +510,18 @@
                     cancelButtonText: 'Cancel',
                     showLoaderOnConfirm: true,
                     preConfirm: () => {
+                        // Get selected employee IDs
                         const employeeIds = Array.from(selectedCheckboxes).map(cb => cb.value).join(',');
                         
+                        // Get the hidden form
+                        const bulkForm = document.getElementById('bulkUpdateForm');
+                        
+                        // Set form values
                         document.getElementById('bulkEmployeeIds').value = employeeIds;
                         document.getElementById('bulkNewStatus').value = status;
                         
-                        const csrfToken = document.querySelector('input[name="_csrf"]')?.value;
-                        const csrfParameter = document.querySelector('input[name="_csrf"]')?.name || '_csrf';
-                        
-                        const form = document.createElement('form');
-                        form.method = 'POST';
-                        form.action = document.getElementById('bulkUpdateForm').action;
-                        form.style.display = 'none';
-                        
-                        // Add form fields
-                        const fields = {
-                            'employeeIds': employeeIds,
-                            'newStatus': status,
-                            'reason': 'Bulk status update',
-                            [csrfParameter]: csrfToken
-                        };
-                        
-                        for (const [key, value] of Object.entries(fields)) {
-                            const input = document.createElement('input');
-                            input.type = 'hidden';
-                            input.name = key;
-                            input.value = value || '';
-                            form.appendChild(input);
-                        }
-                        
-                        document.body.appendChild(form);
-                        form.submit();
+                        // Submit the form
+                        bulkForm.submit();
                         
                         return false; 
                     }
@@ -536,14 +530,15 @@
 
             // Export status report
             window.exportStatusReport = function() {
-                const statusElement = document.querySelector('[th\\:text="${selectedStatus}"]');
-                const status = statusElement ? statusElement.textContent : 'all';
+                // Get current status from URL or default to 'all'
+                const urlParams = new URLSearchParams(window.location.search);
+                const status = urlParams.get('status') || 'all';
                 
-                const url = status && status !== 'all' 
+                const exportUrl = status && status !== 'all' 
                     ? `/status/export?status=${status}`
                     : '/status/export';
                 
-                window.location.href = url;
+                window.location.href = exportUrl;
                 
                 Swal.fire({
                     icon: 'success',
@@ -553,33 +548,6 @@
                     showConfirmButton: false
                 });
             }
-
-            document.addEventListener('DOMContentLoaded', function() {
-                const activateBtn = document.querySelector('button[onclick="bulkUpdateStatus(\'Active\')"]');
-                const deactivateBtn = document.querySelector('button[onclick="bulkUpdateStatus(\'Inactive\')"]');
-                
-                if (activateBtn) {
-                    activateBtn.onclick = function(e) {
-                        e.preventDefault();
-                        window.bulkUpdateStatus('Active');
-                    };
-                }
-                
-                if (deactivateBtn) {
-                    deactivateBtn.onclick = function(e) {
-                        e.preventDefault();
-                        window.bulkUpdateStatus('Inactive');
-                    };
-                }
-            });
-
-            document.querySelectorAll('.bulk-action').forEach(button => {
-                button.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const status = this.dataset.status;
-                    window.bulkUpdateStatus(status);
-                });
-            });
             
             /*]]>*/
         </script>

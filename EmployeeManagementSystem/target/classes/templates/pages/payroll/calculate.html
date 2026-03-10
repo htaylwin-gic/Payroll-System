@@ -67,7 +67,7 @@
                 <p class="text-muted mb-0" th:text="'For: ' + ${employee.full_name}"></p>
             </div>
             <div>
-                <a th:href="@{/payroll/manage}" class="btn btn-outline-secondary">
+                <a th:href="@{/payroll/manage}" class="btn btn-secondary">
                     <i class="fas fa-arrow-left me-2"></i> Back to Payroll
                 </a>
             </div>
@@ -639,10 +639,10 @@
                 <button type="submit" class="btn btn-primary btn-lg">
                     <i class="fas fa-calculator me-2"></i> Calculate & Save Payroll
                 </button>
-                <button type="button" class="btn btn-outline-secondary btn-lg" onclick="resetToInitial()">
+                <button type="button" class="btn btn-secondary btn-lg" onclick="resetToInitial()">
                     <i class="fas fa-sync-alt me-2"></i> Recalculate
                 </button>
-                <a th:href="@{/payroll/manage}" class="btn btn-outline-danger btn-lg">
+                <a th:href="@{/payroll/manage}" class="btn btn-danger btn-lg">
                     <i class="fas fa-times me-2"></i> Cancel
                 </a>
             </div>

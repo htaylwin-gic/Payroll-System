@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/dashboard-layout}">
+<head>
+    <title>Notification Settings</title>
+    <style>
+        .settings-sidebar {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .settings-sidebar .nav-link {
+            color: #495057;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            transition: all 0.3s;
+        }
+        .settings-sidebar .nav-link:hover {
+            background: #f8f9fa;
+            color: #0d6efd;
+        }
+        .settings-sidebar .nav-link.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .settings-sidebar .nav-link i {
+            width: 25px;
+        }
+        .settings-content {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .settings-header {
+            border-bottom: 1px solid #dee2e6;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        .notification-option {
+            padding: 15px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            transition: all 0.3s;
+        }
+        .notification-option:hover {
+            background: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <div layout:fragment="dashboard-content">
+        <!-- Page Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h4 class="mb-0">
+                    <i class="fas fa-bell me-2"></i>
+                    Notification Settings
+                </h4>
+                <p class="text-muted mb-0">Configure how you receive notifications</p>
+            </div>
+        </div>
+
+        <!-- Success/Error Messages -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i> <span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i> <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div class="row">
+            <!-- Settings Sidebar -->
+            <div class="col-md-3 mb-4">
+                <div class="settings-sidebar">
+                    <div class="nav flex-column nav-pills">
+                        <a class="nav-link" th:href="@{/settings/general}">
+                            <i class="fas fa-sliders-h me-2"></i> General
+                        </a>
+                        <a class="nav-link active" th:href="@{/settings/notifications}">
+                            <i class="fas fa-bell me-2"></i> Notifications
+                        </a>
+                        <a class="nav-link" th:href="@{/settings/security}">
+                            <i class="fas fa-shield-alt me-2"></i> Security
+                        </a>
+                        <a class="nav-link" th:href="@{/settings/backup}">
+                            <i class="fas fa-database me-2"></i> Backup
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Content -->
+            <div class="col-md-9">
+                <div class="settings-content">
+                    <div class="settings-header">
+                        <h5 class="mb-0">Notification Preferences</h5>
+                        <p class="text-muted mb-0">Choose which notifications you want to receive</p>
+                    </div>
+                    
+                    <form th:action="@{/settings/notifications/update}" method="post">
+                        <div class="notification-option">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="emailNotifications" 
+                                       id="emailNotifications" th:checked="${settings != null and settings.emailNotifications}">
+                                <label class="form-check-label" for="emailNotifications">
+                                    <strong>Email Notifications</strong>
+                                    <p class="text-muted small mb-0">Receive notifications via email</p>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="notification-option">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="systemNotifications" 
+                                       id="systemNotifications" th:checked="${settings != null and settings.systemNotifications}">
+                                <label class="form-check-label" for="systemNotifications">
+                                    <strong>System Notifications</strong>
+                                    <p class="text-muted small mb-0">Receive in-app notifications</p>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="notification-option">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="payrollAlerts" 
+                                       id="payrollAlerts" th:checked="${settings != null and settings.payrollAlerts}">
+                                <label class="form-check-label" for="payrollAlerts">
+                                    <strong>Payroll Alerts</strong>
+                                    <p class="text-muted small mb-0">Get notified about payroll calculations and updates</p>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="notification-option">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="attendanceReminders" 
+                                       id="attendanceReminders" th:checked="${settings != null and settings.attendanceReminders}">
+                                <label class="form-check-label" for="attendanceReminders">
+                                    <strong>Attendance Reminders</strong>
+                                    <p class="text-muted small mb-0">Receive reminders about attendance marking</p>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="notification-option">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="statusChanges" 
+                                       id="statusChanges" th:checked="${settings != null and settings.statusChangeAlerts}">
+                                <label class="form-check-label" for="statusChanges">
+                                    <strong>Status Change Alerts</strong>
+                                    <p class="text-muted small mb-0">Get notified when employee status changes</p>
+                                </label>
+                            </div>
+                        </div>
+
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                        
+                        <div class="text-end mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i> Save Preferences
+                            </button>
+                            <a th:href="@{/settings}" class="btn btn-outline-secondary ms-2">
+                                <i class="fas fa-times me-2"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

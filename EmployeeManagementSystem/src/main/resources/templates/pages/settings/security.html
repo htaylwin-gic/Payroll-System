@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/dashboard-layout}">
+<head>
+    <title>Security Settings</title>
+    <style>
+        .settings-sidebar {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .settings-sidebar .nav-link {
+            color: #495057;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            transition: all 0.3s;
+        }
+        .settings-sidebar .nav-link:hover {
+            background: #f8f9fa;
+            color: #0d6efd;
+        }
+        .settings-sidebar .nav-link.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .settings-sidebar .nav-link i {
+            width: 25px;
+        }
+        .settings-content {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .settings-header {
+            border-bottom: 1px solid #dee2e6;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div layout:fragment="dashboard-content">
+        <!-- Page Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h4 class="mb-0">
+                    <i class="fas fa-shield-alt me-2"></i>
+                    Security Settings
+                </h4>
+                <p class="text-muted mb-0">Configure security and access control</p>
+            </div>
+        </div>
+
+        <!-- Success/Error Messages -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i> <span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i> <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div class="row">
+            <!-- Settings Sidebar -->
+            <div class="col-md-3 mb-4">
+                <div class="settings-sidebar">
+                    <div class="nav flex-column nav-pills">
+                        <a class="nav-link" th:href="@{/settings/general}">
+                            <i class="fas fa-sliders-h me-2"></i> General
+                        </a>
+                        <a class="nav-link" th:href="@{/settings/notifications}">
+                            <i class="fas fa-bell me-2"></i> Notifications
+                        </a>
+                        <a class="nav-link active" th:href="@{/settings/security}">
+                            <i class="fas fa-shield-alt me-2"></i> Security
+                        </a>
+                        <a class="nav-link" th:href="@{/settings/backup}">
+                            <i class="fas fa-database me-2"></i> Backup
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Content -->
+            <div class="col-md-9">
+                <div class="settings-content">
+                    <div class="settings-header">
+                        <h5 class="mb-0">Security Settings</h5>
+                        <p class="text-muted mb-0">Manage security preferences</p>
+                    </div>
+                    
+                    <form th:action="@{/settings/security/update}" method="post">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Session Timeout (minutes)</label>
+                                <input type="number" class="form-control" name="sessionTimeout" 
+                                       th:value="${settings != null ? settings.sessionTimeout : 30}" min="5" max="120">
+                                <small class="text-muted">How long before user session expires</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Max Login Attempts</label>
+                                <input type="number" class="form-control" name="maxLoginAttempts" 
+                                       th:value="${settings != null ? settings.maxLoginAttempts : 5}" min="3" max="10">
+                                <small class="text-muted">Number of failed attempts before lockout</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Password Expiry (days)</label>
+                                <input type="number" class="form-control" name="passwordExpiryDays" 
+                                       th:value="${settings != null ? settings.passwordExpiryDays : 90}" min="30" max="365">
+                                <small class="text-muted">Days before password expires</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check form-switch mt-4">
+                                    <input class="form-check-input" type="checkbox" name="twoFactorAuth" 
+                                           id="twoFactorAuth" th:checked="${settings != null and settings.twoFactorAuth}">
+                                    <label class="form-check-label" for="twoFactorAuth">
+                                        <strong>Enable Two-Factor Authentication</strong>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <h6 class="mb-3">Password Policy</h6>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Password must contain at least 8 characters, including uppercase, lowercase, and numbers.
+                        </div>
+
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                        
+                        <div class="text-end mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i> Save Changes
+                            </button>
+                            <a th:href="@{/settings}" class="btn btn-outline-secondary ms-2">
+                                <i class="fas fa-times me-2"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
