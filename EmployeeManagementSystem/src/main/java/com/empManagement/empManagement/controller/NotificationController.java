@@ -9,6 +9,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Controller
@@ -24,8 +25,24 @@ public class NotificationController {
         List<Notification> notifications = notificationService.getCurrentUserNotifications();
         int unreadCount = notificationService.getUnreadCount();
 
+        // Calculate today's and this week's notifications
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime startOfDay = now.toLocalDate().atStartOfDay();
+        LocalDateTime startOfWeek = now.minusDays(now.getDayOfWeek().getValue() - 1).toLocalDate().atStartOfDay();
+
+        long todayCount = notifications.stream()
+                .filter(n -> n.getCreatedAt() != null && n.getCreatedAt().isAfter(startOfDay))
+                .count();
+
+        long weekCount = notifications.stream()
+                .filter(n -> n.getCreatedAt() != null && n.getCreatedAt().isAfter(startOfWeek))
+                .count();
+
         model.addAttribute("notifications", notifications);
         model.addAttribute("unreadCount", unreadCount);
+        model.addAttribute("todayCount", todayCount);
+        model.addAttribute("weekCount", weekCount);
+
         return "pages/notifications/view";
     }
 
