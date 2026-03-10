@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/dashboard-layout}">
+<head>
+    <title>Payroll Reports</title>
+</head>
+<body>
+    <div layout:fragment="dashboard-content">
+        <div class="container-fluid">
+            <h2 class="mb-4">Payroll Report - <span th:text="${selectedMonth}"></span></h2>
+            
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <div class="card text-white bg-primary">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Employees</h5>
+                            <h3 th:text="${reportData.totalEmployees}">0</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card text-white bg-success">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Payroll</h5>
+                            <h3 th:text="${#numbers.formatDecimal(reportData.totalPayroll, 0, 'COMMA', 2, 'POINT') + ' MMK'}">0</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card text-white bg-info">
+                        <div class="card-body">
+                            <h5 class="card-title">Average Salary</h5>
+                            <h3 th:text="${#numbers.formatDecimal(reportData.averageSalary, 0, 'COMMA', 2, 'POINT') + ' MMK'}">0</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card text-white bg-warning">
+                        <div class="card-body">
+                            <h5 class="card-title">Highest Salary</h5>
+                            <h3 th:text="${#numbers.formatDecimal(reportData.highestSalary, 0, 'COMMA', 2, 'POINT') + ' MMK'}">0</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5>Department Summary</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Department</th>
+                                <th>Total Payroll</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="entry : ${reportData.departmentTotals}">
+                                <td th:text="${entry.key}"></td>
+                                <td th:text="${#numbers.formatDecimal(entry.value, 0, 'COMMA', 2, 'POINT') + ' MMK'}"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="mt-3">
+                <a href="/payroll/manage" class="btn btn-secondary">Back to Payroll Management</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

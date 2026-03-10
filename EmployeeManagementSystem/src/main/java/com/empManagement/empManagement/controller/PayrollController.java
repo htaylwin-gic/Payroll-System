@@ -30,7 +30,7 @@ public class PayrollController {
     @GetMapping("/manage")
     public String payrollManagement(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "6") int size,
+            @RequestParam(defaultValue = "9") int size,
             Model model) {
         org.springframework.data.domain.Page<Employee> employeesPage = employeeService.getEmployeesPaginated(page,
                 size);

@@ -10,7 +10,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -534,8 +536,132 @@ public class EmployeeService {
         return payrollRepository.findAll();
     }
 
-    public Object getPayrollReportData(String selectedMonth) {
-        throw new UnsupportedOperationException("Unimplemented method 'getPayrollReportData'");
+    public Map<String, Object> getPayrollReportData(String selectedMonth) {
+        Map<String, Object> reportData = new HashMap<>();
+
+        try {
+            // Get all payrolls for the selected month
+            List<EmployeePayroll> payrolls = getPayrollsByMonth(selectedMonth);
+
+            // Basic statistics
+            reportData.put("totalEmployees", payrolls.size());
+            reportData.put("totalPayroll", getTotalPaymentByMonth(selectedMonth));
+
+            // Department-wise breakdown
+            Map<String, Double> deptTotal = new HashMap<>();
+            Map<String, Integer> deptCount = new HashMap<>();
+            Map<String, Double> deptAverage = new HashMap<>();
+
+            for (EmployeePayroll payroll : payrolls) {
+                if (payroll.getEmployee() != null) {
+                    String dept = payroll.getEmployee().getDepartment();
+                    if (dept == null)
+                        dept = "Unknown";
+
+                    double amount = payroll.getTotalPayment() != null ? payroll.getTotalPayment() : 0.0;
+
+                    deptTotal.put(dept, deptTotal.getOrDefault(dept, 0.0) + amount);
+                    deptCount.put(dept, deptCount.getOrDefault(dept, 0) + 1);
+                }
+            }
+
+            // Calculate averages per department
+            for (String dept : deptTotal.keySet()) {
+                int count = deptCount.getOrDefault(dept, 1);
+                deptAverage.put(dept, deptTotal.get(dept) / count);
+            }
+
+            reportData.put("departmentTotals", deptTotal);
+            reportData.put("departmentAverages", deptAverage);
+            reportData.put("departmentCounts", deptCount);
+
+            // Salary range distribution
+            int range1 = 0, range2 = 0, range3 = 0, range4 = 0, range5 = 0;
+
+            for (EmployeePayroll payroll : payrolls) {
+                double amount = payroll.getTotalPayment() != null ? payroll.getTotalPayment() : 0.0;
+
+                if (amount < 500000)
+                    range1++;
+                else if (amount < 1000000)
+                    range2++;
+                else if (amount < 1500000)
+                    range3++;
+                else if (amount < 2000000)
+                    range4++;
+                else
+                    range5++;
+            }
+
+            Map<String, Integer> salaryRanges = new HashMap<>();
+            salaryRanges.put("< 500K", range1);
+            salaryRanges.put("500K - 1M", range2);
+            salaryRanges.put("1M - 1.5M", range3);
+            salaryRanges.put("1.5M - 2M", range4);
+            salaryRanges.put("> 2M", range5);
+
+            reportData.put("salaryRanges", salaryRanges);
+
+            // Top earners
+            List<Map<String, Object>> topEarners = payrolls.stream()
+                    .sorted((p1, p2) -> Double.compare(
+                            p2.getTotalPayment() != null ? p2.getTotalPayment() : 0,
+                            p1.getTotalPayment() != null ? p1.getTotalPayment() : 0))
+                    .limit(5)
+                    .map(p -> {
+                        Map<String, Object> emp = new HashMap<>();
+                        emp.put("name", p.getEmployee() != null ? p.getEmployee().getFull_name() : "Unknown");
+                        emp.put("amount", p.getTotalPayment() != null ? p.getTotalPayment() : 0.0);
+                        emp.put("department", p.getEmployee() != null ? p.getEmployee().getDepartment() : "Unknown");
+                        return emp;
+                    })
+                    .collect(Collectors.toList());
+
+            reportData.put("topEarners", topEarners);
+
+            // Attendance statistics
+            double totalPresent = payrolls.stream()
+                    .mapToDouble(p -> p.getPresentDays() != null ? p.getPresentDays() : 0)
+                    .sum();
+            double totalWorking = payrolls.stream()
+                    .mapToDouble(p -> p.getWorkingDays() != null ? p.getWorkingDays() : 0)
+                    .sum();
+
+            reportData.put("attendanceRate", totalWorking > 0 ? (totalPresent / totalWorking) * 100 : 0);
+
+            // Payment statistics
+            reportData.put("highestSalary", payrolls.stream()
+                    .mapToDouble(p -> p.getTotalPayment() != null ? p.getTotalPayment() : 0)
+                    .max().orElse(0.0));
+
+            reportData.put("lowestSalary", payrolls.stream()
+                    .mapToDouble(p -> p.getTotalPayment() != null ? p.getTotalPayment() : 0)
+                    .min().orElse(0.0));
+
+            reportData.put("averageSalary", payrolls.stream()
+                    .mapToDouble(p -> p.getTotalPayment() != null ? p.getTotalPayment() : 0)
+                    .average().orElse(0.0));
+
+            // Monthly comparison data (last 6 months)
+            Map<String, Double> monthlyTrend = new LinkedHashMap<>();
+            LocalDate currentDate = LocalDate.now();
+
+            for (int i = 5; i >= 0; i--) {
+                LocalDate monthDate = currentDate.minusMonths(i);
+                String monthStr = monthDate.format(DateTimeFormatter.ofPattern("MMM,yyyy"));
+                Double monthTotal = getTotalPaymentByMonth(monthStr);
+                monthlyTrend.put(monthStr, monthTotal != null ? monthTotal : 0.0);
+            }
+
+            reportData.put("monthlyTrend", monthlyTrend);
+
+        } catch (Exception e) {
+            System.err.println("Error generating payroll report: " + e.getMessage());
+            e.printStackTrace();
+            reportData.put("error", "Error generating report: " + e.getMessage());
+        }
+
+        return reportData;
     }
 
     public boolean hasPayrollRecords(int id) {
