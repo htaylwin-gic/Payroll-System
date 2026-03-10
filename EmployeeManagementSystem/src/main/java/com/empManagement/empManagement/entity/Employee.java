@@ -39,7 +39,7 @@ public class Employee {
     private String startDate;
 
     @Column(name = "employment_status")
-    private String employmentStatus;
+    private String employmentStatus = "Active";
 
     @NumberFormat(pattern = "#,###.##")
     @Column(name = "salary", nullable = true)
@@ -143,7 +143,8 @@ public class Employee {
     @Column(name = "is_payroll")
     private String isPayroll;
 
-    private String status;
+    @Column(name = "status")
+    private String status = "Active";
 
     @Column(name = "total_basic_salary")
     private String totalBasicSalary;
