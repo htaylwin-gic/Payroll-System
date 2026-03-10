@@ -207,32 +207,69 @@
     </div>
 
     <th:block layout:fragment="scripts">
-        <script>
-            // Filter functionality
-            document.getElementById('departmentFilter')?.addEventListener('change', function() {
-                filterTable();
-            });
+    <script>
+        // Filter functionality
+        document.getElementById('departmentFilter')?.addEventListener('change', function() {
+            filterTable();
+        });
+        
+        document.getElementById('statusFilter')?.addEventListener('change', function() {
+            filterTable();
+        });
+        
+        function filterTable() {
+            const deptFilter = document.getElementById('departmentFilter').value.trim().toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value.trim().toLowerCase();
+            const rows = document.querySelectorAll('.employee-table tbody tr');
             
-            document.getElementById('statusFilter')?.addEventListener('change', function() {
-                filterTable();
-            });
+            console.log('Filtering - Department:', deptFilter, 'Status:', statusFilter); // Debug log
             
-            function filterTable() {
-                const deptFilter = document.getElementById('departmentFilter').value.toLowerCase();
-                const statusFilter = document.getElementById('statusFilter').value.toLowerCase();
-                const rows = document.querySelectorAll('.employee-table tbody tr');
+            rows.forEach(row => {
+                if (row.cells.length < 7) return;
                 
-                rows.forEach(row => {
-                    const dept = row.cells[3]?.textContent?.toLowerCase() || '';
-                    const status = row.cells[4]?.textContent?.toLowerCase() || '';
-                    
-                    const deptMatch = !deptFilter || dept.includes(deptFilter);
-                    const statusMatch = !statusFilter || status.includes(statusFilter);
-                    
-                    row.style.display = (deptMatch && statusMatch) ? '' : 'none';
-                });
+                const deptCell = row.cells[3];
+                const dept = deptCell?.textContent?.trim().toLowerCase() || '';
+                
+                const statusCell = row.cells[4];
+                const statusBadge = statusCell?.querySelector('span.badge');
+                let status = statusBadge?.textContent?.trim().toLowerCase() || statusCell?.textContent?.trim().toLowerCase() || '';
+                
+                console.log('Row:', dept, status);
+                
+                const deptMatch = !deptFilter || dept.includes(deptFilter);
+                
+                let statusMatch = !statusFilter;
+                if (statusFilter) {
+                    statusMatch = status === statusFilter;
+                }
+                
+                row.style.display = (deptMatch && statusMatch) ? '' : 'none';
+            });
+            
+            // Show a message if no rows are visible
+            const visibleRows = Array.from(rows).filter(row => row.style.display !== 'none' && row.cells.length >= 7);
+            const noResultsRow = document.querySelector('.no-results-row');
+            
+            if (visibleRows.length === 0) {
+                if (!noResultsRow) {
+                    const tbody = document.querySelector('.employee-table tbody');
+                    const newRow = document.createElement('tr');
+                    newRow.className = 'no-results-row';
+                    newRow.innerHTML = '<td colspan="7" class="text-center py-4">' +
+                        '<i class="fas fa-search fa-2x text-muted mb-3"></i>' +
+                        '<p class="text-muted mb-0">No employees match the selected filters</p>' +
+                        '</td>';
+                    tbody.appendChild(newRow);
+                }
+            } else if (noResultsRow) {
+                noResultsRow.remove();
             }
-        </script>
-    </th:block>
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            filterTable();
+        });
+    </script>
+</th:block>
 </body>
 </html>
