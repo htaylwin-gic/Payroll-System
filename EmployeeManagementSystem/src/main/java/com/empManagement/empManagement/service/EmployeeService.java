@@ -668,4 +668,9 @@ public class EmployeeService {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'hasPayrollRecords'");
     }
+
+    public Employee findByUserId(Long id) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'findByUserId'");
+    }
 }
